@@ -4,16 +4,26 @@ Revisado el 23-11-2026.
 
 ## Recomendación
 
-Usar **free-exercise-db** como base técnica (nombres, imágenes, instrucciones largas) y un **catálogo curado propio en español** (`data/ejercicios.json`) con el mapa de músculos, la fatiga y las alternativas. Ninguna base abierta trae lo que la app necesita para decidir alternativas: músculos con el detalle de la meta semanal (hombro lateral vs. posterior), peso de cada músculo, fatiga y explicaciones de equivalencia. Eso hay que curarlo, y ya está hecho para los 57 ejercicios de la rutina.
+Tres capas:
+
+1. **Catálogo curado propio en español** (`data/ejercicios.json`): los ejercicios de la rutina con el mapa de músculos, la fatiga y las alternativas explicadas. Es lo que usa la app para contar series y decidir.
+2. **openGym** (`data/fuentes/opengym/biblioteca.json`): biblioteca de 5.632 ejercicios con nombre en español para todos e instrucciones en español para 1.249. Separa hombro anterior, lateral y posterior, y dice qué máquina necesita cada uno. Sirve para buscar más alternativas y para las instrucciones en español.
+3. **free-exercise-db** (`data/fuentes/free-exercise-db.json`): fotos de dominio público, que es lo único que openGym no permite usar. Ninguna base abierta trae lo que la app necesita para decidir alternativas: músculos con el detalle de la meta semanal (hombro lateral vs. posterior), peso de cada músculo, fatiga y explicaciones de equivalencia. Eso hay que curarlo, y ya está hecho para los 57 ejercicios de la rutina.
 
 ## Bases de ejercicios evaluadas
 
 | Fuente | Licencia | Qué trae | Español | Veredicto |
 |---|---|---|---|---|
+| [openGym](https://github.com/DuarteSantos8/openGym) | Texto: AGPL-3.0 (lo escrito por openGym) y MIT (1.323 entradas que vienen de ExerciseDB v1). Imágenes y animaciones: licencia privada de Gym visual, **prohibido reutilizarlas** | 5.632 ejercicios (6.554 contando versiones femeninas), nombres traducidos a 22 idiomas, instrucciones en español en 1.249, músculo principal con deltoides separado, tipo de máquina (`pec-deck`, `leg-press`...), si necesita banco o barra | Sí: nombres completos, instrucciones parciales | **Usar el texto.** Importado sin imágenes con `scripts/importar_opengym.py` (versión del 15-11-2026). |
 | [free-exercise-db](https://github.com/yuhonas/free-exercise-db) | Unlicense (dominio público), datos e imágenes | 876 ejercicios en un JSON, 2 fotos por ejercicio, instrucciones en inglés, músculo principal/secundario, equipo, compuesto/aislado, nivel | No | **Usar.** Sin API, sin claves, sin restricciones. Copia en `data/fuentes/`. |
 | [wger](https://github.com/wger-project/wger) | Código AGPL-3.0; datos de ejercicios con licencias Creative Commons por entrada (en general CC-BY-SA) | API abierta, traducciones a varios idiomas incluido español, imágenes y videos subidos por la comunidad | Parcial | **Complemento opcional** para traducir instrucciones. Exige atribución por ejercicio y la cobertura en español es desigual. Su API no fue accesible desde este entorno, así que no la descargué. |
 | ExerciseDB (RapidAPI / exercisedb.dev) | Términos propios del proveedor, no es licencia abierta | 1.300+ ejercicios con GIFs animados | No | **No usar** como base. Los GIFs son de un proveedor comercial y no pude leer los términos (página en Notion que requiere navegador). Para una app personal no vale el riesgo ni la dependencia de una API con cuota. |
 | ExRx, MuscleWiki | Licencias comerciales / términos de API restrictivos | Muy buen contenido técnico | No | Solo como referencia de lectura, no para copiar datos. |
+
+### Sobre la licencia de openGym
+Para una app personal en un repo privado, la AGPL no exige nada. Si algún día la app se publica para otras personas, la biblioteca de openGym obliga a publicar el código bajo AGPL y a mantener el aviso de autoría (copia de la licencia en `data/fuentes/opengym/`). El catálogo curado y la rutina son texto propio y no dependen de eso. Sus imágenes no se copiaron ni se enlazan.
+
+openGym también tiene un botón para cambiar ejercicio, pero solo filtra "mismo músculo principal, mismo equipo primero". No ordena alternativas ni explica la equivalencia, que es lo que agrega esta app.
 
 ### Límites de free-exercise-db que el catálogo curado corrige
 - Agrupa todo el hombro en `shoulders`: no distingue lateral, posterior ni anterior, que son metas separadas en la app.
@@ -31,6 +41,14 @@ o copiarse al repo más adelante si se quiere que la app funcione sin internet.
 - **Robinson, Pelland, Remmert, Refalo, Jukic, Steele y Zourdos (2024), Sports Medicine.** Meta-regresiones con RIR estimado: la hipertrofia aumenta a medida que las series se acercan al fallo, mientras que la fuerza mejora parecido en un rango amplio de RIR. [Preprint](https://sportrxiv.org/index.php/server/preprint/view/295)
 
 **Cómo se traduce a la app:** compuestos a 1-2 RIR (casi todo el beneficio, menos fatiga para las series siguientes y menos riesgo con cargas pesadas); aislados con la última serie al fallo o a 1 RIR (fatiga local barata, bajo riesgo). Coincide con las reglas del proyecto. La evidencia respalda "cerca del fallo" en general; la división exacta compuesto/aislado es una aplicación práctica habitual, no un resultado directo de estos estudios.
+
+## Recuperación por músculo (para orden y día 4)
+
+openGym documenta su modelo de fatiga en `docs/dev/FATIGUE_SETS_MODEL.md`, con estas fuentes:
+- Reproducibilidad de 10RM: a las 24 h la sentadilla rinde 12,6% menos y la banca 9,2% menos; a las 36 h, 6,6% y 3,0%; recuperación completa a las 48-72 h. [PMC6719818](https://pmc.ncbi.nlm.nih.gov/articles/PMC6719818)
+- Su modelo usa vidas medias por músculo: brazos y deltoides 24 h, pecho y espalda alta 30 h, piernas y lumbar 48 h. Es una calibración suya, no un resultado de un estudio.
+
+**Cómo se traduce a la app:** el día 4 de rescate no debería cargar piernas si el día 3 fue el día anterior; tren superior sí se recupera en 1-2 días.
 
 ## Respaldo para el volumen semanal por músculo
 
