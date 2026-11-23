@@ -6,9 +6,9 @@ Revisado el 23-11-2026.
 
 Tres capas:
 
-1. **Catálogo curado propio en español** (`data/ejercicios.json`): los ejercicios de la rutina con el mapa de músculos, la fatiga y las alternativas explicadas. Es lo que usa la app para contar series y decidir.
+1. **Catálogo curado propio en español** (`data/ejercicios.json`): 57 ejercicios comunes de gimnasio con el mapa de músculos, la fatiga y las alternativas explicadas. Es lo que usa la app para contar series y decidir.
 2. **openGym** (`data/fuentes/opengym/biblioteca.json`): biblioteca de 5.632 ejercicios con nombre en español para todos e instrucciones en español para 1.249. Separa hombro anterior, lateral y posterior, y dice qué máquina necesita cada uno. Sirve para buscar más alternativas y para las instrucciones en español.
-3. **free-exercise-db** (`data/fuentes/free-exercise-db.json`): fotos de dominio público, que es lo único que openGym no permite usar. Ninguna base abierta trae lo que la app necesita para decidir alternativas: músculos con el detalle de la meta semanal (hombro lateral vs. posterior), peso de cada músculo, fatiga y explicaciones de equivalencia. Eso hay que curarlo, y ya está hecho para los 57 ejercicios de la rutina.
+3. **free-exercise-db** (`data/fuentes/free-exercise-db.json`): fotos de dominio público, que es lo único que openGym no permite usar. Ninguna base abierta trae lo que la app necesita para decidir alternativas: músculos con el detalle de la meta semanal (hombro lateral vs. posterior), peso de cada músculo, fatiga y explicaciones de equivalencia. Eso hay que curarlo, y ya está hecho para 57 ejercicios comunes.
 
 ## Bases de ejercicios evaluadas
 
@@ -21,7 +21,7 @@ Tres capas:
 | ExRx, MuscleWiki | Licencias comerciales / términos de API restrictivos | Muy buen contenido técnico | No | Solo como referencia de lectura, no para copiar datos. |
 
 ### Sobre la licencia de openGym
-Para una app personal en un repo privado, la AGPL no exige nada. Si algún día la app se publica para otras personas, la biblioteca de openGym obliga a publicar el código bajo AGPL y a mantener el aviso de autoría (copia de la licencia en `data/fuentes/opengym/`). El catálogo curado y la rutina son texto propio y no dependen de eso. Sus imágenes no se copiaron ni se enlazan.
+Para una app personal en un repo privado, la AGPL no exige nada. Si algún día la app se publica para otras personas, la biblioteca de openGym obliga a publicar el código bajo AGPL y a mantener el aviso de autoría (copia de la licencia en `data/fuentes/opengym/`). El catálogo curado es texto propio y no dependen de eso. Sus imágenes no se copiaron ni se enlazan.
 
 openGym también tiene un botón para cambiar ejercicio, pero solo filtra "mismo músculo principal, mismo equipo primero". No ordena alternativas ni explica la equivalencia, que es lo que agrega esta app.
 
@@ -55,21 +55,3 @@ openGym documenta su modelo de fatiga en `docs/dev/FATIGUE_SETS_MODEL.md`, con e
 - **Pelland, Remmert, Robinson, Hinson y Zourdos (2024), preprint en SportRxiv.** Meta-regresión de 67 estudios y 2.058 participantes: más series semanales dan más hipertrofia y fuerza, con rendimientos decrecientes. El método que mejor explicó los datos fue el **"fraccional"**: las series indirectas cuentan 0,5. [Preprint](https://sportrxiv.org/index.php/server/preprint/view/460)
 
 **Cómo se traduce a la app:** el conteo principal = 1 y secundario = 0,5 es exactamente el método fraccional de ese análisis. Las metas de 8-16 series duras por músculo están dentro del rango que los estudios cubren con buenos resultados. No hay un número "mágico": más volumen ayuda pero cada serie extra rinde menos, por eso las metas son rangos.
-
-## Hallazgo al cruzar la rutina con las metas
-
-`python scripts/validar_datos.py` suma las series de los días 1-3 (alternativa A, ponderadas). La rutina base deja cortas todas las metas:
-
-| Músculo | Días 1-3 | Meta |
-|---|---|---|
-| Espalda | 11 | 14-16 |
-| Pecho | 8 | 12-14 |
-| Cuádriceps | 7 | 10-12 |
-| Isquios y glúteos | 8,5 | 10-12 |
-| Hombro lateral | 4 | 8-10 |
-| Hombro posterior | 6 | 8-10 |
-| Tríceps | 7 | 8-10 |
-| Bíceps | 7,5 | 8-10 |
-| Pantorrillas | 3 | 6-8 |
-
-El faltante total (~26 series) es mayor que lo que cabe en un día 4 de rescate de 60-70 minutos. Hay que decidir entre subir series en los días 1-3, hacer que el día 4 sea fijo de tren superior más pantorrillas, o bajar las metas al nivel de la rutina.
