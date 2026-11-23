@@ -1,0 +1,637 @@
+<title>Slot · App de gimnasio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: una columna tipo app de celular (máx. 480px), barra de pestañas fija abajo, todo operable con el pulgar */
+:root {
+  --bg: #EEF1F5;
+  --surface: #FFFFFF;
+  --surface-2: #E4E9F0;
+  --ink: #131820;
+  --muted: #5A6472;
+  --line: #D5DCE5;
+  --accent: #1E4FD8;
+  --accent-soft: #DCE5FB;
+  --accent-ink: #FFFFFF;
+  --ok: #1D8048;
+  --ok-soft: #DDF1E5;
+  --warn: #9A6410;
+  --warn-soft: #FBEFD9;
+  --bad: #B8322A;
+  --bad-soft: #F8E0DE;
+  --tag: #6B4FC4;
+  --tag-soft: #ECE6FA;
+  --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1015; --surface: #161A21; --surface-2: #20262F; --ink: #E8ECF2; --muted: #96A0AD; --line: #2A313B;
+    --accent: #7096FF; --accent-soft: #1C2A4D; --accent-ink: #0B1020;
+    --ok: #4CC683; --ok-soft: #143222; --warn: #E8AE4C; --warn-soft: #3A2C12; --bad: #F2766B; --bad-soft: #3D1A18;
+    --tag: #B39DFF; --tag-soft: #2A2245; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1015; --surface: #161A21; --surface-2: #20262F; --ink: #E8ECF2; --muted: #96A0AD; --line: #2A313B;
+  --accent: #7096FF; --accent-soft: #1C2A4D; --accent-ink: #0B1020;
+  --ok: #4CC683; --ok-soft: #143222; --warn: #E8AE4C; --warn-soft: #3A2C12; --bad: #F2766B; --bad-soft: #3D1A18;
+  --tag: #B39DFF; --tag-soft: #2A2245; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app { max-width: 480px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px calc(96px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 14px; }
+.num { font-family: var(--display); font-variant-numeric: tabular-nums; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+h1 { font-size: 30px; line-height: 1; }
+h2 { font-size: 22px; line-height: 1.05; }
+h3 { font-size: 18px; }
+p { margin: 0; }
+.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+
+/* encabezado */
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.toggle { white-space: nowrap; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 10px; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; }
+.toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.toggle[aria-pressed="true"] .dot { background: var(--tag); }
+
+/* nota de "qué problema resuelve" */
+.why-tag { display: flex; gap: 8px; align-items: flex-start; background: var(--tag-soft); color: var(--tag); border-radius: 8px; padding: 7px 10px; font-size: 12.5px; font-weight: 500; }
+.why-tag b { font-weight: 700; white-space: nowrap; }
+.hide-tags .why-tag { display: none; }
+
+/* tira de la sesión */
+.strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.chip-slot { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 4px 6px; text-align: center; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.chip-slot .n { font-family: var(--display); font-weight: 700; font-size: 18px; line-height: 1; }
+.chip-slot .l { font-size: 10px; line-height: 1.15; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip-slot.cur { border-color: var(--accent); background: var(--accent-soft); }
+.chip-slot.done { background: var(--ok-soft); border-color: transparent; }
+.chip-slot.done .n { color: var(--ok); }
+.chip-slot.cut { opacity: .45; text-decoration: line-through; }
+.prio { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; }
+.prio.alta { background: var(--accent); color: var(--accent-ink); }
+.prio.media { background: var(--accent-soft); color: var(--accent); }
+.prio.baja { background: var(--surface-2); color: var(--muted); }
+
+/* tarjeta principal */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.slot-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.slot-head .meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+.target { font-family: var(--display); font-size: 26px; font-weight: 700; line-height: 1; text-align: right; white-space: nowrap; }
+.target small { display: block; font-family: var(--body); font-size: 11px; font-weight: 500; color: var(--muted); }
+
+.alts { display: flex; flex-direction: column; gap: 6px; }
+.alt { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 9px 10px; background: var(--surface); text-align: left; width: 100%; }
+.alt .letter { font-family: var(--display); font-weight: 700; font-size: 20px; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-2); }
+.alt.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.alt.on .letter { background: var(--accent); color: var(--accent-ink); }
+.alt.busy { opacity: .55; }
+.alt.busy .name { text-decoration: line-through; }
+.alt .name { font-weight: 600; font-size: 14.5px; }
+.alt .sub { font-size: 12px; color: var(--muted); }
+.state { font-size: 11px; font-weight: 600; padding: 3px 7px; border-radius: 6px; white-space: nowrap; }
+.state.free { background: var(--ok-soft); color: var(--ok); }
+.state.taken { background: var(--bad-soft); color: var(--bad); }
+
+.explain { background: var(--surface-2); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; }
+.explain .row { display: grid; grid-template-columns: 74px minmax(0,1fr); gap: 8px; }
+.explain .k { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding-top: 2px; }
+
+.btn { border: none; border-radius: 12px; padding: 13px 14px; font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: var(--surface-2); }
+.btn.danger { background: var(--bad-soft); color: var(--bad); }
+.btn.block { width: 100%; }
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.last { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.last .val { font-family: var(--display); font-size: 20px; font-weight: 600; }
+.note { border-radius: 10px; padding: 9px 11px; font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
+.note.warn { background: var(--warn-soft); color: var(--warn); }
+.note.ok { background: var(--ok-soft); color: var(--ok); }
+.note.info { background: var(--accent-soft); color: var(--accent); }
+.note.bad { background: var(--bad-soft); color: var(--bad); }
+.note b { font-weight: 700; }
+
+/* registro */
+.log { display: flex; flex-direction: column; gap: 12px; }
+.guide { border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 4px 10px 10px 4px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.guide.fail { border-left-color: var(--bad); background: var(--bad-soft); }
+.guide .g1 { font-family: var(--display); font-size: 19px; font-weight: 700; line-height: 1.1; }
+.guide .g2 { font-size: 13px; color: var(--muted); }
+.steppers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stepper { border: 1px solid var(--line); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.stepper .lab { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+.stepper .ctl { display: grid; grid-template-columns: 40px minmax(0,1fr) 40px; align-items: center; width: 100%; }
+.stepper .ctl button { height: 40px; border: none; border-radius: 10px; background: var(--surface-2); font-size: 20px; font-weight: 600; }
+.stepper .v { font-family: var(--display); font-size: 30px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; }
+.rir { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.rir button { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 2px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.rir button .big { font-family: var(--display); font-size: 22px; font-weight: 700; line-height: 1; }
+.rir button .tiny { font-size: 10.5px; color: var(--muted); }
+.rir button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.rir button.on .tiny { color: var(--accent-ink); opacity: .85; }
+.sets-done { display: flex; gap: 6px; flex-wrap: wrap; }
+.set-pill { font-family: var(--display); font-size: 15px; font-weight: 600; background: var(--surface-2); border-radius: 8px; padding: 3px 8px; }
+.set-pill.f { background: var(--bad-soft); color: var(--bad); }
+
+.rest { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--ink); color: var(--bg); border-radius: 12px; padding: 10px 14px; }
+.rest .t { font-family: var(--display); font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rest button { background: transparent; border: 1px solid currentColor; border-radius: 8px; padding: 4px 10px; font-size: 12px; color: inherit; }
+
+.banner { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; }
+.banner .btn { padding: 8px 10px; font-size: 13px; background: var(--warn); color: var(--surface); white-space: nowrap; }
+
+/* tiempo */
+.time-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+.time-opts button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; }
+.time-opts button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.plan-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); align-items: center; }
+.plan-row:first-child { border-top: none; }
+.plan-row .what { font-weight: 600; font-size: 14px; }
+.plan-row .impact { font-size: 12.5px; color: var(--muted); }
+.plan-row .tag-keep { color: var(--ok); font-weight: 600; font-size: 12px; }
+.plan-row .tag-cut { color: var(--bad); font-weight: 600; font-size: 12px; }
+
+/* semana */
+.bars { display: flex; flex-direction: column; gap: 12px; }
+.bar-row { display: flex; flex-direction: column; gap: 4px; }
+.bar-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.bar-top .m { font-weight: 600; font-size: 14px; }
+.bar-top .v { font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.bar { position: relative; height: 14px; border-radius: 7px; background: var(--surface-2); overflow: hidden; }
+.bar .zone { position: absolute; top: 0; bottom: 0; background: var(--ok-soft); border-left: 2px solid var(--ok); border-right: 2px solid var(--ok); }
+.bar .proj { position: absolute; top: 3px; bottom: 3px; left: 0; border-radius: 5px; background: var(--accent-soft); outline: 1px dashed var(--accent); outline-offset: -1px; }
+.bar .fill { position: absolute; top: 3px; bottom: 3px; left: 0; border-radius: 5px; background: var(--accent); }
+.bar-row.behind .fill { background: var(--bad); }
+.bar-row.behind .m::after { content: "Atrasado"; margin-left: 8px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); background: var(--bad-soft); padding: 2px 6px; border-radius: 4px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 8px; border-radius: 3px; display: inline-block; }
+.d4 { display: flex; flex-direction: column; }
+.d4-row { display: grid; grid-template-columns: 26px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); }
+.d4-row:first-child { border-top: none; }
+.d4-row .i { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--muted); }
+.d4-row .s { font-family: var(--display); font-weight: 700; font-size: 18px; }
+
+/* guía */
+.rule { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rule > div { border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.rule .c { background: var(--accent-soft); }
+.rule .a { background: var(--surface-2); }
+.rule .big { font-family: var(--display); font-size: 26px; font-weight: 700; line-height: 1; }
+.scale { display: flex; flex-direction: column; gap: 4px; }
+.scale-row { display: grid; grid-template-columns: 46px minmax(0,1fr); gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); font-size: 13.5px; }
+.scale-row .k { font-family: var(--display); font-weight: 700; font-size: 20px; }
+.scale-row.hl { background: var(--ok-soft); }
+.scale-row.fl { background: var(--bad-soft); }
+ul.plain { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+details summary { cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--accent); }
+details[open] summary { margin-bottom: 6px; }
+
+/* hoja inferior */
+.sheet-bg { position: fixed; inset: 0; background: rgba(5, 8, 12, .5); display: flex; align-items: flex-end; justify-content: center; z-index: 30; }
+.sheet { background: var(--surface); width: 100%; max-width: 480px; border-radius: 18px 18px 0 0; padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 12px; }
+
+/* pestañas */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); display: flex; justify-content: center; padding: 6px max(16px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); z-index: 20; }
+.tabs-in { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.tabs button { border: none; background: transparent; border-radius: 10px; padding: 8px 4px; font-weight: 600; font-size: 13px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.tabs button svg { width: 22px; height: 22px; }
+.tabs button.on { color: var(--accent); background: var(--accent-soft); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .flash { animation: pop .35s ease-out; }
+  @keyframes pop { from { transform: translateY(4px); opacity: .4; } to { transform: none; opacity: 1; } }
+}
+</style>
+
+<div id="root"></div>
+
+<script>
+// ---------- Datos ----------
+const MUS = { espalda:'Espalda', pecho:'Pecho', cuad:'Cuádriceps', isq:'Isquios y glúteos', lat:'Hombro lateral', post:'Hombro posterior', tri:'Tríceps', bi:'Bíceps', pant:'Pantorrillas', front:'Hombro frontal' };
+const META = { espalda:[14,16], pecho:[12,14], cuad:[10,12], isq:[10,12], lat:[8,10], post:[8,10], tri:[8,10], bi:[8,10], pant:[6,8] };
+// Lo que ya llevas esta semana (ejemplo: hiciste día 2 el lunes y día 3 el miércoles, recortado por tiempo)
+const BASE = { espalda:11, pecho:0, cuad:5, isq:8.5, lat:0, post:4.5, tri:0, bi:7.5, pant:0, front:0 };
+
+const EX = {
+  banca:{ n:'Press banca con barra', eq:'Barra', p:['pecho'], s:['tri','front'], why:'El ejercicio base del día. Mueve más peso y es el que mejor muestra tu progreso.', adj:'Es tu referencia: los demás se calculan a partir de este.', tec:'Junta las escápulas, pies firmes en el suelo y baja la barra a la parte baja del pecho.', last:{w:70,r:[8,8,8],pos:1,d:'jue 16 nov'} },
+  mancPlana:{ n:'Press plano con mancuernas', eq:'Mancuernas', p:['pecho'], s:['tri','front'], why:'Mismo empuje horizontal y mismo músculo. Baja un poco más y cada brazo trabaja por su cuenta.', adj:'Cada mancuerna pesa cerca del 40% de la barra. Si haces 70 kg en barra, parte con 26-28 kg por mano.', tec:'Baja hasta sentir el estiramiento en el pecho, con los codos a unos 45° del cuerpo.', last:{w:28,r:[9,8,8],pos:1,d:'jue 2 nov'} },
+  smith:{ n:'Press en máquina o Smith', eq:'Máquina', p:['pecho'], s:['tri','front'], why:'Mismo patrón con el recorrido guiado. Pide menos equilibrio, así que puedes empujar fuerte con menos riesgo.', adj:'Usa cerca de 10% menos que en barra libre. Anota qué máquina usas, porque cada una pesa distinto.', tec:'Ajusta el banco para que la barra baje a la altura de los pezones.', last:null, sugW:62.5 },
+  incl:{ n:'Press inclinado con mancuernas', eq:'Mancuernas', p:['pecho'], s:['tri','front'], why:'Trabaja la parte alta del pecho, que el press plano toca menos.', adj:'Banco a 30°. Más inclinado ya trabaja sobre todo el hombro.', tec:'Baja controlado hasta la altura del pecho alto, sin rebotar.', last:{w:24,r:[10,9,8],pos:2,d:'jue 16 nov'} },
+  inclSmith:{ n:'Press inclinado en Smith o máquina', eq:'Máquina', p:['pecho'], s:['tri','front'], why:'Mismo ángulo de empuje y mismo músculo, con recorrido guiado.', adj:'Parte con el peso de las dos mancuernas sumadas, menos 10%.', tec:'Banco a 30°, la barra baja a la parte alta del pecho.', last:null, sugW:40 },
+  flexPeso:{ n:'Flexiones con peso', eq:'Sin máquina', p:['pecho'], s:['tri','front'], why:'No hay que esperar a nadie. Mismo empuje y mismo músculo; súbele dificultad con un disco.', adj:'Si haces más de 15 sin peso, pide que te pongan un disco de 10 kg en la espalda.', tec:'Cuerpo recto como tabla, pecho casi al suelo en cada repetición.', last:null, sugW:10 },
+  cruces:{ n:'Cruces en polea', eq:'Polea', p:['pecho'], s:[], why:'Mismo movimiento de cerrar los brazos que el pec deck, con tensión constante, y cambias el peso en segundos.', adj:'Si vienes del pec deck, el número no se compara. Busca un peso que te deje 12-15 con 1-2 en reserva.', tec:'Codos levemente doblados y fijos. Imagina que abrazas un árbol.', last:{w:15,r:[15,13],pos:3,d:'jue 16 nov'} },
+  pecdeck:{ n:'Pec deck (apertura en máquina)', eq:'Máquina', p:['pecho'], s:[], why:'Mismo movimiento de apertura con el recorrido guiado. Fácil de aprender.', adj:'La primera vez busca un peso en que llegues a 12-15 con 1-2 en reserva.', tec:'Espalda pegada al respaldo, junta las manos sin chocar los brazos.', last:{w:45,r:[15,14],pos:3,d:'jue 9 nov'} },
+  aperturas:{ n:'Aperturas con mancuernas', eq:'Mancuernas', p:['pecho'], s:[], why:'Mismo patrón de cerrar los brazos. Más tensión cuando el brazo está abierto y menos al cerrar.', adj:'Usa 30-40% menos que en la polea por lado. Parte liviano: el estiramiento abajo es fuerte.', tec:'Baja abriendo los brazos hasta la altura del pecho, no más.', last:null, sugW:10 },
+  latMan:{ n:'Elevaciones laterales con mancuernas', eq:'Mancuernas', p:['lat'], s:[], why:'El ejercicio más directo para el hombro lateral, que da el ancho de hombros.', adj:'Peso liviano y muchas repeticiones. Si balanceas el cuerpo, baja el peso.', tec:'Sube los brazos hacia los lados hasta la altura de los hombros, con el codo apenas doblado.', last:{w:10,r:[15,14,12],pos:4,d:'jue 16 nov'} },
+  latPolea:{ n:'Laterales en polea', eq:'Polea', p:['lat'], s:[], why:'Mismo movimiento. La polea mantiene tensión también abajo, donde la mancuerna no pesa.', adj:'A un brazo, parte con 5-7 kg.', tec:'Polea baja, cable por delante del cuerpo, sube hacia el lado.', last:null, sugW:5 },
+  latMaq:{ n:'Máquina de laterales', eq:'Máquina', p:['lat'], s:[], why:'Mismo músculo con recorrido guiado.', adj:'La primera vez busca un peso que te deje 15-20.', tec:'Codos contra los rodillos, sube hasta la altura del hombro.', last:null, sugW:20 },
+  pressHom:{ n:'Press de hombro con mancuernas', eq:'Mancuernas', p:['front'], s:['tri','lat'], why:'Empuje vertical: trabaja el hombro frontal y ayuda al lateral y al tríceps.', adj:'Sentado con respaldo, para no arquear la espalda.', tec:'Empuja hacia arriba sin chocar las mancuernas arriba.', last:{w:20,r:[10,9],pos:5,d:'jue 16 nov'} },
+  pressHomMaq:{ n:'Press de hombro en máquina', eq:'Máquina', p:['front'], s:['tri','lat'], why:'Mismo empuje vertical con recorrido guiado.', adj:'Parte con el peso de las dos mancuernas sumadas.', tec:'Asiento a una altura en que las manijas queden a la altura de los hombros.', last:null, sugW:40 },
+  arnold:{ n:'Press Arnold', eq:'Mancuernas', p:['front'], s:['tri','lat'], why:'Mismo empuje vertical; el giro de muñeca suma recorrido para el hombro.', adj:'Usa 10-15% menos que en el press normal.', tec:'Parte con las palmas hacia ti y gíralas mientras subes.', last:null, sugW:16 },
+  triPolea:{ n:'Tríceps en polea', eq:'Polea', p:['tri'], s:[], why:'Aísla el tríceps sin cansar el pecho ni el hombro.', adj:'Con cuerda o barra recta: elige el que no te moleste el codo.', tec:'Codos pegados al cuerpo; solo se mueve el antebrazo.', last:{w:30,r:[14,12,11],pos:6,d:'jue 16 nov'} },
+  fondos:{ n:'Fondos asistidos', eq:'Máquina', p:['tri'], s:['pecho'], why:'Mismo músculo usando tu cuerpo como peso. El pecho ayuda un poco.', adj:'En la máquina asistida, más contrapeso es más fácil. Parte con uno que te deje 10-15.', tec:'Cuerpo vertical para cargar más el tríceps.', last:null, sugW:30 },
+  frances:{ n:'Press francés', eq:'Barra Z', p:['tri'], s:[], why:'Trabaja el tríceps estirado, que es donde más crece. Solo necesitas una barra Z.', adj:'Parte con la barra Z vacía o con poco peso; cuida los codos.', tec:'Baja la barra hacia la frente doblando solo los codos.', last:null, sugW:20 }
+};
+
+const DAY = [
+  { name:'Press pesado', sets:3, reps:[6,8], prio:'alta', type:'comp', alts:['banca','mancPlana','smith'] },
+  { name:'Press inclinado', sets:3, reps:[8,10], prio:'alta', type:'comp', alts:['incl','inclSmith','flexPeso'] },
+  { name:'Aislado pecho', sets:2, reps:[12,15], prio:'baja', type:'iso', alts:['cruces','pecdeck','aperturas'] },
+  { name:'Hombro lateral', sets:3, reps:[12,20], prio:'baja', type:'iso', alts:['latMan','latPolea','latMaq'] },
+  { name:'Press hombro', sets:2, reps:[8,12], prio:'media', type:'comp', alts:['pressHom','pressHomMaq','arnold'] },
+  { name:'Tríceps', sets:3, reps:[10,15], prio:'baja', type:'iso', alts:['triPolea','fondos','frances'] }
+];
+const PRANK = { alta:3, media:2, baja:1 };
+const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
+
+// ---------- Estado ----------
+const S = {
+  tab:'hoy', tags:true, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
+  minutes:null, draft:null, msg:null, swap:null, restEnd:null, restLen:0, sheet:null, showWhy:false
+};
+
+const fmt = n => (Math.round(n*10)/10).toString().replace('.', ',');
+const altIdx = si => S.alt[si] ?? 0;
+const exOf = si => EX[DAY[si].alts[altIdx(si)]];
+const exIdOf = si => DAY[si].alts[altIdx(si)];
+const logsFor = si => S.logs.filter(l => l.si === si);
+const isDone = si => logsFor(si).length >= DAY[si].sets;
+const pos = si => { const i = S.order.indexOf(si); return i >= 0 ? i + 1 : S.order.length + 1; };
+const muscles = si => { const e = exOf(si); return [...e.p, ...e.s]; };
+const share = (a, b) => muscles(a).filter(m => muscles(b).includes(m));
+const restSecs = si => DAY[si].type === 'comp' ? 150 : 75;
+const slotMins = (si, setsLeft) => (setsLeft ?? DAY[si].sets) * (45 + restSecs(si)) / 60 + 2;
+
+function makeDraft(si) {
+  const e = exOf(si), n = logsFor(si).length, prev = logsFor(si).slice(-1)[0];
+  const w = prev ? prev.w : (e.last ? e.last.w : e.sugW ?? 0);
+  const r = prev ? prev.r : (e.last ? (e.last.r[n] ?? e.last.r[e.last.r.length-1]) : DAY[si].reps[0]);
+  return { w, r, rir: null };
+}
+
+function weekly(includePlan) {
+  const t = { ...BASE };
+  const add = (e, k) => { e.p.forEach(m => t[m] += k); e.s.forEach(m => t[m] += k * 0.5); };
+  S.logs.forEach(l => add(EX[l.ex], 1));
+  if (includePlan) DAY.forEach((d, si) => {
+    if (cutSet().has(si)) return;
+    const left = d.sets - logsFor(si).length; if (left > 0) add(exOf(si), left);
+  });
+  return t;
+}
+
+function timePlan() {
+  const pending = DAY.map((d, si) => si).filter(si => !isDone(si));
+  const rows = pending.map(si => ({ si, mins: slotMins(si, DAY[si].sets - logsFor(si).length) }));
+  const cut = new Set();
+  if (S.minutes != null) {
+    let total = rows.reduce((a, r) => a + r.mins, 0);
+    const order = [...rows].filter(r => logsFor(r.si).length === 0 && r.si !== S.si)
+      .sort((a, b) => PRANK[DAY[a.si].prio] - PRANK[DAY[b.si].prio] || b.si - a.si);
+    for (const r of order) { if (total <= S.minutes) break; if (DAY[r.si].prio === 'alta') break; cut.add(r.si); total -= r.mins; }
+  }
+  return { rows, cut };
+}
+const cutSet = () => timePlan().cut;
+
+function findFiller(si) {
+  const behind = weekly(false);
+  return DAY.map((d, j) => j).filter(j => j !== si && !isDone(j) && DAY[j].type === 'iso' && logsFor(j).length === 0 && share(j, si).length === 0)
+    .sort((a, b) => (behind[exOf(a).p[0]] / (META[exOf(a).p[0]]?.[0] || 1)) - (behind[exOf(b).p[0]] / (META[exOf(b).p[0]]?.[0] || 1)))[0];
+}
+
+function conflictFor(j) {
+  // ¿Hay un ejercicio más importante, pendiente, que use los mismos músculos?
+  const hit = DAY.map((d, k) => k).find(k => k !== j && !isDone(k) && logsFor(k).length === 0 && PRANK[DAY[k].prio] > PRANK[DAY[j].prio] && share(j, k).length > 0);
+  return hit;
+}
+
+function guideFor(si) {
+  const d = DAY[si], n = logsFor(si).length + 1, last = n === d.sets;
+  if (d.type === 'comp') return { cls:'', g1:`Serie ${n} de ${d.sets}: termina con 1-2 en el tanque`, g2:`Compuesto. No llegues al fallo en ninguna serie. Descansa 2-3 min.` };
+  if (!last) return { cls:'', g1:`Serie ${n} de ${d.sets}: deja 1-2 en reserva`, g2:`Aislado. Guarda el fallo para la última serie. Descansa 60-90 s.` };
+  return { cls:'fail', g1:`Última serie: puedes llegar al fallo`, g2:`Aislado. Dalo todo, hasta que no salga una repetición más con buena técnica.` };
+}
+
+function feedback(si, rir) {
+  const d = DAY[si], n = logsFor(si).length, last = n === d.sets;
+  if (d.type === 'comp') {
+    if (rir === 0) return { cls:'bad', t:'Llegaste al fallo en un compuesto.', s:'Descansa los 3 minutos completos. Si en la próxima no llegas al rango, baja 5% el peso. Aquí el fallo suma poco músculo y mucho cansancio para las series que vienen.' };
+    if (rir >= 3) return { cls:'warn', t:'Te sobraron 3 o más repeticiones.', s:'En la próxima serie sube 2,5 kg o haz más repeticiones, hasta quedar a 1-2 del fallo.' };
+    return { cls:'ok', t:'Justo en la zona: 1-2 en reserva.', s:'Así sumas estímulo sin quemar las series que siguen.' };
+  }
+  if (!last && rir === 0) return { cls:'warn', t:'Todavía no era la última serie.', s:'Guarda el fallo para el final y descansa 90 s antes de la próxima.' };
+  if (last && rir >= 2) return { cls:'warn', t:'Era la última y te quedó margen.', s:'En la última serie de un aislado puedes apretar más. La próxima vez, dalo todo.' };
+  if (last) return { cls:'ok', t:'Así se hace la última serie de un aislado.', s:'Cerca del fallo, sin perder la técnica.' };
+  return { cls:'ok', t:'Bien, 1-2 en reserva.', s:'La última serie es la que puedes llevar al fallo.' };
+}
+
+function progressionNote(si) {
+  const d = DAY[si], ls = logsFor(si);
+  if (ls.length < d.sets) return null;
+  if (ls.every(l => l.r >= d.reps[1])) {
+    const w = ls[0].w, inc = DAY[si].type === 'comp' ? Math.max(2.5, Math.round(w * 0.03 / 2.5) * 2.5) : 1;
+    return `Llegaste al tope (${d.reps[1]}) en todas las series. La próxima vez sube a ${fmt(w + inc)} kg.`;
+  }
+  return null;
+}
+
+// ---------- Acciones ----------
+function act(a, v) {
+  const si = S.si;
+  switch (a) {
+    case 'tab': S.tab = v; window.scrollTo(0, 0); break;
+    case 'tags': S.tags = !S.tags; break;
+    case 'pick': { S.alt[si] = +v; S.draft = makeDraft(si); S.swap = null; S.showWhy = true; break; }
+    case 'whyToggle': S.showWhy = !S.showWhy; break;
+    case 'busy': {
+      const id = exIdOf(si); S.busy[id] = true;
+      const next = DAY[si].alts.findIndex(x => !S.busy[x]);
+      if (next >= 0) { const from = EX[id].n; S.alt[si] = next; S.draft = makeDraft(si); S.swap = { from, to: exOf(si).n }; S.showWhy = true; }
+      else S.swap = { none: true };
+      break;
+    }
+    case 'free': { DAY[si].alts.forEach(x => delete S.busy[x]); S.swap = null; break; }
+    case 'filler': {
+      const j = +v; S.returnTo = si; S.si = j; S.swap = null; S.draft = makeDraft(j); S.showWhy = false; window.scrollTo(0, 0); break;
+    }
+    case 'back': {
+      const r = S.returnTo; S.returnTo = null; DAY[r].alts.forEach(x => delete S.busy[x]); S.alt[r] = 0;
+      S.si = r; S.draft = makeDraft(r); S.swap = null; window.scrollTo(0, 0); break;
+    }
+    case 'jump': {
+      const j = +v; if (j === si) break;
+      const c = conflictFor(j);
+      if (c != null && !isDone(j)) {
+        const m = share(j, c).filter(x => x !== 'front').map(x => MUS[x].toLowerCase());
+        S.sheet = { title:`${DAY[j].name} antes de ${DAY[c].name}`, body:`Este ejercicio cansa ${m.join(' y ') || 'los mismos músculos'}, que vas a necesitar en ${DAY[c].name.toLowerCase()} (prioridad alta). Es posible que rindas menos ahí y no notes el progreso que esperas.`, foot:'Si igual lo haces, la app guarda el orden y ajusta la comparación con la vez anterior.', go:j };
+      } else { S.si = j; S.draft = makeDraft(j); S.swap = null; S.showWhy = false; }
+      break;
+    }
+    case 'sheetGo': { const j = S.sheet.go; S.sheet = null; S.si = j; S.draft = makeDraft(j); S.swap = null; S.showWhy = false; window.scrollTo(0, 0); break; }
+    case 'sheetClose': S.sheet = null; break;
+    case 'w': S.draft.w = Math.max(0, S.draft.w + (+v)); break;
+    case 'r': S.draft.r = Math.max(0, S.draft.r + (+v)); break;
+    case 'rir': S.draft.rir = +v; break;
+    case 'log': {
+      if (S.draft.rir == null) { S.msg = { cls:'info', t:'Falta un dato.', s:'Marca cuántas repeticiones más podías hacer.' }; break; }
+      if (!S.order.includes(si)) S.order.push(si);
+      S.logs.push({ si, ex: exIdOf(si), w: S.draft.w, r: S.draft.r, rir: S.draft.rir });
+      S.msg = feedback(si, S.draft.rir);
+      const pn = progressionNote(si); if (pn) S.msg = { cls:'info', t:'Serie registrada. Toca subir peso.', s:pn };
+      S.restLen = restSecs(si); S.restEnd = Date.now() + S.restLen * 1000;
+      S.draft = makeDraft(si); S.swap = null;
+      break;
+    }
+    case 'next': {
+      S.msg = null; S.restEnd = null;
+      if (S.returnTo != null) { act('back'); return; }
+      const nx = DAY.map((d, j) => j).find(j => !isDone(j) && !cutSet().has(j));
+      if (nx != null) { S.si = nx; S.draft = makeDraft(nx); S.showWhy = false; window.scrollTo(0, 0); }
+      break;
+    }
+    case 'undo': { const l = S.logs.pop(); if (l && !logsFor(l.si).length) S.order = S.order.filter(x => x !== l.si); S.msg = null; S.restEnd = null; S.draft = makeDraft(si); break; }
+    case 'skipRest': S.restEnd = null; break;
+    case 'min': S.minutes = S.minutes === +v ? null : +v; break;
+    case 'reset': Object.assign(S, { si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); break;
+  }
+  render();
+}
+
+// ---------- Vistas ----------
+const tag = (t) => `<div class="why-tag"><b>Resuelve:</b><span>${t}</span></div>`;
+const ord = n => `${n}º`;
+
+function viewHoy() {
+  const si = S.si, d = DAY[si], e = exOf(si), ls = logsFor(si), done = isDone(si), cut = cutSet();
+  const p = pos(si), filler = findFiller(si);
+  const allBusy = d.alts.every(x => S.busy[x]);
+
+  const strip = DAY.map((x, j) => `<button class="chip-slot ${j===si?'cur':''} ${isDone(j)?'done':''} ${cut.has(j)?'cut':''}" data-a="jump" data-v="${j}" aria-label="${x.name}">
+      <span class="n">${isDone(j) ? '✓' : j+1}</span><span class="l">${x.name}</span></button>`).join('');
+
+  const alts = d.alts.map((id, k) => {
+    const x = EX[id], on = k === altIdx(si), b = !!S.busy[id];
+    return `<button class="alt ${on?'on':''} ${b?'busy':''}" data-a="pick" data-v="${k}">
+      <span class="letter">${'ABC'[k]}</span>
+      <span style="min-width:0"><span class="name">${x.n}</span><br><span class="sub">${x.eq}${x.last ? ` · última: ${fmt(x.last.w)} kg` : ' · sin historial'}</span></span>
+      <span class="state ${b?'taken':'free'}">${b ? 'Ocupado' : on ? 'Usando' : 'Libre'}</span></button>`;
+  }).join('');
+
+  let swapHtml = '';
+  if (S.swap && S.swap.none) {
+    swapHtml = `<div class="note warn flash"><b>Las tres opciones están ocupadas.</b>${filler != null
+      ? `<span>No esperes parado: haz ${DAY[filler].name.toLowerCase()} (${exOf(filler).n.toLowerCase()}) mientras se libera. No cansa ${muscles(si).filter(m=>m!=='front').map(m=>MUS[m].toLowerCase()).join(' ni ')}.</span>`
+      : `<span>No queda un aislado que no interfiera. Descansa un poco más o pasa al siguiente compuesto.</span>`}</div>
+      ${filler != null ? `<div class="btn-row"><button class="btn primary" data-a="filler" data-v="${filler}">Hacer ${DAY[filler].name.toLowerCase()}</button><button class="btn ghost" data-a="free">Se liberó una</button></div>` : ''}
+      ${tag('esperar turno sin saber qué hacer mientras tanto')}`;
+  } else if (S.swap) {
+    swapHtml = `<div class="note info flash"><b>Cambiado: ${S.swap.to}.</b><span>Cuenta igual para la rutina. ${S.swap.from} quedó marcado como ocupado.</span></div>`;
+  }
+
+  const lastBlock = e.last ? (() => {
+    const changed = e.last.pos !== p;
+    const top = e.last.r.every(r => r >= d.reps[1]);
+    return `<div class="last"><span class="eyebrow">La última vez · ${e.last.d}</span><span class="small muted">de ${ord(e.last.pos)} en la sesión</span></div>
+      <div class="last"><span class="val">${fmt(e.last.w)} kg × ${e.last.r.join(' · ')}</span></div>
+      ${top ? `<div class="note info"><b>Llegaste al tope en todas las series.</b><span>Hoy prueba con ${fmt(e.last.w + 2.5)} kg.</span></div>` : ''}
+      ${changed ? `<div class="note warn"><b>La última vez lo hiciste de ${ord(e.last.pos)}, hoy va de ${ord(p)}.</b><span>${p > e.last.pos ? 'Llegas más cansado: es normal rendir algo menos. No es pérdida de fuerza.' : 'Llegas más fresco: es normal rendir algo más.'}</span></div>${tag('creer que perdiste fuerza cuando solo cambió el orden')}` : ''}`;
+  })() : `<div class="note info"><b>Primera vez con este ejercicio.</b><span>${e.adj}</span></div>`;
+
+  const why = `<div class="explain">
+      <div class="row"><span class="k">Por qué</span><span>${e.why}</span></div>
+      <div class="row"><span class="k">Peso</span><span>${e.adj}</span></div>
+      <div class="row"><span class="k">Técnica</span><span>${e.tec}</span></div>
+      <div class="row"><span class="k">Cuenta</span><span>${e.p.map(m=>`${MUS[m]} 1`).concat(e.s.map(m=>`${MUS[m]} 0,5`)).join(' · ')} por serie</span></div>
+    </div>`;
+
+  const g = guideFor(si);
+  const restLeft = S.restEnd ? Math.max(0, Math.round((S.restEnd - Date.now())/1000)) : null;
+
+  const logPanel = done ? `<div class="note ok"><b>${d.name}: listo.</b><span>${ls.map(l=>`${fmt(l.w)}×${l.r}`).join(' · ')}</span></div>
+      ${S.msg ? `<div class="note ${S.msg.cls}"><b>${S.msg.t}</b><span>${S.msg.s}</span></div>` : ''}
+      <div class="btn-row"><button class="btn ghost" data-a="undo">Deshacer serie</button><button class="btn primary" data-a="next">${S.returnTo != null ? `Volver a ${DAY[S.returnTo].name.toLowerCase()}` : 'Siguiente ejercicio'}</button></div>`
+    : `${ls.length ? `<div class="sets-done">${ls.map((l,i)=>`<span class="set-pill ${l.rir===0?'f':''}">${i+1}: ${fmt(l.w)}×${l.r} · ${l.rir===3?'3+':l.rir} RIR</span>`).join('')}</div>` : ''}
+      ${restLeft != null ? `<div class="rest"><span><span class="small">Descanso</span><br><span class="t" id="restT">${Math.floor(restLeft/60)}:${String(restLeft%60).padStart(2,'0')}</span></span><button data-a="skipRest">Saltar</button></div>` : ''}
+      ${S.msg ? `<div class="note ${S.msg.cls} flash"><b>${S.msg.t}</b><span>${S.msg.s}</span></div>` : ''}
+      <div class="guide ${g.cls}"><span class="g1">${g.g1}</span><span class="g2">${g.g2}</span></div>
+      ${tag(d.type==='comp' ? 'llegar al fallo en todo y necesitar descansos eternos' : 'no saber cuándo sí conviene llegar al fallo')}
+      <div class="steppers">
+        <div class="stepper"><span class="lab">Peso kg</span><div class="ctl"><button data-a="w" data-v="-2.5" aria-label="Bajar peso">−</button><span class="v">${fmt(S.draft.w)}</span><button data-a="w" data-v="2.5" aria-label="Subir peso">+</button></div></div>
+        <div class="stepper"><span class="lab">Repeticiones</span><div class="ctl"><button data-a="r" data-v="-1" aria-label="Menos repeticiones">−</button><span class="v">${S.draft.r}</span><button data-a="r" data-v="1" aria-label="Más repeticiones">+</button></div></div>
+      </div>
+      <div><p class="small muted" style="margin-bottom:6px">¿Cuántas más podías hacer?</p>
+      <div class="rir">${[[0,'Ninguna','fallo'],[1,'Una',''],[2,'Dos',''],[3,'3 o más','']].map(([v,l])=>`<button class="${S.draft.rir===v?'on':''}" data-a="rir" data-v="${v}"><span class="big">${v===3?'3+':v}</span><span class="tiny">${l}</span></button>`).join('')}</div></div>
+      <button class="btn primary block" data-a="log">Registrar serie ${ls.length+1} de ${d.sets}</button>
+      ${ls.length ? `<button class="btn ghost block" data-a="undo">Deshacer última</button>` : ''}`;
+
+  const tp = timePlan();
+  const wk = weekly(false);
+  const timeRows = tp.rows.map(r => {
+    const x = DAY[r.si], ex = exOf(r.si), c = tp.cut.has(r.si);
+    let impact = `${Math.round(r.mins)} min`;
+    if (c) {
+      const m = ex.p[0], kept = DAY.map((dd,k)=>k).filter(k=>k!==r.si && !tp.cut.has(k) && !isDone(k));
+      const indirect = kept.reduce((a,k)=>a + (exOf(k).p.includes(m)?DAY[k].sets-logsFor(k).length:0) + (exOf(k).s.includes(m)?(DAY[k].sets-logsFor(k).length)*0.5:0), 0) + S.logs.reduce((a,l)=>a+(EX[l.ex].p.includes(m)?1:EX[l.ex].s.includes(m)?0.5:0),0);
+      impact = `−${x.sets} series de ${MUS[m].toLowerCase()}${indirect ? `, pero hoy igual sumas ${fmt(indirect)} con lo demás` : ''}. El día 4 lo recupera.`;
+    }
+    return `<div class="plan-row"><div><div class="what">${x.name} <span class="prio ${x.prio}">${x.prio}</span></div><div class="impact">${impact}</div></div><span class="${c?'tag-cut':'tag-keep'}">${c?'Recortar':'Hacer'}</span></div>`;
+  }).join('');
+  const totalMin = Math.round(tp.rows.filter(r=>!tp.cut.has(r.si)).reduce((a,r)=>a+r.mins,0));
+
+  return `
+    ${S.returnTo != null ? `<div class="banner"><span>Haciendo esto mientras esperas <b>${DAY[S.returnTo].name.toLowerCase()}</b>.</span><button class="btn" data-a="back">Se liberó</button></div>` : ''}
+    <div class="strip">${strip}</div>
+    ${tag('saltarte ejercicios sin darte cuenta: ves la sesión entera de un vistazo')}
+
+    <section class="card">
+      <div class="slot-head">
+        <div><span class="eyebrow">Slot ${si+1} de ${DAY.length} · va de ${ord(p)}</span><h2>${d.name}</h2>
+          <div class="meta"><span class="prio ${d.prio}">Prioridad ${d.prio}</span><span class="small muted">${d.type==='comp'?'Compuesto':'Aislado'}</span></div></div>
+        <div class="target">${d.sets}×${d.reps[0]}-${d.reps[1]}<small>series × reps</small></div>
+      </div>
+      <div class="alts">${alts}</div>
+      ${!allBusy || !S.swap ? `<button class="btn danger block" data-a="busy" ${allBusy?'disabled':''}>Ocupado / no disponible</button>` : ''}
+      ${swapHtml}
+      ${tag('perder tiempo decidiendo un reemplazo en el momento')}
+      <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>
+    </section>
+
+    <section class="card">${lastBlock}</section>
+
+    <section class="card log">${logPanel}</section>
+
+    <section class="card">
+      <div><span class="eyebrow">Tiempo</span><h3>¿Cuánto te queda?</h3></div>
+      <div class="time-opts">${[60,40,25].map(m=>`<button class="${S.minutes===m?'on':''}" data-a="min" data-v="${m}">${m} min</button>`).join('')}</div>
+      ${S.minutes == null ? `<p class="small muted">Lo que falta de hoy toma unos ${totalMin} min. Elige un tiempo y la app te dice qué recortar primero.</p>` : `<p class="small muted">Con ${S.minutes} min haces esto (${totalMin} min). Se recorta primero lo de prioridad baja y los compuestos se protegen.</p><div>${timeRows}</div>`}
+      ${tag('no saber qué sacrificar cuando tienes que irte')}
+    </section>
+    <button class="btn ghost block" data-a="reset">Reiniciar el ejemplo</button>`;
+}
+
+function viewSemana() {
+  const now = weekly(false), proj = weekly(true);
+  const keys = Object.keys(META);
+  const maxV = 18;
+  const ratio = k => proj[k] / META[k][0];
+  const behindK = [...keys].sort((a,b)=>ratio(a)-ratio(b)).slice(0,1);
+  const bars = keys.map(k => {
+    const [lo, hi] = META[k], b = proj[k] < lo;
+    return `<div class="bar-row ${b && behindK.includes(k) ? 'behind' : ''}">
+      <div class="bar-top"><span class="m">${MUS[k]}</span><span class="v">${fmt(now[k])}<span class="muted small"> / ${lo}-${hi}${proj[k] > now[k] ? ` · al cerrar hoy ${fmt(proj[k])}` : ''}</span></span></div>
+      <div class="bar"><span class="zone" style="left:${lo/maxV*100}%;width:${(hi-lo)/maxV*100}%"></span><span class="proj" style="width:${Math.min(proj[k],maxV)/maxV*100}%"></span><span class="fill" style="width:${Math.min(now[k],maxV)/maxV*100}%"></span></div></div>`;
+  }).join('');
+
+  // Día 4
+  const def = keys.map(k => ({ k, d: META[k][0] - proj[k], r: proj[k] / META[k][0] })).filter(x => x.d > 0.5).sort((a,b)=>a.r-b.r).slice(0,5);
+  const d4 = def.length ? def.map((x,i)=>`<div class="d4-row"><span class="i">${i+1}</span><div><div style="font-weight:600">${D4LIB[x.k]}</div><div class="small muted">${MUS[x.k]}: faltan ${fmt(x.d)} series</div></div><span class="s">${Math.min(4, Math.max(2, Math.round(x.d)))} series</span></div>`).join('')
+    : `<p class="small">No falta nada: segunda dosis liviana de tren superior (1 press, 1 remo, 1 lateral, 1 de brazos, 2-3 series cada uno).</p>`;
+
+  return `
+    <div><span class="eyebrow">Semana del 20 al 26 de noviembre</span><h1>Series duras por músculo</h1></div>
+    <p class="small muted">Hecho: día 2 (lunes) y día 3 (miércoles, recortado). Hoy jueves: día 1. Lo que registres en Hoy se suma aquí al instante.</p>
+    <section class="card">
+      <div class="legend"><span><i style="background:var(--accent)"></i>Hecho</span><span><i style="background:var(--accent-soft);outline:1px dashed var(--accent)"></i>Si terminas hoy</span><span><i style="background:var(--ok-soft);border:1px solid var(--ok)"></i>Meta</span></div>
+      <div class="bars">${bars}</div>
+      ${tag('no saber cuántas series duras llevas por músculo')}
+    </section>
+    <section class="card">
+      <div><span class="eyebrow">Cómo se cuenta</span><h3>No todas las series valen lo mismo</h3></div>
+      <p class="small">Una serie suma <b>1</b> al músculo principal y <b>0,5</b> a los que ayudan. Una serie de press de banca suma 1 a pecho y 0,5 a tríceps. Por eso, si recortas tríceps un día de press, no quedas en cero.</p>
+      ${tag('tratar una serie de curl igual que una de dominadas')}
+    </section>
+    <section class="card">
+      <div><span class="eyebrow">Día 4 de rescate · sábado</span><h3>Completa lo que va atrasado</h3></div>
+      <div class="d4">${d4}</div>
+      <p class="small muted">Se calcula con lo que llevarías al terminar hoy. Si recortas algo, aparece aquí.</p>
+      ${tag('que un músculo pase dos semanas sin trabajarse por saltarte un día')}
+    </section>`;
+}
+
+function viewGuia() {
+  return `
+    <div><span class="eyebrow">Guía de esfuerzo</span><h1>Qué tan cerca del fallo</h1></div>
+    <p>El fallo es cuando ya no sale ni una repetición más con buena técnica. Llegar ahí en cada serie no te hace crecer más: te cansa mucho más, te obliga a descansar más y baja el rendimiento de las series que siguen.</p>
+    <section class="card">
+      <div><span class="eyebrow">La pregunta después de cada serie</span><h3>¿Cuántas más podías hacer?</h3></div>
+      <div class="scale">
+        <div class="scale-row"><span class="k">3+</span><span>Fue fácil. Sube el peso o haz más repeticiones.</span></div>
+        <div class="scale-row hl"><span class="k">2</span><span>Zona buena para compuestos.</span></div>
+        <div class="scale-row hl"><span class="k">1</span><span>Zona buena para casi todo.</span></div>
+        <div class="scale-row fl"><span class="k">0</span><span>Fallo. Solo en la última serie de un aislado.</span></div>
+      </div>
+      <p class="small muted">A esto se le llama RIR (repeticiones en reserva). En la app solo tocas el número.</p>
+    </section>
+    <section class="rule">
+      <div class="c"><span class="eyebrow">Compuestos</span><span class="big">1-2 en reserva</span><span class="small">Sentadilla, press, remo, dominadas, peso muerto. Nunca al fallo, ni en la última serie. Descansa 2-3 min.</span></div>
+      <div class="a"><span class="eyebrow">Aislados</span><span class="big">Fallo al final</span><span class="small">Laterales, curl, tríceps, pantorrillas. 1-2 en reserva hasta la última serie; en esa, dalo todo. Descansa 60-90 s.</span></div>
+    </section>
+    <section class="card">
+      <h3>Por qué no fallar en la sentadilla</h3>
+      <ul class="plain small">
+        <li>Mueve mucho peso y muchos músculos a la vez: el fallo cansa todo el cuerpo, no solo la pierna.</li>
+        <li>Quedarte a 1-2 del fallo da casi el mismo estímulo con mucho menos cansancio.</li>
+        <li>Si fallas en la primera serie, la segunda y la tercera salen peor, y terminas con menos trabajo total.</li>
+        <li>Con la técnica rota y peso alto, aumenta el riesgo de lesión.</li>
+      </ul>
+      <p class="small muted">En un aislado como el curl el peso es bajo y el cansancio queda en un solo músculo, por eso ahí sí conviene apretar al final.</p>
+    </section>
+    <section class="card">
+      <h3>Cómo subir de peso</h3>
+      <p class="small">Progresión doble: dentro del rango (por ejemplo 6-8) primero subes repeticiones. Cuando llegas al tope en todas las series, subes el peso 2,5-5% y vuelves al piso del rango. La app te avisa cuándo toca.</p>
+      <p class="small muted">Si en una serie no llegas al rango, lo mejor es descansar más. Bajar el peso y seguir (serie descendente) también vale. Cada 5-6 semanas, una semana liviana.</p>
+    </section>
+    ${tag('entrenar todo al fallo por no saber que hay una mejor forma')}`;
+}
+
+const ICONS = {
+  hoy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12"/></svg>',
+  semana:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  guia:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+};
+
+function render() {
+  const views = { hoy: viewHoy, semana: viewSemana, guia: viewGuia };
+  const r = document.getElementById('root');
+  r.innerHTML = `<main class="app ${S.tags ? '' : 'hide-tags'}">
+    <header class="top">
+      <div><span class="eyebrow">Jueves 23 nov · Día 1</span><h1>${S.tab==='hoy'?'Pecho, hombro, tríceps':S.tab==='semana'?'Tu semana':'Guía'}</h1></div>
+      <div class="top-right"><button class="toggle" data-a="tags" aria-pressed="${S.tags}"><span class="dot"></span>Qué resuelve</button></div>
+    </header>
+    ${views[S.tab]()}
+  </main>
+  <nav class="tabs"><div class="tabs-in">
+    ${[['hoy','Entrenar'],['semana','Semana'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
+  </div></nav>
+  ${S.sheet ? `<div class="sheet-bg" data-a="sheetClose"><div class="sheet" onclick="event.stopPropagation()">
+    <span class="eyebrow">Ojo con el orden</span><h2>${S.sheet.title}</h2><p>${S.sheet.body}</p><p class="small muted">${S.sheet.foot}</p>
+    ${tag('cambiar el orden sin saber que afecta el rendimiento')}
+    <div class="btn-row"><button class="btn ghost" data-a="sheetClose">Mantener orden</button><button class="btn primary" data-a="sheetGo">Hacerlo igual</button></div>
+  </div></div>` : ''}`;
+}
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-a]'); if (!b) return;
+  if (b.classList.contains('sheet-bg') && ev.target !== b) return;
+  act(b.dataset.a, b.dataset.v);
+});
+setInterval(() => {
+  if (!S.restEnd) return;
+  const el = document.getElementById('restT'); if (!el) return;
+  const left = Math.max(0, Math.round((S.restEnd - Date.now())/1000));
+  el.textContent = `${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
+}, 1000);
+S.draft = makeDraft(0);
+render();
+</script>
