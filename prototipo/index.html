@@ -202,7 +202,30 @@ details[open] summary { margin-bottom: 6px; }
 
 /* pestañas */
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); display: flex; justify-content: center; padding: 6px max(16px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); z-index: 20; }
-.tabs-in { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.tabs-in { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.ed { gap: 10px; }
+.ed-head { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: center; }
+.ed-title { border: none; background: none; padding: 0; text-align: left; display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 10px; align-items: center; }
+.ed-n { font-size: 24px; font-weight: 700; color: var(--accent); }
+.ed-move { display: inline-flex; gap: 4px; }
+.ed-move button { width: 34px; height: 34px; border: none; border-radius: 8px; background: var(--surface-2); font-weight: 700; }
+.ed-move button:disabled { opacity: .3; cursor: default; }
+.ed.open { border-color: var(--accent); }
+.ed-field { display: flex; flex-direction: column; gap: 6px; }
+.ed3 { grid-template-columns: repeat(3, 1fr); }
+.ed3 .v { font-size: 24px; }
+.ed3 .ctl { grid-template-columns: 30px minmax(0,1fr) 30px; }
+.ed3 .ctl button { height: 34px; font-size: 18px; }
+.txt { width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; padding: 11px 12px; font: inherit; font-size: 16px; }
+.txt:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 10px; }
+.seg button { border: none; background: transparent; border-radius: 7px; padding: 8px 4px; font-weight: 600; font-size: 13px; color: var(--muted); }
+.seg button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.days { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.day { text-align: center; padding: 8px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-weight: 600; font-size: 13px; color: var(--muted); }
+.day.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.sheet.pick { max-height: 85vh; overflow-y: auto; }
+.btn:disabled { opacity: .4; cursor: default; }
 .tabs button { border: none; background: transparent; border-radius: 10px; padding: 8px 4px; font-weight: 600; font-size: 13px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .tabs button svg { width: 22px; height: 22px; }
 .tabs button.on { color: var(--accent); background: var(--accent-soft); }
@@ -240,7 +263,14 @@ const EX = {
   arnold:{ n:'Press Arnold', eq:'Mancuernas', p:['front'], s:['tri','lat'], why:'Mismo empuje vertical; el giro de muñeca suma recorrido para el hombro.', adj:'Usa 10-15% menos que en el press normal.', tec:'Parte con las palmas hacia ti y gíralas mientras subes.', last:null, sugW:16 },
   triPolea:{ n:'Tríceps en polea', eq:'Polea', p:['tri'], s:[], why:'Aísla el tríceps sin cansar el pecho ni el hombro.', adj:'Con cuerda o barra recta: elige el que no te moleste el codo.', tec:'Codos pegados al cuerpo; solo se mueve el antebrazo.', last:{w:30,r:[14,12,11],pos:6,d:'jue 16 nov'} },
   fondos:{ n:'Fondos asistidos', eq:'Máquina', p:['tri'], s:['pecho'], why:'Mismo músculo usando tu cuerpo como peso. El pecho ayuda un poco.', adj:'En la máquina asistida, más contrapeso es más fácil. Parte con uno que te deje 10-15.', tec:'Cuerpo vertical para cargar más el tríceps.', last:null, sugW:30 },
-  frances:{ n:'Press francés', eq:'Barra Z', p:['tri'], s:[], why:'Trabaja el tríceps estirado, que es donde más crece. Solo necesitas una barra Z.', adj:'Parte con la barra Z vacía o con poco peso; cuida los codos.', tec:'Baja la barra hacia la frente doblando solo los codos.', last:null, sugW:20 }
+  frances:{ n:'Press francés', eq:'Barra Z', p:['tri'], s:[], why:'Trabaja el tríceps estirado, que es donde más crece. Solo necesitas una barra Z.', adj:'Parte con la barra Z vacía o con poco peso; cuida los codos.', tec:'Baja la barra hacia la frente doblando solo los codos.', last:null, sugW:20 },
+  sentadilla:{ n:'Sentadilla con barra', eq:'Barra', p:['cuad'], s:['isq'], why:'Compuesto base de pierna.', adj:'Parte con un peso que te deje 8 con 2 en reserva.', tec:'Pies al ancho de hombros, baja con la espalda neutra.', last:null, sugW:60 },
+  prensa:{ n:'Prensa de piernas', eq:'Máquina', p:['cuad'], s:['isq'], why:'Mismo músculo que la sentadilla, con la espalda apoyada.', adj:'El peso de la prensa no se compara con la barra.', tec:'No despegues la espalda baja del respaldo.', last:null, sugW:120 },
+  remoBarra:{ n:'Remo con barra', eq:'Barra', p:['espalda'], s:['bi','post'], why:'Tirón horizontal pesado.', adj:'Espalda casi paralela al suelo.', tec:'Lleva la barra al ombligo.', last:null, sugW:50 },
+  dominadas:{ n:'Dominadas', eq:'Barra fija', p:['espalda'], s:['bi'], why:'Tirón vertical con tu peso.', adj:'Si no llegas a 6, usa la máquina asistida.', tec:'Baja completo, sube hasta el mentón.', last:null, sugW:0 },
+  curlZ:{ n:'Curl con barra Z', eq:'Barra Z', p:['bi'], s:[], why:'Aísla el bíceps.', adj:'Sin balancear el cuerpo.', tec:'Codos quietos al costado.', last:null, sugW:25 },
+  facePull:{ n:'Face pull', eq:'Polea', p:['post'], s:[], why:'Trabaja el hombro posterior sin cansar la espalda.', adj:'Peso liviano, controla la vuelta.', tec:'Tira la cuerda hacia la frente abriendo los codos.', last:null, sugW:15 },
+  pantorrilla:{ n:'Pantorrillas de pie', eq:'Máquina', p:['pant'], s:[], why:'Aísla la pantorrilla.', adj:'Pausa de un segundo abajo.', tec:'Baja hasta estirar y sube en punta de pies.', last:null, sugW:60 }
 };
 
 const DAY = [
@@ -252,6 +282,8 @@ const DAY = [
   { name:'Tríceps', sets:3, reps:[10,15], prio:'baja', type:'iso', alts:['triPolea','fondos','frances'] }
 ];
 const PRANK = { alta:3, media:2, baja:1 };
+const resetSession = () => { Object.assign(S, { si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
+const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
 const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
 
 // ---------- Estado ----------
@@ -349,6 +381,7 @@ function progressionNote(si) {
 // ---------- Acciones ----------
 function act(a, v) {
   const si = S.si;
+  if (a === 'noop') return;
   switch (a) {
     case 'tab': S.tab = v; window.scrollTo(0, 0); break;
     case 'tags': S.tags = !S.tags; break;
@@ -403,7 +436,28 @@ function act(a, v) {
     case 'undo': { const l = S.logs.pop(); if (l && !logsFor(l.si).length) S.order = S.order.filter(x => x !== l.si); S.msg = null; S.restEnd = null; S.draft = makeDraft(si); break; }
     case 'skipRest': S.restEnd = null; break;
     case 'min': S.minutes = S.minutes === +v ? null : +v; break;
-    case 'reset': Object.assign(S, { si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); break;
+    case 'reset': resetSession(); break;
+    // --- editor de rutina ---
+    case 'edOpen': S.ed = S.ed === +v ? null : +v; S.pick = null; break;
+    case 'edMove': { const [i, d] = v.split(',').map(Number); move(DAY, i, d); if (S.ed === i) S.ed = i + d >= 0 && i + d < DAY.length ? i + d : i; resetSession(); break; }
+    case 'edDel': { if (DAY.length > 1) { DAY.splice(+v, 1); S.ed = null; resetSession(); } break; }
+    case 'edSets': { const d = DAY[S.ed]; d.sets = Math.min(8, Math.max(1, d.sets + (+v))); resetSession(); break; }
+    case 'edLo': { const d = DAY[S.ed]; d.reps[0] = Math.max(1, Math.min(d.reps[1], d.reps[0] + (+v))); break; }
+    case 'edHi': { const d = DAY[S.ed]; d.reps[1] = Math.max(d.reps[0], Math.min(30, d.reps[1] + (+v))); break; }
+    case 'edPrio': DAY[S.ed].prio = v; break;
+    case 'edType': DAY[S.ed].type = v; break;
+    case 'altMove': { const [i, d] = v.split(',').map(Number); move(DAY[S.ed].alts, i, d); resetSession(); break; }
+    case 'altDel': { const a = DAY[S.ed].alts; if (a.length > 1) { a.splice(+v, 1); resetSession(); } break; }
+    case 'pickOpen': S.pick = v; S.q = ''; break;
+    case 'pickClose': S.pick = null; break;
+    case 'pickEx': {
+      const e = EX[v];
+      if (S.pick === 'new') {
+        DAY.push({ name: e.n.split(' ').slice(0, 2).join(' '), sets: 3, reps: e.s.length ? [8,10] : [12,15], prio: e.s.length ? 'alta' : 'baja', type: e.s.length ? 'comp' : 'iso', alts: [v] });
+        S.ed = DAY.length - 1;
+      } else if (DAY[S.ed].alts.length < 3 && !DAY[S.ed].alts.includes(v)) DAY[S.ed].alts.push(v);
+      S.pick = null; resetSession(); break;
+    }
   }
   render();
 }
@@ -595,35 +649,88 @@ function viewGuia() {
     ${tag('entrenar todo al fallo por no saber que hay una mejor forma')}`;
 }
 
+function pickerHtml() {
+  const used = S.pick === 'new' ? [] : DAY[S.ed].alts;
+  const ref = S.pick === 'new' ? null : EX[DAY[S.ed].alts[0]];
+  const q = (S.q || '').toLowerCase();
+  let list = Object.entries(EX).filter(([id, e]) => !used.includes(id) && (!q || e.n.toLowerCase().includes(q) || e.eq.toLowerCase().includes(q) || e.p.some(m => MUS[m].toLowerCase().includes(q))));
+  if (ref) list.sort((a, b) => (b[1].p[0] === ref.p[0]) - (a[1].p[0] === ref.p[0]));
+  return list.slice(0, 12).map(([id, e]) => `<button class="alt" data-a="pickEx" data-v="${id}"><span class="letter">+</span><span style="min-width:0"><span class="name">${e.n}</span><br><span class="sub">${e.eq} · ${e.p.map(m=>MUS[m]).join(', ')}${e.s.length ? ` (+ ${e.s.map(m=>MUS[m].toLowerCase()).join(', ')})` : ''}</span></span>${ref && e.p[0] === ref.p[0] ? '<span class="state free">Mismo músculo</span>' : '<span></span>'}</button>`).join('') || '<p class="small muted">No hay coincidencias.</p>';
+}
+
+function viewRutina() {
+  const slots = DAY.map((d, i) => {
+    const open = S.ed === i;
+    const head = `<div class="ed-head">
+        <button class="ed-title" data-a="edOpen" data-v="${i}"><span class="num ed-n">${i+1}</span><span style="min-width:0"><b>${d.name}</b><br><span class="small muted">${d.sets}×${d.reps[0]}-${d.reps[1]} · ${d.alts.map(a => EX[a].n).join(' / ')}</span></span></button>
+        <span class="ed-move"><button data-a="edMove" data-v="${i},-1" aria-label="Subir" ${i===0?'disabled':''}>↑</button><button data-a="edMove" data-v="${i},1" aria-label="Bajar" ${i===DAY.length-1?'disabled':''}>↓</button></span>
+      </div>`;
+    if (!open) return `<section class="card ed">${head}</section>`;
+    const alts = d.alts.map((a, k) => `<div class="alt"><span class="letter">${'ABC'[k]}</span><span style="min-width:0"><span class="name">${EX[a].n}</span><br><span class="sub">${EX[a].eq} · ${EX[a].p.map(m=>MUS[m]).join(', ')}</span></span>
+        <span class="ed-move"><button data-a="altMove" data-v="${k},-1" aria-label="Subir" ${k===0?'disabled':''}>↑</button><button data-a="altMove" data-v="${k},1" aria-label="Bajar" ${k===d.alts.length-1?'disabled':''}>↓</button><button data-a="altDel" data-v="${k}" aria-label="Quitar" ${d.alts.length===1?'disabled':''}>✕</button></span></div>`).join('');
+    const seg = (act, cur, opts) => `<div class="seg">${opts.map(([v,l]) => `<button class="${cur===v?'on':''}" data-a="${act}" data-v="${v}">${l}</button>`).join('')}</div>`;
+    const step = (lab, act, val) => `<div class="stepper"><span class="lab">${lab}</span><div class="ctl"><button data-a="${act}" data-v="-1">−</button><span class="v">${val}</span><button data-a="${act}" data-v="1">+</button></div></div>`;
+    return `<section class="card ed open">${head}
+      <label class="small muted" for="edName">Nombre del slot</label>
+      <input id="edName" class="txt" data-in="edName" value="${d.name.replace(/"/g,'&quot;')}">
+      <div class="steppers ed3">${step('Series','edSets',d.sets)}${step('Reps mín.','edLo',d.reps[0])}${step('Reps máx.','edHi',d.reps[1])}</div>
+      <div class="ed-field"><span class="small muted">Prioridad (qué se recorta primero si falta tiempo)</span>${seg('edPrio', d.prio, [['alta','Alta'],['media','Media'],['baja','Baja']])}</div>
+      <div class="ed-field"><span class="small muted">Tipo (define qué tan cerca del fallo ir)</span>${seg('edType', d.type, [['comp','Compuesto'],['iso','Aislado']])}</div>
+      <div class="ed-field"><span class="small muted">Alternativas, en orden de preferencia</span><div class="alts">${alts}</div>
+      ${d.alts.length < 3 ? `<button class="btn ghost block" data-a="pickOpen" data-v="alt">+ Agregar alternativa ${'ABC'[d.alts.length]}</button>` : ''}</div>
+      ${tag('armar tu rutina a tu manera, con plan B y C listos antes de llegar al gimnasio')}
+      <button class="btn danger block" data-a="edDel" data-v="${i}" ${DAY.length===1?'disabled':''}>Eliminar slot</button>
+    </section>`;
+  }).join('');
+  return `
+    <div class="days">${['Día 1','Día 2','Día 3','Día 4'].map((d,i)=>`<span class="day ${i===0?'on':''}">${d}</span>`).join('')}</div>
+    <p class="small muted">Los ejercicios de aquí son un ejemplo. En la app real partes en blanco y armas tus días. Al editar, la sesión de ejemplo se reinicia.</p>
+    ${slots}
+    <button class="btn primary block" data-a="pickOpen" data-v="new">+ Agregar slot</button>
+    ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" data-a="noop">
+      <span class="eyebrow">${S.pick === 'new' ? 'Nuevo slot' : `Alternativa ${'ABC'[DAY[S.ed].alts.length]} para ${DAY[S.ed].name}`}</span>
+      <h2>Elige un ejercicio</h2>
+      ${S.pick !== 'new' ? '<p class="small muted">Arriba salen los que trabajan el mismo músculo principal.</p>' : ''}
+      <input id="pickQ" class="txt" data-in="q" placeholder="Busca por nombre, equipo o músculo" value="${S.q||''}">
+      <div class="alts pick-list" id="pickList">${pickerHtml()}</div>
+      <button class="btn ghost block" data-a="pickClose">Cancelar</button>
+    </div></div>` : ''}`;
+}
+
 const ICONS = {
+  rutina:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
   hoy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12"/></svg>',
   semana:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
   guia:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
 };
 
 function render() {
-  const views = { hoy: viewHoy, semana: viewSemana, guia: viewGuia };
+  const views = { hoy: viewHoy, semana: viewSemana, guia: viewGuia, rutina: viewRutina };
   const r = document.getElementById('root');
   r.innerHTML = `<main class="app ${S.tags ? '' : 'hide-tags'}">
     <header class="top">
-      <div><span class="eyebrow">Jueves 23 nov · Día 1</span><h1>${S.tab==='hoy'?'Pecho, hombro, tríceps':S.tab==='semana'?'Tu semana':'Guía'}</h1></div>
+      <div><span class="eyebrow">Jueves 23 nov · Día 1</span><h1>${S.tab==='hoy'?'Pecho, hombro, tríceps':S.tab==='semana'?'Tu semana':S.tab==='rutina'?'Tu rutina':'Guía'}</h1></div>
       <div class="top-right"><button class="toggle" data-a="tags" aria-pressed="${S.tags}"><span class="dot"></span>Qué resuelve</button></div>
     </header>
     ${views[S.tab]()}
   </main>
   <nav class="tabs"><div class="tabs-in">
-    ${[['hoy','Entrenar'],['semana','Semana'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
+    ${[['hoy','Entrenar'],['semana','Semana'],['rutina','Rutina'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
   </div></nav>
-  ${S.sheet ? `<div class="sheet-bg" data-a="sheetClose"><div class="sheet" onclick="event.stopPropagation()">
+  ${S.sheet ? `<div class="sheet-bg" data-a="sheetClose"><div class="sheet" data-a="noop">
     <span class="eyebrow">Ojo con el orden</span><h2>${S.sheet.title}</h2><p>${S.sheet.body}</p><p class="small muted">${S.sheet.foot}</p>
     ${tag('cambiar el orden sin saber que afecta el rendimiento')}
     <div class="btn-row"><button class="btn ghost" data-a="sheetClose">Mantener orden</button><button class="btn primary" data-a="sheetGo">Hacerlo igual</button></div>
   </div></div>` : ''}`;
 }
 
+document.addEventListener('input', ev => {
+  const k = ev.target.dataset && ev.target.dataset.in; if (!k) return;
+  if (k === 'edName') { DAY[S.ed].name = ev.target.value; }
+  if (k === 'q') { S.q = ev.target.value; const l = document.getElementById('pickList'); if (l) l.innerHTML = pickerHtml(); }
+});
 document.addEventListener('click', ev => {
   const b = ev.target.closest('[data-a]'); if (!b) return;
-  if (b.classList.contains('sheet-bg') && ev.target !== b) return;
   act(b.dataset.a, b.dataset.v);
 });
 setInterval(() => {
