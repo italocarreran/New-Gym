@@ -689,7 +689,7 @@ function viewHoy() {
       <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
       ${swapHtml}
       ${chosen ? `<div class="setlist">
-        <div class="sl-row sl-h"><span></span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span class="antes">Antes</span></div>
+        <div class="sl-row sl-h"><span></span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span class="antes">Última vez</span></div>
         ${Array.from({length: nS(si)}, (_, i) => {
           const l = ls[i], prev = e.last && e.last.r[i] != null ? `<b>${fmt(toU(e.last.w))}×${e.last.r[i]}</b>${e.last.rir ? `${e.last.rir[i] === 3 ? '3+' : e.last.rir[i]} RIR` : ''}` : '–';
           const cur = i === ls.length;
