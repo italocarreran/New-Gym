@@ -392,12 +392,13 @@ function plan(si) {
   return { why: 'rep', w: L.w, reps };
 }
 function target(si, i) { const p = plan(si); return { w: p.w, r: p.reps[i] ?? p.reps[p.reps.length - 1], why: p.why }; }
+const defRir = (si, i) => DAY[si].type === 'iso' && i === DAY[si].sets - 1 ? 0 : 2;
 function makeDraft(si) {
   const n = logsFor(si).length, prev = logsFor(si).slice(-1)[0], t = target(si, n);
   const w = prev ? prev.w : t.w;
   const r = t.r;
   const pre = S.pre[`${si}-${n}`] || {};
-  return { w: pre.w ?? w, r: pre.r ?? r, rir: null };
+  return { w: pre.w ?? w, r: pre.r ?? r, rir: pre.rir ?? defRir(si, n) };
 }
 
 function weekly(includePlan) {
@@ -668,7 +669,7 @@ function viewHoy() {
             const pre = S.pre[`${si}-${i}`] || {};
             const w = l ? l.w : cur ? S.draft.w : pre.w ?? target(si, i).w, r = l ? l.r : cur ? S.draft.r : pre.r ?? target(si, i).r;
             const tg = target(si, i), ph = [toU(tg.w), tg.r];
-            return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones en reserva serie ${i+1}" data-set="${i}" data-f="rir" value="${(l ? l.rir : cur ? S.draft.rir : pre.rir) ?? ''}" placeholder="${d.type === 'iso' && i === d.sets - 1 ? '0' : '1-2'}"><span class="u">RIR</span></label>`;
+            return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones en reserva serie ${i+1}" data-set="${i}" data-f="rir" value="${(l ? l.rir : cur ? S.draft.rir : pre.rir ?? defRir(si, i)) ?? ''}" placeholder="${d.type === 'iso' && i === d.sets - 1 ? '0' : '1-2'}"><span class="u">RIR</span></label>`;
           })()}</span><span class="antes">${prev}</span></div>`;
         }).join('')}
       </div>
