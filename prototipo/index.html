@@ -115,12 +115,13 @@ p { margin: 0; }
 .cell:focus { outline: 2px solid var(--accent); outline-offset: 0; }
 .sl-row.cur .cell { border-color: var(--accent); }
 .sl-row.done .cell { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
-.sl-row { display: grid; grid-template-columns: 28px minmax(0,1fr) 50px; gap: 4px; row-gap: 2px; align-items: center; padding: 8px 8px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.sl-row { display: grid; grid-template-columns: 28px minmax(0,1fr) 60px; gap: 4px; row-gap: 2px; align-items: center; padding: 8px 8px; border-top: 1px solid var(--line); font-size: 13.5px; }
 .sl-row:first-child { border-top: none; }
 .sl-row .num { font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sl-row small { display: block; font-size: 11px; color: var(--muted); }
-.antes { font-size: 11px; line-height: 1.25; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
-.sl-h .antes, .sl-h span:last-child { text-align: right; }
+.antes { align-self: stretch; margin: -8px -8px -8px 2px; padding: 0 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--surface-2); border-left: 1px solid var(--line); font-size: 11px; line-height: 1.3; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+.antes b { font-family: var(--display); font-size: 14px; font-weight: 600; color: var(--ink); }
+.sl-h .antes { margin-block: -6px; font-size: 10px; }
 .chk { width: 26px; height: 26px; border-radius: 7px; border: 2px solid var(--line); background: var(--surface); color: var(--muted); font-family: var(--display); font-weight: 700; font-size: 13px; display: grid; place-items: center; padding: 0; }
 .chk.cur { border-color: var(--accent); color: var(--accent); }
 .chk.on { background: var(--ok); border-color: var(--ok); color: var(--surface); font-size: 15px; }
@@ -688,9 +689,9 @@ function viewHoy() {
       <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
       ${swapHtml}
       ${chosen ? `<div class="setlist">
-        <div class="sl-row sl-h"><span></span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span>Antes</span></div>
+        <div class="sl-row sl-h"><span></span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span class="antes">Antes</span></div>
         ${Array.from({length: nS(si)}, (_, i) => {
-          const l = ls[i], prev = e.last && e.last.r[i] != null ? `${fmt(toU(e.last.w))}×${e.last.r[i]}<br>${e.last.rir ? `${e.last.rir[i] === 3 ? '3+' : e.last.rir[i]} RIR` : ''}` : '–';
+          const l = ls[i], prev = e.last && e.last.r[i] != null ? `<b>${fmt(toU(e.last.w))}×${e.last.r[i]}</b>${e.last.rir ? `${e.last.rir[i] === 3 ? '3+' : e.last.rir[i]} RIR` : ''}` : '–';
           const cur = i === ls.length;
           const lastIso = d.type === 'iso' && i === nS(si) - 1;
           return `<div class="sl-swipe ${S.swiped === i ? 'open' : ''}" data-row="${i}"><div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><button class="chk ${l ? 'on' : ''} ${cur ? 'cur' : ''}" data-a="${l ? (i === ls.length - 1 ? 'undo' : 'noop') : cur ? 'log' : 'noop'}" ${!l && !cur ? 'disabled' : ''} aria-label="Serie ${i+1} completa" aria-pressed="${!!l}">${l ? '✓' : i + 1}</button><span class="cells">${(() => {
