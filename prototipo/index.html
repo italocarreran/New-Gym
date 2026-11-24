@@ -866,7 +866,7 @@ function render() {
     ${views[S.tab]()}
   </main>
   <nav class="tabs"><div class="tabs-in">
-    ${[['hoy','Entrenar'],['semana','Semana'],['rutina','Rutina'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
+    ${[['hoy','Rutina'],['semana','Semana'],['rutina','Editar'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
   </div></nav>
   ${S.prioSheet ? `<div class="sheet-bg" data-a="prioClose"><div class="sheet" data-a="noop">
     <span class="eyebrow">${DAY[S.si].name}</span><h2>Prioridad ${DAY[S.si].prio}</h2>
