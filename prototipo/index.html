@@ -115,9 +115,13 @@ p { margin: 0; }
 .chk.cur { border-color: var(--accent); color: var(--accent); }
 .chk.on { background: var(--ok); border-color: var(--ok); color: var(--surface); font-size: 15px; }
 .chk:disabled { opacity: .5; cursor: default; }
-.sl-add { display: flex; gap: 6px; padding: 6px 8px; border-top: 1px solid var(--line); }
-.sl-add button { border: none; background: transparent; color: var(--accent); font-weight: 600; font-size: 12.5px; padding: 6px 4px; }
-.sl-add button + button { color: var(--muted); margin-left: auto; }
+.sl-add { display: flex; padding: 0 8px; border-top: 1px solid var(--line); }
+.sl-add button { border: none; background: transparent; color: var(--accent); font-weight: 600; font-size: 11.5px; padding: 5px 2px; }
+.sl-swipe { position: relative; overflow: hidden; border-top: 1px solid var(--line); }
+.sl-swipe .sl-row { border-top: none; background: var(--surface); position: relative; z-index: 1; transition: transform .2s ease; touch-action: pan-y; }
+.sl-swipe .sl-row.cur { background: var(--accent-soft); }
+.sl-swipe.open .sl-row { transform: translateX(-84px); }
+.sl-del { position: absolute; top: 0; bottom: 0; right: 0; width: 84px; border: none; background: var(--bad); color: #fff; font-weight: 600; font-size: 13px; }
 .sl-foot { font-size: 11.5px; color: var(--muted); margin-top: -4px; }
 .sl-h { background: var(--surface-2); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-block: 6px; }
 .sl-row.cur { background: var(--accent-soft); }
@@ -553,6 +557,12 @@ function act(a, v) {
     case 'altMove': { const [i, d] = v.split(',').map(Number); move(DAY[S.ed].alts, i, d); afterAltEdit(); break; }
     case 'altDel': { const a = DAY[S.ed].alts; if (a.length > 1) { a.splice(+v, 1); afterAltEdit(); } break; }
     case 'addSet': S.extra = S.extra || {}; S.extra[si] = (S.extra[si] || 0) + 1; S.draft = makeDraft(si); break;
+    case 'delSetAt': {
+      const i = +v, l = logsFor(si)[i];
+      if (l) { S.logs.splice(S.logs.indexOf(l), 1); if (!logsFor(si).length) S.order = S.order.filter(x => x !== si); }
+      if (nS(si) > 1) { S.extra = S.extra || {}; S.extra[si] = (S.extra[si] || 0) - 1; }
+      S.swiped = null; S.msg = null; S.draft = makeDraft(si); break;
+    }
     case 'delSet': if (nS(si) > logsFor(si).length && nS(si) > 1) { S.extra = S.extra || {}; S.extra[si] = (S.extra[si] || 0) - 1; } break;
     case 'altSheet': S.ed = si; S.altSheet = true; break;
     case 'altSheetClose': S.altSheet = false; break;
@@ -671,14 +681,14 @@ function viewHoy() {
           const l = ls[i], prev = e.last && e.last.r[i] != null ? `${fmt(toU(e.last.w))}×${e.last.r[i]}<br>${e.last.rir ? `${e.last.rir[i] === 3 ? '3+' : e.last.rir[i]} RIR` : ''}` : '–';
           const cur = i === ls.length;
           const lastIso = d.type === 'iso' && i === nS(si) - 1;
-          return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><button class="chk ${l ? 'on' : ''} ${cur ? 'cur' : ''}" data-a="${l ? (i === ls.length - 1 ? 'undo' : 'noop') : cur ? 'log' : 'noop'}" ${!l && !cur ? 'disabled' : ''} aria-label="Serie ${i+1} completa" aria-pressed="${!!l}">${l ? '✓' : i + 1}</button><span class="cells">${(() => {
+          return `<div class="sl-swipe ${S.swiped === i ? 'open' : ''}" data-row="${i}"><div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><button class="chk ${l ? 'on' : ''} ${cur ? 'cur' : ''}" data-a="${l ? (i === ls.length - 1 ? 'undo' : 'noop') : cur ? 'log' : 'noop'}" ${!l && !cur ? 'disabled' : ''} aria-label="Serie ${i+1} completa" aria-pressed="${!!l}">${l ? '✓' : i + 1}</button><span class="cells">${(() => {
             const pre = S.pre[`${si}-${i}`] || {};
             const w = l ? l.w : cur ? S.draft.w : pre.w ?? target(si, i).w, r = l ? l.r : cur ? S.draft.r : pre.r ?? target(si, i).r;
             const tg = target(si, i), ph = [toU(tg.w), tg.r];
             return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones en reserva serie ${i+1}" data-set="${i}" data-f="rir" value="${(l ? l.rir : cur ? S.draft.rir : pre.rir ?? defRir(si, i)) ?? ''}" placeholder="${d.type === 'iso' && i === nS(si) - 1 ? '0' : '1-2'}"><span class="u">RIR</span></label>`;
-          })()}</span><span class="antes">${prev}</span></div>`;
+          })()}</span><span class="antes">${prev}</span></div><button class="sl-del" data-a="delSetAt" data-v="${i}">Eliminar</button></div>`;
         }).join('')}
-        <div class="sl-add"><button data-a="addSet">+ Agregar serie</button>${nS(si) > ls.length && nS(si) > 1 ? `<button data-a="delSet">− Quitar última</button>` : ''}</div>
+        <div class="sl-add"><button data-a="addSet">+ Agregar serie</button></div>
       </div>
       <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en cada serie' : '1-2 en reserva, la última al fallo'}.</p>
       <details><summary>Cómo progresar hoy</summary><p class="sl-foot">${(() => { const pl = plan(si); return ({
@@ -870,6 +880,15 @@ ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" dat
   </div></div>` : ''}`;
 }
 
+// deslizar una serie a la izquierda muestra "Eliminar"
+let swX = null, swRow = null;
+document.addEventListener('pointerdown', ev => { const r = ev.target.closest('.sl-swipe'); swX = ev.clientX; swRow = r ? +r.dataset.row : null; });
+document.addEventListener('pointerup', ev => {
+  if (swX == null) return; const dx = ev.clientX - swX; swX = null;
+  if (swRow != null && dx < -30) { S.swiped = swRow; render(); return; }
+  if (S.swiped != null && dx > 30) { S.swiped = null; render(); return; }
+  if (S.swiped != null && Math.abs(dx) < 5 && !ev.target.closest('.sl-del')) { S.swiped = null; render(); }
+});
 document.addEventListener('change', ev => {
   const t = ev.target; if (!t.dataset || t.dataset.set == null) return;
   const i = +t.dataset.set, f = t.dataset.f, raw = parseFloat(String(t.value).replace(',', '.')), v = f === 'w' ? fromU(raw) : raw;
