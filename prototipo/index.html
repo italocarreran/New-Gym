@@ -82,7 +82,17 @@ p { margin: 0; }
 
 /* tarjeta principal */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-.slot-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.slot-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.slot-line { font-size: 19px; min-width: 0; }
+.slot-type { font-family: var(--body); font-size: 13px; font-weight: 500; }
+.pico { border: none; background: var(--surface-2); border-radius: 8px; width: 34px; height: 30px; display: grid; place-items: center; padding: 0; flex-shrink: 0; }
+.pico svg { width: 18px; height: 16px; }
+.pico.alta { color: var(--bad); background: var(--bad-soft); }
+.pico.media { color: var(--warn); background: var(--warn-soft); }
+.pico.baja { color: var(--muted); }
+.plegend { display: flex; flex-direction: column; gap: 8px; }
+.plegend div { display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 10px; align-items: center; font-size: 13.5px; }
+.plegend div.cur { font-weight: 600; }
 .slot-head .meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
 .target { font-family: var(--display); font-size: 26px; font-weight: 700; line-height: 1; text-align: right; white-space: nowrap; }
 .target small { display: block; font-family: var(--body); font-size: 11px; font-weight: 500; color: var(--muted); }
@@ -564,6 +574,8 @@ function act(a, v) {
       S.swiped = null; S.msg = null; S.draft = makeDraft(si); break;
     }
     case 'delSet': if (nS(si) > logsFor(si).length && nS(si) > 1) { S.extra = S.extra || {}; S.extra[si] = (S.extra[si] || 0) - 1; } break;
+    case 'prioSheet': S.prioSheet = true; break;
+    case 'prioClose': S.prioSheet = false; break;
     case 'altSheet': S.ed = si; S.altSheet = true; break;
     case 'altSheetClose': S.altSheet = false; break;
     case 'pickOpen': S.pick = v; S.q = ''; break;
@@ -670,8 +682,8 @@ function viewHoy() {
 
     <section class="card">
       <div class="slot-head">
-        <div><span class="eyebrow">Slot ${si+1} de ${DAY.length} · va de ${ord(p)}</span><h2>${d.name}</h2>
-          <div class="meta"><span class="prio ${d.prio}">Prioridad ${d.prio}</span><span class="small muted">${d.type==='comp'?'Compuesto':'Aislado'}</span></div></div>
+        <h2 class="slot-line">Slot ${si+1}: ${d.name} <span class="muted slot-type">· ${d.type==='comp'?'Compuesto':'Aislado'}</span></h2>
+        ${prioIcon(d.prio)}
       </div>
       <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
       ${swapHtml}
@@ -804,6 +816,9 @@ function pickerHtml() {
   return list.slice(0, 12).map(([id, e]) => `<button class="alt" data-a="pickEx" data-v="${id}"><span class="letter">+</span><span style="min-width:0"><span class="name">${e.n}</span><br><span class="sub">${e.eq} · ${e.p.map(m=>MUS[m]).join(', ')}${e.s.length ? ` (+ ${e.s.map(m=>MUS[m].toLowerCase()).join(', ')})` : ''}</span></span>${ref && e.p[0] === ref.p[0] ? '<span class="state free">Mismo músculo</span>' : '<span></span>'}</button>`).join('') || '<p class="small muted">No hay coincidencias.</p>';
 }
 
+const PRIO_TXT = { alta: 'Compuesto pesado. Se protege: nunca se recorta si falta tiempo.', media: 'Compuesto liviano. Se recorta solo si no alcanza con sacar los de prioridad baja.', baja: 'Aislado. Es lo primero que se recorta si falta tiempo; los compuestos ya lo trabajan de forma indirecta.' };
+const prioSvg = lvl => { const n = { alta: 3, media: 2, baja: 1 }[lvl]; return `<svg viewBox="0 0 18 16" aria-hidden="true">${[0,1,2].map(i => `<rect x="${i*6+1}" y="${12 - i*5}" width="4" height="${4 + i*5}" rx="1" fill="currentColor" opacity="${i < n ? 1 : .25}"/>`).join('')}</svg>`; };
+const prioIcon = lvl => `<button class="pico ${lvl}" data-a="prioSheet" aria-label="Prioridad ${lvl}">${prioSvg(lvl)}</button>`;
 const LET = 'ABCD', MAXALT = 4;
 const altRows = d => d.alts.map((a, k) => `<div class="alt"><span class="letter">${LET[k]}</span><span style="min-width:0"><span class="name">${EX[a].n}</span><br><span class="sub">${EX[a].eq} · ${EX[a].p.map(m=>MUS[m]).join(', ')}</span></span>
         <span class="ed-move"><button data-a="altMove" data-v="${k},-1" aria-label="Subir" ${k===0?'disabled':''}>↑</button><button data-a="altMove" data-v="${k},1" aria-label="Bajar" ${k===d.alts.length-1?'disabled':''}>↓</button><button data-a="altDel" data-v="${k}" aria-label="Quitar" ${d.alts.length===1?'disabled':''}>✕</button></span></div>`).join('');
@@ -858,6 +873,11 @@ function render() {
   <nav class="tabs"><div class="tabs-in">
     ${[['hoy','Entrenar'],['semana','Semana'],['rutina','Rutina'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
   </div></nav>
+  ${S.prioSheet ? `<div class="sheet-bg" data-a="prioClose"><div class="sheet" data-a="noop">
+    <span class="eyebrow">${DAY[S.si].name}</span><h2>Prioridad ${DAY[S.si].prio}</h2>
+    <div class="plegend">${['alta','media','baja'].map(k => `<div class="${k === DAY[S.si].prio ? 'cur' : ''}"><span class="pico ${k}">${prioSvg(k)}</span><span><b>${k[0].toUpperCase() + k.slice(1)}.</b> ${PRIO_TXT[k]}</span></div>`).join('')}</div>
+    <button class="btn primary block" data-a="prioClose">Entendido</button>
+  </div></div>` : ''}
   ${S.altSheet && !S.pick ? `<div class="sheet-bg" data-a="altSheetClose"><div class="sheet" data-a="noop">
     <span class="eyebrow">Opciones de ${DAY[S.ed].name.toLowerCase()}</span><h2>Ordena tus opciones</h2>
     <p class="small muted">La de arriba es tu primera opción y la que sale elegida al iniciar.</p>
