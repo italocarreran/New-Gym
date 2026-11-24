@@ -475,7 +475,7 @@ function act(a, v) {
     case 'tags': S.tags = !S.tags; break;
     case 'pick': {
       const k = +v, id = DAY[si].alts[k];
-      if (k === altIdx(si) && !S.busy[id] && S.chosen[si]) { act('busy'); return; }   // tocar la elegida otra vez = está ocupada
+      if (k === altIdx(si) && !S.busy[id]) { act('busy'); return; }   // tocar la elegida otra vez = está ocupada
       S.chosen[si] = true; delete S.busy[id]; S.alt[si] = k; S.draft = makeDraft(si); S.swap = null; S.showWhy = false; break;
     }
     case 'whyToggle': S.showWhy = !S.showWhy; break;
@@ -568,7 +568,7 @@ function viewHoy() {
       <span class="n">${isDone(j) ? '✓' : j+1}</span><span class="l">${x.name}</span></button>`).join('');
 
   const alts = d.alts.map((id, k) => {
-    const x = EX[id], on = k === altIdx(si) && (!!S.chosen[si] || ls.length > 0), b = !!S.busy[id];
+    const x = EX[id], on = k === altIdx(si), b = !!S.busy[id];
     return `<button class="opt ${on?'on':''} ${b?'busy':''}" data-a="pick" data-v="${k}" aria-pressed="${on}">
       <span class="opt-top"><span class="opt-l">${'ABC'[k]}</span><span class="opt-dot ${b?'taken':''}" aria-hidden="true"></span></span>
       <span class="opt-n">${SHORT[id] || x.n}</span>
@@ -587,7 +587,7 @@ function viewHoy() {
     swapHtml = `<div class="note info flash"><b>Cambiado: ${S.swap.to}.</b><span>Cuenta igual para la rutina. ${S.swap.from} quedó marcado como ocupado.</span></div>`;
   }
 
-  const chosen = !!S.chosen[si] || ls.length > 0;
+  const chosen = true; // opciones siempre compactas, la A elegida y las series a la vista
   const orderWarn = e.last && e.last.pos !== p ? `<div class="note warn"><b>La última vez lo hiciste de ${ord(e.last.pos)}, hoy va de ${ord(p)}.</b><span>${p > e.last.pos ? 'Llegas más cansado: es normal rendir algo menos. No es pérdida de fuerza.' : 'Llegas más fresco: es normal rendir algo más.'}</span></div>` : '';
 
   const why = `<div class="explain">
