@@ -58,7 +58,12 @@ p { margin: 0; }
 .small { font-size: 13px; }
 
 /* encabezado */
-.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.top { position: sticky; top: 0; z-index: 12; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -12px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 10px max(16px, env(safe-area-inset-left, 0px)) 8px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.cur-card { scroll-margin-top: 96px; }
+.top-l { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.top h1 { font-size: 22px; }
+.clock { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.clock b { color: var(--ink); font-weight: 600; }
 .top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .toggle { white-space: nowrap; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 10px; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; }
 .toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
@@ -278,7 +283,7 @@ details summary { cursor: pointer; font-weight: 600; font-size: 12px; color: var
 details[open] summary { margin-bottom: 6px; }
 
 /* hoja inferior */
-.bodyfab { position: fixed; right: max(10px, calc(50vw - 230px)); bottom: calc(74px + env(safe-area-inset-bottom, 0px)); z-index: 15; width: 76px; touch-action: none; user-select: none; padding: 5px 3px 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 6px 20px rgba(10, 20, 40, .16); display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; color: var(--ink); }
+.bodyfab { flex: none; width: 62px; padding: 4px 3px 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; color: var(--ink); }
 .bodyfab svg { width: 100%; height: auto; display: block; }
 .bodyfab .bf-t { font-size: 10px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
 .bodyfab.pulse { animation: bfpulse .7s ease-out; }
@@ -378,7 +383,7 @@ const DAY = [
 const SHORT = { banca:'Banca barra', mancPlana:'Mancuernas plano', smith:'Máquina / Smith', incl:'Inclinado manc.', inclSmith:'Inclinado Smith', flexPeso:'Flexiones c/ peso', cruces:'Cruces polea', pecdeck:'Pec deck', aperturas:'Aperturas manc.', latMan:'Laterales manc.', latPolea:'Laterales polea', latMaq:'Laterales máq.', pressHom:'Press manc.', pressHomMaq:'Press máquina', arnold:'Arnold', triPolea:'Polea', fondos:'Fondos asist.', frances:'Press francés' };
 const PRANK = { alta:3, media:2, baja:1 };
 const afterAltEdit = () => { if (S.tab === 'rutina') { resetSession(); return; } S.alt[S.ed] = 0; DAY[S.ed].alts.forEach(x => delete S.busy[x]); S.draft = makeDraft(S.si); S.swap = null; };
-const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, fold:{}, orderOk:{}, conflictOk:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
+const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, startAt:null, fold:{}, orderOk:{}, conflictOk:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
 const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
 const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
 
@@ -562,7 +567,7 @@ function act(a, v) {
     case 'log': {
       if (S.draft.rir == null) { S.msg = { cls:'info', t:'Falta el RIR.', s:'Anota en la casilla RIR cuántas repeticiones más podías hacer.' }; break; }
       if (!S.order.includes(si)) S.order.push(si);
-      S.logs.push({ si, ex: exIdOf(si), w: S.draft.w, r: S.draft.r, rir: S.draft.rir }); S.pulse = true;
+      S.logs.push({ si, ex: exIdOf(si), w: S.draft.w, r: S.draft.r, rir: S.draft.rir }); S.pulse = true; if (!S.startAt) S.startAt = Date.now();
       S.msg = feedback(si, S.draft.rir);
       const pn = progressionNote(si); if (pn) S.msg = { cls:'info', t:'Sube el peso la próxima vez.', s:pn };
       S.restLen = restSecs(si); S.restEnd = Date.now() + S.restLen * 1000;
@@ -605,7 +610,7 @@ function act(a, v) {
     case 'fold': S.fold[si] = !S.fold[si]; break;
     case 'orderOk': S.orderOk[si] = true; break;
     case 'conflictOk': S.conflictOk[si] = true; break;
-    case 'bodyOpen': if (fabDrag.moved) { fabDrag.moved = false; return; } S.bodySheet = true; break;
+    case 'bodyOpen': S.bodySheet = true; break;
     case 'bodyClose': S.bodySheet = false; break;
     case 'bodyMode': S.bodyMode = v; break;
     case 'altSheet': S.ed = si; S.altSheet = true; break;
@@ -907,10 +912,17 @@ function bodySvg(lv) {
     ${E('pant', 57, 177, 4.4, 13)}`;
   return `<svg class="bodyfig" viewBox="0 0 210 210" aria-hidden="true"><g>${front}</g><g transform="translate(110,0)">${back}</g></svg>`;
 }
+function clockTxt() {
+  const fm = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+  const cut = cutSet();
+  const left = Math.round(DAY.reduce((a, d, si) => a + (isDone(si) || cut.has(si) ? 0 : slotMins(si, nS(si) - logsFor(si).length)), 0));
+  if (!S.startAt) return `⏱ Rutina de ~${left} min`;
+  const el = Math.round((Date.now() - S.startAt) / 1000);
+  return `⏱ <b>${fm(el)}</b> · ${left ? `faltan ~${left} min` : 'terminada'}`;
+}
 function bodyFab() {
   const total = DAY.reduce((a, d, si) => a + (cutSet().has(si) && !logsFor(si).length ? 0 : Math.max(nS(si), logsFor(si).length)), 0);
-  const pos = S.fabPos ? `style="left:${S.fabPos.x}px;top:${S.fabPos.y}px;right:auto;bottom:auto"` : '';
-  return `<button class="bodyfab ${S.pulse ? 'pulse' : ''}" ${pos} data-a="bodyOpen" aria-label="Ver músculos trabajados">${bodySvg(bodyLevels('hoy'))}<span class="bf-t">${S.logs.length}/${total}</span></button>`;
+  return `<button class="bodyfab ${S.pulse ? 'pulse' : ''}" data-a="bodyOpen" aria-label="Ver músculos trabajados">${bodySvg(bodyLevels('hoy'))}<span class="bf-t">${S.logs.length}/${total}</span></button>`;
 }
 function bodySheet() {
   const mode = S.bodyMode || 'hoy', lv = bodyLevels(mode);
@@ -975,15 +987,14 @@ function render() {
   const r = document.getElementById('root');
   r.innerHTML = `<main class="app ${S.tags ? '' : 'hide-tags'}">
     <header class="top">
-      <div><span class="eyebrow">Jueves 23 nov · Día 1</span><h1>${S.tab==='hoy'?'Pecho · Hombro · Tríceps':S.tab==='semana'?'Tu semana':S.tab==='rutina'?'Tu rutina':'Guía'}</h1></div>
-      
+      <div class="top-l"><span class="eyebrow">Jueves 23 nov · Día 1</span><h1>${S.tab==='hoy'?'Pecho · Hombro · Tríceps':S.tab==='semana'?'Tu semana':S.tab==='rutina'?'Tu rutina':'Guía'}</h1><span class="clock" id="clock">${clockTxt()}</span></div>
+      ${bodyFab()}
     </header>
     ${views[S.tab]()}
   </main>
   <nav class="tabs"><div class="tabs-in">
     ${[['hoy','Rutina'],['semana','Semana'],['rutina','Editar'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
   </div></nav>
-  ${bodyFab()}
   ${S.bodySheet ? bodySheet() : ''}
   ${S.prioSheet ? `<div class="sheet-bg" data-a="prioClose"><div class="sheet" data-a="noop">
     <span class="eyebrow">${DAY[S.si].name}</span><h2>Prioridad ${DAY[S.si].prio}</h2>
@@ -1014,30 +1025,6 @@ ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" dat
   if (S.scrollCur) { S.scrollCur = false; const c = r.querySelector('.cur-card'); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 }
 
-// el muñeco se puede arrastrar a cualquier borde
-const fabDrag = { on: false, moved: false, dx: 0, dy: 0, sx: 0, sy: 0 };
-document.addEventListener('pointerdown', ev => {
-  const b = ev.target.closest('.bodyfab'); if (!b) return;
-  const r = b.getBoundingClientRect();
-  Object.assign(fabDrag, { on: true, moved: false, dx: ev.clientX - r.left, dy: ev.clientY - r.top, sx: ev.clientX, sy: ev.clientY });
-});
-document.addEventListener('pointermove', ev => {
-  if (!fabDrag.on) return;
-  if (!fabDrag.moved && Math.hypot(ev.clientX - fabDrag.sx, ev.clientY - fabDrag.sy) < 6) return;
-  fabDrag.moved = true;
-  const b = document.querySelector('.bodyfab'); if (!b) return;
-  Object.assign(b.style, { left: `${ev.clientX - fabDrag.dx}px`, top: `${ev.clientY - fabDrag.dy}px`, right: 'auto', bottom: 'auto' });
-});
-document.addEventListener('pointerup', () => {
-  if (!fabDrag.on) return; fabDrag.on = false;
-  if (!fabDrag.moved) return;
-  const b = document.querySelector('.bodyfab'); if (!b) return;
-  const r = b.getBoundingClientRect(), W = innerWidth, H = innerHeight;
-  const x = r.left + r.width / 2 < W / 2 ? 10 : W - r.width - 10;
-  const y = Math.min(Math.max(10, r.top), H - r.height - 80);
-  S.fabPos = { x, y }; b.style.left = `${x}px`; b.style.top = `${y}px`;
-});
-
 // deslizar una serie a la izquierda muestra "Eliminar"
 let swX = null, swRow = null;
 document.addEventListener('pointerdown', ev => { const r = ev.target.closest('.sl-swipe'); swX = ev.clientX; swRow = r ? +r.dataset.row : null; });
@@ -1067,6 +1054,7 @@ document.addEventListener('click', ev => {
   act(b.dataset.a, b.dataset.v);
 });
 setInterval(() => {
+  const ck = document.getElementById('clock'); if (ck && S.startAt) ck.innerHTML = clockTxt();
   if (!S.restEnd) return;
   const el = document.getElementById('restT'); if (!el) return;
   const left = Math.max(0, Math.round((S.restEnd - Date.now())/1000));
