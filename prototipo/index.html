@@ -115,6 +115,9 @@ p { margin: 0; }
 .chk.cur { border-color: var(--accent); color: var(--accent); }
 .chk.on { background: var(--ok); border-color: var(--ok); color: var(--surface); font-size: 15px; }
 .chk:disabled { opacity: .5; cursor: default; }
+.sl-add { display: flex; gap: 6px; padding: 6px 8px; border-top: 1px solid var(--line); }
+.sl-add button { border: none; background: transparent; color: var(--accent); font-weight: 600; font-size: 12.5px; padding: 6px 4px; }
+.sl-add button + button { color: var(--muted); margin-left: auto; }
 .sl-foot { font-size: 11.5px; color: var(--muted); margin-top: -4px; }
 .sl-h { background: var(--surface-2); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-block: 6px; }
 .sl-row.cur { background: var(--accent-soft); }
@@ -331,7 +334,7 @@ const DAY = [
 const SHORT = { banca:'Banca barra', mancPlana:'Mancuernas plano', smith:'Máquina / Smith', incl:'Inclinado manc.', inclSmith:'Inclinado Smith', flexPeso:'Flexiones c/ peso', cruces:'Cruces polea', pecdeck:'Pec deck', aperturas:'Aperturas manc.', latMan:'Laterales manc.', latPolea:'Laterales polea', latMaq:'Laterales máq.', pressHom:'Press manc.', pressHomMaq:'Press máquina', arnold:'Arnold', triPolea:'Polea', fondos:'Fondos asist.', frances:'Press francés' };
 const PRANK = { alta:3, media:2, baja:1 };
 const afterAltEdit = () => { if (S.tab === 'rutina') { resetSession(); return; } S.alt[S.ed] = 0; DAY[S.ed].alts.forEach(x => delete S.busy[x]); S.draft = makeDraft(S.si); S.swap = null; };
-const resetSession = () => { Object.assign(S, { chosen:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
+const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
 const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
 const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
 
@@ -348,12 +351,13 @@ const altIdx = si => S.alt[si] ?? 0;
 const exOf = si => EX[DAY[si].alts[altIdx(si)]];
 const exIdOf = si => DAY[si].alts[altIdx(si)];
 const logsFor = si => S.logs.filter(l => l.si === si);
-const isDone = si => logsFor(si).length >= DAY[si].sets;
+const nS = si => DAY[si].sets + ((S.extra || {})[si] || 0);
+const isDone = si => logsFor(si).length >= nS(si);
 const pos = si => { const i = S.order.indexOf(si); return i >= 0 ? i + 1 : S.order.length + 1; };
 const muscles = si => { const e = exOf(si); return [...e.p, ...e.s]; };
 const share = (a, b) => muscles(a).filter(m => muscles(b).includes(m));
 const restSecs = si => DAY[si].type === 'comp' ? 150 : 75;
-const slotMins = (si, setsLeft) => (setsLeft ?? DAY[si].sets) * (45 + restSecs(si)) / 60 + 2;
+const slotMins = (si, setsLeft) => (setsLeft ?? nS(si)) * (45 + restSecs(si)) / 60 + 2;
 
 // Sobrecarga progresiva (progresión doble): +1 rep por serie hasta el tope del rango;
 // si la vez anterior llegaste al tope en todas, sube el peso y vuelve al piso del rango.
@@ -365,7 +369,7 @@ const slotMins = (si, setsLeft) => (setsLeft ?? DAY[si].sets) * (45 + restSecs(s
 const stepOf = e => e.eq === 'Mancuernas' ? 2 : (e.eq === 'Sin máquina' ? 5 : 2.5);
 const roundTo = (x, st) => Math.round(x / st) * st;
 function plan(si) {
-  const d = DAY[si], e = exOf(si), [lo, hi] = d.reps, n = d.sets;
+  const d = DAY[si], e = exOf(si), [lo, hi] = d.reps, n = nS(si);
   if (!e.last) return { why: 'nuevo', w: e.sugW ?? 0, reps: Array.from({length: n}, () => lo) };
   const L = e.last, lr = L.r, rr = L.rir || lr.map(() => 2), k = lr.length - 1, st = stepOf(e);
   const descend = Array.from({length: n}, (_, i) => Math.min(hi, lo + (n - 1 - i)));
@@ -392,7 +396,7 @@ function plan(si) {
   return { why: 'rep', w: L.w, reps };
 }
 function target(si, i) { const p = plan(si); return { w: p.w, r: p.reps[i] ?? p.reps[p.reps.length - 1], why: p.why }; }
-const defRir = (si, i) => DAY[si].type === 'iso' && i === DAY[si].sets - 1 ? 0 : 2;
+const defRir = (si, i) => DAY[si].type === 'iso' && i === nS(si) - 1 ? 0 : 2;
 function makeDraft(si) {
   const n = logsFor(si).length, prev = logsFor(si).slice(-1)[0], t = target(si, n);
   const w = prev ? prev.w : t.w;
@@ -407,14 +411,14 @@ function weekly(includePlan) {
   S.logs.forEach(l => add(EX[l.ex], 1));
   if (includePlan) DAY.forEach((d, si) => {
     if (cutSet().has(si)) return;
-    const left = d.sets - logsFor(si).length; if (left > 0) add(exOf(si), left);
+    const left = nS(si) - logsFor(si).length; if (left > 0) add(exOf(si), left);
   });
   return t;
 }
 
 function timePlan() {
   const pending = DAY.map((d, si) => si).filter(si => !isDone(si));
-  const rows = pending.map(si => ({ si, mins: slotMins(si, DAY[si].sets - logsFor(si).length) }));
+  const rows = pending.map(si => ({ si, mins: slotMins(si, nS(si) - logsFor(si).length) }));
   const cut = new Set();
   if (S.minutes != null) {
     let total = rows.reduce((a, r) => a + r.mins, 0);
@@ -439,14 +443,14 @@ function conflictFor(j) {
 }
 
 function guideFor(si) {
-  const d = DAY[si], n = logsFor(si).length + 1, last = n === d.sets;
-  if (d.type === 'comp') return { cls:'', g1:`Serie ${n} de ${d.sets}: termina con 1-2 en el tanque`, g2:`Compuesto. No llegues al fallo en ninguna serie. Descansa 2-3 min.` };
-  if (!last) return { cls:'', g1:`Serie ${n} de ${d.sets}: deja 1-2 en reserva`, g2:`Aislado. Guarda el fallo para la última serie. Descansa 60-90 s.` };
+  const d = DAY[si], n = logsFor(si).length + 1, last = n === nS(si);
+  if (d.type === 'comp') return { cls:'', g1:`Serie ${n} de ${nS(si)}: termina con 1-2 en el tanque`, g2:`Compuesto. No llegues al fallo en ninguna serie. Descansa 2-3 min.` };
+  if (!last) return { cls:'', g1:`Serie ${n} de ${nS(si)}: deja 1-2 en reserva`, g2:`Aislado. Guarda el fallo para la última serie. Descansa 60-90 s.` };
   return { cls:'fail', g1:`Última serie: puedes llegar al fallo`, g2:`Aislado. Dalo todo, hasta que no salga una repetición más con buena técnica.` };
 }
 
 function feedback(si, rir) {
-  const d = DAY[si], n = logsFor(si).length, last = n === d.sets, e = exOf(si), lg = logsFor(si)[n - 1];
+  const d = DAY[si], n = logsFor(si).length, last = n === nS(si), e = exOf(si), lg = logsFor(si)[n - 1];
   if (e.last && lg && lg.w > e.last.w) {
     if (lg.r < d.reps[0]) return { cls:'warn', t:'El salto de peso fue muy grande.', s:`No llegaste al mínimo del rango (${d.reps[0]}). Baja un poco el peso (2,5-5%) en la próxima serie.` };
     if (rir >= 3) return { cls:'warn', t:'El salto de peso quedó chico.', s:'Te sobraron 3 o más repeticiones. La próxima vez sube un poco más.' };
@@ -464,7 +468,7 @@ function feedback(si, rir) {
 
 function progressionNote(si) {
   const d = DAY[si], ls = logsFor(si), e = exOf(si);
-  if (ls.length < d.sets) return null;
+  if (ls.length < nS(si)) return null;
   const l = ls[ls.length - 1], minRir = d.type === 'iso' ? 0 : 1;
   if (l.r >= d.reps[1] && l.rir >= minRir && l.rir <= 2) {
     const st = stepOf(e), w = Math.max(l.w + st, roundTo(l.w * 1.06, st));
@@ -548,6 +552,8 @@ function act(a, v) {
     case 'edType': DAY[S.ed].type = v; break;
     case 'altMove': { const [i, d] = v.split(',').map(Number); move(DAY[S.ed].alts, i, d); afterAltEdit(); break; }
     case 'altDel': { const a = DAY[S.ed].alts; if (a.length > 1) { a.splice(+v, 1); afterAltEdit(); } break; }
+    case 'addSet': S.extra = S.extra || {}; S.extra[si] = (S.extra[si] || 0) + 1; S.draft = makeDraft(si); break;
+    case 'delSet': if (nS(si) > logsFor(si).length && nS(si) > 1) { S.extra = S.extra || {}; S.extra[si] = (S.extra[si] || 0) - 1; } break;
     case 'altSheet': S.ed = si; S.altSheet = true; break;
     case 'altSheetClose': S.altSheet = false; break;
     case 'pickOpen': S.pick = v; S.q = ''; break;
@@ -640,7 +646,7 @@ function viewHoy() {
     let impact = `${Math.round(r.mins)} min`;
     if (c) {
       const m = ex.p[0], kept = DAY.map((dd,k)=>k).filter(k=>k!==r.si && !tp.cut.has(k) && !isDone(k));
-      const indirect = kept.reduce((a,k)=>a + (exOf(k).p.includes(m)?DAY[k].sets-logsFor(k).length:0) + (exOf(k).s.includes(m)?(DAY[k].sets-logsFor(k).length)*0.5:0), 0) + S.logs.reduce((a,l)=>a+(EX[l.ex].p.includes(m)?1:EX[l.ex].s.includes(m)?0.5:0),0);
+      const indirect = kept.reduce((a,k)=>a + (exOf(k).p.includes(m)?nS(k)-logsFor(k).length:0) + (exOf(k).s.includes(m)?(nS(k)-logsFor(k).length)*0.5:0), 0) + S.logs.reduce((a,l)=>a+(EX[l.ex].p.includes(m)?1:EX[l.ex].s.includes(m)?0.5:0),0);
       impact = `−${x.sets} series de ${MUS[m].toLowerCase()}${indirect ? `, pero hoy igual sumas ${fmt(indirect)} con lo demás` : ''}. El día 4 lo recupera.`;
     }
     return `<div class="plan-row"><div><div class="what">${x.name} <span class="prio ${x.prio}">${x.prio}</span></div><div class="impact">${impact}</div></div><span class="${c?'tag-cut':'tag-keep'}">${c?'Recortar':'Hacer'}</span></div>`;
@@ -661,17 +667,18 @@ function viewHoy() {
       ${swapHtml}
       ${chosen ? `<div class="setlist">
         <div class="sl-row sl-h"><span></span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span>Antes</span></div>
-        ${Array.from({length: d.sets}, (_, i) => {
+        ${Array.from({length: nS(si)}, (_, i) => {
           const l = ls[i], prev = e.last && e.last.r[i] != null ? `${fmt(toU(e.last.w))}×${e.last.r[i]}<br>${e.last.rir ? `${e.last.rir[i] === 3 ? '3+' : e.last.rir[i]} RIR` : ''}` : '–';
           const cur = i === ls.length;
-          const lastIso = d.type === 'iso' && i === d.sets - 1;
+          const lastIso = d.type === 'iso' && i === nS(si) - 1;
           return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><button class="chk ${l ? 'on' : ''} ${cur ? 'cur' : ''}" data-a="${l ? (i === ls.length - 1 ? 'undo' : 'noop') : cur ? 'log' : 'noop'}" ${!l && !cur ? 'disabled' : ''} aria-label="Serie ${i+1} completa" aria-pressed="${!!l}">${l ? '✓' : i + 1}</button><span class="cells">${(() => {
             const pre = S.pre[`${si}-${i}`] || {};
             const w = l ? l.w : cur ? S.draft.w : pre.w ?? target(si, i).w, r = l ? l.r : cur ? S.draft.r : pre.r ?? target(si, i).r;
             const tg = target(si, i), ph = [toU(tg.w), tg.r];
-            return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones en reserva serie ${i+1}" data-set="${i}" data-f="rir" value="${(l ? l.rir : cur ? S.draft.rir : pre.rir ?? defRir(si, i)) ?? ''}" placeholder="${d.type === 'iso' && i === d.sets - 1 ? '0' : '1-2'}"><span class="u">RIR</span></label>`;
+            return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones en reserva serie ${i+1}" data-set="${i}" data-f="rir" value="${(l ? l.rir : cur ? S.draft.rir : pre.rir ?? defRir(si, i)) ?? ''}" placeholder="${d.type === 'iso' && i === nS(si) - 1 ? '0' : '1-2'}"><span class="u">RIR</span></label>`;
           })()}</span><span class="antes">${prev}</span></div>`;
         }).join('')}
+        <div class="sl-add"><button data-a="addSet">+ Agregar serie</button>${nS(si) > ls.length && nS(si) > 1 ? `<button data-a="delSet">− Quitar última</button>` : ''}</div>
       </div>
       <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en cada serie' : '1-2 en reserva, la última al fallo'}.</p>
       <details><summary>Cómo progresar hoy</summary><p class="sl-foot">${(() => { const pl = plan(si); return ({
