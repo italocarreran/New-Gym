@@ -591,7 +591,7 @@ function act(a, v) {
       if (nx != null) { S.si = nx; S.fold[nx] = false; S.draft = makeDraft(nx); S.showWhy = false; S.scrollCur = true; }
       break;
     }
-    case 'undo': { const l = S.logs.pop(); if (l && !logsFor(l.si).length) S.order = S.order.filter(x => x !== l.si); S.msg = null; S.restEnd = null; S.draft = makeDraft(si); break; }
+    case 'undo': { let ix = -1; S.logs.forEach((x, k) => { if (x.si === si) ix = k; }); const l = ix >= 0 ? S.logs.splice(ix, 1)[0] : null; if (l && !logsFor(l.si).length) S.order = S.order.filter(x => x !== l.si); S.msg = null; S.restEnd = null; S.draft = makeDraft(si); break; }
     case 'skipRest': S.restEnd = null; break;
     case 'unit': S.unit = v; break;
     case 'min': S.minutes = S.minutes === +v ? null : +v; break;
@@ -652,17 +652,25 @@ const ord = n => `${n}º`;
 function foldedCard(j) {
   const x = DAY[j], ex = exOf(j), lg = logsFor(j), dn = isDone(j), ct = cutSet().has(j);
   const st = dn ? `✓ ${lg.map(l=>`${fmt(toU(l.w))}×${l.r}`).join(', ')}` : ct ? 'Se recorta hoy' : lg.length ? `${lg.length}/${nS(j)} series · ${lg.map(l=>`${fmt(toU(l.w))}×${l.r}`).join(', ')}` : `${nS(j)} series · ${x.reps[0]}-${x.reps[1]} reps`;
-  return `<section class="card fold-card ${dn?'done':''} ${ct?'cut':''}" data-a="jump" data-v="${j}">
+  return `<section class="card fold-card ${dn?'done':''} ${ct?'cut':''}" data-slot="${j}" data-a="fold">
       <div class="slot-head">
-        <button class="fold-btn" data-a="jump" data-v="${j}" aria-expanded="false"><span class="fold-chev" aria-hidden="true">›</span><h2 class="slot-line">Slot ${j+1}: ${x.name} <span class="muted slot-type">· ${x.type==='comp'?'Compuesto':'Aislado'}</span></h2></button>
+        <button class="fold-btn" data-a="fold" aria-expanded="false"><span class="fold-chev" aria-hidden="true">›</span><h2 class="slot-line">Slot ${j+1}: ${x.name} <span class="muted slot-type">· ${x.type==='comp'?'Compuesto':'Aislado'}</span></h2></button>
         ${prioIcon(x.prio)}
       </div>
-      <button class="fold-sub" data-a="jump" data-v="${j}"><span>${ex.n}</span><span class="muted"> · ${st}</span></button>
+      <button class="fold-sub" data-a="fold"><span>${ex.n}</span><span class="muted"> · ${st}</span></button>
     </section>`;
 }
 
 function viewHoy() {
-  const si = S.si, d = DAY[si], e = exOf(si), ls = logsFor(si), done = isDone(si), cut = cutSet();
+  return `
+    ${S.returnTo != null ? `<div class="banner"><span>Haciendo esto mientras esperas <b>${DAY[S.returnTo].name.toLowerCase()}</b>.</span><button class="btn" data-a="back">Se liberó</button></div>` : ''}
+    ${DAY.map((x, j) => S.fold[j] ? foldedCard(j) : slotCard(j)).join('')}
+    <button class="btn ghost block" data-a="reset">Reiniciar el ejemplo</button>`;
+}
+
+function slotCard(si) {
+  const act0 = si === S.si, DR = act0 ? S.draft : makeDraft(si);
+  const d = DAY[si], e = exOf(si), ls = logsFor(si), done = isDone(si), cut = cutSet();
   const p = pos(si), filler = findFiller(si);
   const allBusy = d.alts.every(x => S.busy[x]);
 
@@ -744,16 +752,14 @@ function viewHoy() {
   const totalMin = Math.round(tp.rows.filter(r=>!tp.cut.has(r.si)).reduce((a,r)=>a+r.mins,0));
 
   return `
-    ${S.returnTo != null ? `<div class="banner"><span>Haciendo esto mientras esperas <b>${DAY[S.returnTo].name.toLowerCase()}</b>.</span><button class="btn" data-a="back">Se liberó</button></div>` : ''}
-    ${DAY.slice(0, si).map((x, j) => foldedCard(j)).join('')}
-    <section class="card cur-card ${S.fold[si]?'folded':''}">
+    <section data-slot="${si}" class="card ${act0 ? 'cur-card' : ''} ${S.fold[si]?'folded':''}">
       <div class="slot-head">
         <button class="fold-btn" data-a="fold" aria-expanded="${!S.fold[si]}"><span class="fold-chev ${S.fold[si]?'':'open'}" aria-hidden="true">›</span><h2 class="slot-line">Slot ${si+1}: ${d.name} <span class="muted slot-type">· ${d.type==='comp'?'Compuesto':'Aislado'}</span></h2></button>
         ${prioIcon(d.prio)}
       </div>
       ${S.fold[si] ? `<button class="fold-sub" data-a="fold"><span>${e.n}</span><span class="muted"> · ${ls.length}/${nS(si)} series${ls.length ? ' · ' + ls.map(l=>`${fmt(toU(l.w))}×${l.r}`).join(', ') : ''}</span></button>` : `
       <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
-      ${swapHtml}
+      ${act0 ? swapHtml : ''}
       ${chosen ? `<div class="setlist">
         <div class="sl-row sl-h"><span></span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span class="antes">Última vez</span></div>
         ${Array.from({length: nS(si)}, (_, i) => {
@@ -762,14 +768,14 @@ function viewHoy() {
           const lastIso = d.type === 'iso' && i === nS(si) - 1;
           return `<div class="sl-swipe ${S.swiped === i ? 'open' : ''}" data-row="${i}"><div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><button class="chk ${l ? 'on' : ''} ${cur ? 'cur' : ''}" data-a="${l ? (i === ls.length - 1 ? 'undo' : 'noop') : cur ? 'log' : 'noop'}" ${!l && !cur ? 'disabled' : ''} aria-label="Serie ${i+1} completa" aria-pressed="${!!l}">${l ? '✓' : i + 1}</button><span class="cells">${(() => {
             const pre = S.pre[`${si}-${i}`] || {};
-            const w = l ? l.w : cur ? S.draft.w : pre.w ?? target(si, i).w, r = l ? l.r : cur ? S.draft.r : pre.r ?? target(si, i).r;
+            const w = l ? l.w : cur ? DR.w : pre.w ?? target(si, i).w, r = l ? l.r : cur ? DR.r : pre.r ?? target(si, i).r;
             const tg = target(si, i), ph = [toU(tg.w), tg.r];
-            return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones en reserva serie ${i+1}" data-set="${i}" data-f="rir" value="${(l ? l.rir : cur ? S.draft.rir : pre.rir ?? defRir(si, i)) ?? ''}" placeholder="${d.type === 'iso' && i === nS(si) - 1 ? '0' : '1-2'}"><span class="u">RIR</span></label>`;
+            return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones en reserva serie ${i+1}" data-set="${i}" data-f="rir" value="${(l ? l.rir : cur ? DR.rir : pre.rir ?? defRir(si, i)) ?? ''}" placeholder="${d.type === 'iso' && i === nS(si) - 1 ? '0' : '1-2'}"><span class="u">RIR</span></label>`;
           })()}</span><span class="antes">${prev}</span></div><button class="sl-del" data-a="delSetAt" data-v="${i}">Eliminar</button></div>`;
         }).join('')}
         <div class="sl-add"><button data-a="addSet">+ Agregar serie</button></div>
       </div>
-      ${actions}
+      ${act0 ? actions : ''}
       <details class="det"><summary>Detalles</summary><div class="det-sec"><span class="det-h">Cómo progresar hoy</span><p>Rango ${d.reps[0]}-${d.reps[1]} reps, ${d.type === 'comp' ? '1-2 en reserva en cada serie' : '1-2 en reserva y la última al fallo'}.${orderShort} ${(() => { const pl = plan(si); return ({
           nuevo: 'Primera vez: parte liviano y busca el mínimo del rango.',
           rep: 'Mismo peso. Suma una repetición donde te sobró reserva. Que las reps bajen de serie en serie es normal.',
@@ -777,12 +783,7 @@ function viewHoy() {
           chico: `La vez pasada, con ${fmt(toU(pl.from))} ${S.unit}, te sobraron 3 o más: el salto fue chico. Hoy sube a ${fmt(toU(pl.w))} ${S.unit}.`,
           grande: `La vez pasada, con ${fmt(toU(pl.from))} ${S.unit}, no llegaste al mínimo: el salto fue grande. Hoy baja a ${fmt(toU(pl.w))} ${S.unit}.`
         })[pl.why]; })()}${d.type === 'comp' ? ' Descansa 2-3 min entre series para que las reps caigan menos.' : ''}</p></div><div class="det-sec"><span class="det-h">¿Por qué ${e.n.toLowerCase()} es equivalente?</span>${why}</div></details>` : ''}`}
-    </section>
-    ${DAY.slice(si + 1).map((x, k) => foldedCard(si + 1 + k)).join('')}
-
-
-
-    <button class="btn ghost block" data-a="reset">Reiniciar el ejemplo</button>`;
+    </section>`;
 }
 
 function viewSemana() {
@@ -1047,13 +1048,20 @@ document.addEventListener('pointerup', ev => {
   if (S.swiped != null && dx > 30) { S.swiped = null; render(); return; }
   if (S.swiped != null && Math.abs(dx) < 5 && !ev.target.closest('.sl-del')) { S.swiped = null; render(); }
 });
+// cada tarjeta abierta es su propio ejercicio: tocar dentro la vuelve la activa
+function selSlot(ev) {
+  const c = ev.target.closest && ev.target.closest('[data-slot]'); if (!c) return;
+  const j = +c.dataset.slot; if (j === S.si) return;
+  S.si = j; S.draft = makeDraft(j); S.swap = null; S.msg = null; S.showWhy = false;
+}
 document.addEventListener('change', ev => {
   const t = ev.target; if (!t.dataset || t.dataset.set == null) return;
+  selSlot(ev);
   const i = +t.dataset.set, f = t.dataset.f, raw = parseFloat(String(t.value).replace(',', '.')), v = f === 'w' ? fromU(raw) : raw;
   if (isNaN(v)) return;
   const si = S.si, l = logsFor(si)[i];
   if (l) l[f] = v;
-  else if (i === logsFor(si).length) S.draft[f] = v;
+  else if (i === logsFor(si).length) { S.draft[f] = v; const k = `${si}-${i}`; S.pre[k] = { ...(S.pre[k] || {}), [f]: v }; }
   else { const k = `${si}-${i}`; S.pre[k] = { ...(S.pre[k] || {}), [f]: v }; }
   render();
 });
@@ -1064,6 +1072,7 @@ document.addEventListener('input', ev => {
 });
 document.addEventListener('click', ev => {
   const b = ev.target.closest('[data-a]'); if (!b) return;
+  selSlot(ev);
   act(b.dataset.a, b.dataset.v);
 });
 setInterval(() => {
