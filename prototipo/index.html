@@ -95,7 +95,12 @@ p { margin: 0; }
 .alt.busy { opacity: .55; }
 .setlist { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .cells { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-.cell { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 4px; text-align: center; font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cellw { display: flex; align-items: center; gap: 3px; min-width: 0; }
+.cellw .u { font-size: 10px; color: var(--muted); font-weight: 500; }
+.unit-sw { display: inline-flex; justify-self: start; background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 2px; gap: 2px; }
+.unit-sw button { border: none; background: transparent; border-radius: 5px; padding: 2px 8px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: none; letter-spacing: 0; }
+.unit-sw button.on { background: var(--accent); color: var(--accent-ink); }
+.cell { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 2px; text-align: center; font-family: var(--display); font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .cell::placeholder { color: var(--muted); opacity: .6; }
 .cell:focus { outline: 2px solid var(--accent); outline-offset: 0; }
 .sl-row.cur .cell { border-color: var(--accent); }
@@ -317,11 +322,13 @@ const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de
 
 // ---------- Estado ----------
 const S = {
-  tab:'hoy', tags:true, pre:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
+  tab:'hoy', tags:true, pre:{}, unit:'kg', si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
   minutes:null, draft:null, msg:null, swap:null, restEnd:null, restLen:0, sheet:null, showWhy:false
 };
 
 const fmt = n => (Math.round(n*10)/10).toString().replace('.', ',');
+const toU = kg => kg == null || kg === '' ? kg : S.unit === 'lb' ? Math.round(kg * 2.20462 * 2) / 2 : kg;
+const fromU = v => S.unit === 'lb' ? Math.round(v / 2.20462 * 100) / 100 : v;
 const altIdx = si => S.alt[si] ?? 0;
 const exOf = si => EX[DAY[si].alts[altIdx(si)]];
 const exIdOf = si => DAY[si].alts[altIdx(si)];
@@ -469,6 +476,7 @@ function act(a, v) {
     }
     case 'undo': { const l = S.logs.pop(); if (l && !logsFor(l.si).length) S.order = S.order.filter(x => x !== l.si); S.msg = null; S.restEnd = null; S.draft = makeDraft(si); break; }
     case 'skipRest': S.restEnd = null; break;
+    case 'unit': S.unit = v; break;
     case 'min': S.minutes = S.minutes === +v ? null : +v; break;
     case 'reset': resetSession(); break;
     // --- editor de rutina ---
@@ -556,7 +564,7 @@ function viewHoy() {
       <div class="guide ${g.cls}"><span class="g1">${g.g1}</span><span class="g2">${g.g2}</span></div>
       ${tag(d.type==='comp' ? 'llegar al fallo en todo y necesitar descansos eternos' : 'no saber cuándo sí conviene llegar al fallo')}
       <div class="steppers">
-        <div class="stepper"><span class="lab">Peso kg</span><div class="ctl"><button data-a="w" data-v="-2.5" aria-label="Bajar peso">−</button><span class="v">${fmt(S.draft.w)}</span><button data-a="w" data-v="2.5" aria-label="Subir peso">+</button></div></div>
+        <div class="stepper"><span class="lab">Peso ${S.unit}</span><div class="ctl"><button data-a="w" data-v="-2.5" aria-label="Bajar peso">−</button><span class="v">${fmt(toU(S.draft.w))}</span><button data-a="w" data-v="2.5" aria-label="Subir peso">+</button></div></div>
         <div class="stepper"><span class="lab">Repeticiones</span><div class="ctl"><button data-a="r" data-v="-1" aria-label="Menos repeticiones">−</button><span class="v">${S.draft.r}</span><button data-a="r" data-v="1" aria-label="Más repeticiones">+</button></div></div>
       </div>
       <div><p class="small muted" style="margin-bottom:6px">¿Cuántas más podías hacer?</p>
@@ -591,16 +599,16 @@ function viewHoy() {
       </div>
       <div class="opts">${alts}</div>
       <div class="setlist">
-        <div class="sl-row sl-h"><span>#</span><span>Meta</span><span>Antes</span><span class="cells"><span>Kg</span><span>Reps</span></span></div>
+        <div class="sl-row sl-h"><span>#</span><span>Meta</span><span>Antes</span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span></div>
         ${Array.from({length: d.sets}, (_, i) => {
-          const l = ls[i], prev = e.last ? `${fmt(e.last.w)}×${e.last.r[i] ?? '–'}` : '–';
+          const l = ls[i], prev = e.last ? `${fmt(toU(e.last.w))}×${e.last.r[i] ?? '–'}` : '–';
           const cur = i === ls.length;
           const lastIso = d.type === 'iso' && i === d.sets - 1;
           return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span>${d.reps[0]}-${d.reps[1]} reps<small>${lastIso ? 'al fallo' : '1-2 en reserva'}</small></span><span class="num">${prev}</span><span class="cells">${(() => {
             const pre = S.pre[`${si}-${i}`] || {};
             const w = l ? l.w : cur ? S.draft.w : pre.w, r = l ? l.r : cur ? S.draft.r : pre.r;
-            const ph = e.last ? [e.last.w, e.last.r[i] ?? ''] : ['kg', 'reps'];
-            return `<input class="cell" inputmode="decimal" aria-label="Kilos serie ${i+1}" data-set="${i}" data-f="w" value="${w ?? ''}" placeholder="${ph[0]}"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}">`;
+            const ph = e.last ? [toU(e.last.w), e.last.r[i] ?? ''] : ['', ''];
+            return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label>`;
           })()}</span></div>`;
         }).join('')}
       </div>
@@ -774,7 +782,7 @@ function render() {
 
 document.addEventListener('change', ev => {
   const t = ev.target; if (!t.dataset || t.dataset.set == null) return;
-  const i = +t.dataset.set, f = t.dataset.f, v = parseFloat(String(t.value).replace(',', '.'));
+  const i = +t.dataset.set, f = t.dataset.f, raw = parseFloat(String(t.value).replace(',', '.')), v = f === 'w' ? fromU(raw) : raw;
   if (isNaN(v)) return;
   const si = S.si, l = logsFor(si)[i];
   if (l) l[f] = v;
