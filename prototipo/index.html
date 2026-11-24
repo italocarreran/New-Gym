@@ -718,12 +718,6 @@ function viewHoy() {
 
 
 
-    <section class="card">
-      <div><span class="eyebrow">Tiempo</span><h3>¿Cuánto te queda?</h3></div>
-      <div class="time-opts">${[60,40,25].map(m=>`<button class="${S.minutes===m?'on':''}" data-a="min" data-v="${m}">${m} min</button>`).join('')}</div>
-      ${S.minutes == null ? `<p class="small muted">Lo que falta de hoy toma unos ${totalMin} min. Elige un tiempo y la app te dice qué recortar primero.</p>` : `<p class="small muted">Con ${S.minutes} min haces esto (${totalMin} min). Se recorta primero lo de prioridad baja y los compuestos se protegen.</p><div>${timeRows}</div>`}
-      ${tag('no saber qué sacrificar cuando tienes que irte')}
-    </section>
     <button class="btn ghost block" data-a="reset">Reiniciar el ejemplo</button>`;
 }
 
