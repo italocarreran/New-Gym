@@ -362,12 +362,12 @@ const DAY = [
 const SHORT = { banca:'Banca barra', mancPlana:'Mancuernas plano', smith:'Máquina / Smith', incl:'Inclinado manc.', inclSmith:'Inclinado Smith', flexPeso:'Flexiones c/ peso', cruces:'Cruces polea', pecdeck:'Pec deck', aperturas:'Aperturas manc.', latMan:'Laterales manc.', latPolea:'Laterales polea', latMaq:'Laterales máq.', pressHom:'Press manc.', pressHomMaq:'Press máquina', arnold:'Arnold', triPolea:'Polea', fondos:'Fondos asist.', frances:'Press francés' };
 const PRANK = { alta:3, media:2, baja:1 };
 const afterAltEdit = () => { if (S.tab === 'rutina') { resetSession(); return; } S.alt[S.ed] = 0; DAY[S.ed].alts.forEach(x => delete S.busy[x]); S.draft = makeDraft(S.si); S.swap = null; };
-const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, fold:{}, orderOk:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
+const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, fold:{}, orderOk:{}, conflictOk:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
 const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
 const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
 
 // ---------- Estado ----------
-const S = { fold: {}, orderOk: {},
+const S = { fold: {}, orderOk: {}, conflictOk: {},
   tab:'hoy', tags:true, pre:{}, chosen:{}, unit:'kg', si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
   minutes:null, draft:null, msg:null, swap:null, restEnd:null, restLen:0, sheet:null, showWhy:false
 };
@@ -535,11 +535,7 @@ function act(a, v) {
     }
     case 'jump': {
       const j = +v; if (j === si) { S.fold[j] = false; break; }
-      const c = conflictFor(j);
-      if (c != null && !isDone(j)) {
-        const m = share(j, c).filter(x => x !== 'front').map(x => MUS[x].toLowerCase());
-        S.sheet = { title:`${DAY[j].name} antes de ${DAY[c].name}`, body:`Este ejercicio cansa ${m.join(' y ') || 'los mismos músculos'}, que vas a necesitar en ${DAY[c].name.toLowerCase()} (prioridad alta). Es posible que rindas menos ahí y no notes el progreso que esperas.`, foot:'Si igual lo haces, la app guarda el orden y ajusta la comparación con la vez anterior.', go:j };
-      } else { S.si = j; S.fold[j] = false; S.draft = makeDraft(j); S.swap = null; S.showWhy = false; S.scrollCur = true; }
+      { S.si = j; S.fold[j] = false; S.draft = makeDraft(j); S.swap = null; S.showWhy = false; S.scrollCur = true; }
       break;
     }
     case 'sheetGo': { const j = S.sheet.go; S.sheet = null; S.si = j; S.fold[j] = false; S.draft = makeDraft(j); S.swap = null; S.showWhy = false; S.scrollCur = true; break; }
@@ -592,6 +588,7 @@ function act(a, v) {
     case 'prioClose': S.prioSheet = false; break;
     case 'fold': S.fold[si] = !S.fold[si]; break;
     case 'orderOk': S.orderOk[si] = true; break;
+    case 'conflictOk': S.conflictOk[si] = true; break;
     case 'altSheet': S.ed = si; S.altSheet = true; break;
     case 'altSheetClose': S.altSheet = false; break;
     case 'pickOpen': S.pick = v; S.q = ''; break;
@@ -660,6 +657,8 @@ function viewHoy() {
     ? `${msgH}<div><button class="btn primary block" data-a="next">${S.returnTo != null ? `Volver a ${DAY[S.returnTo].name.toLowerCase()}` : 'Siguiente ejercicio'}</button></div>`
     : `${restL != null ? `<div class="rest"><span><span class="small">Descanso</span><br><span class="t" id="restT">${Math.floor(restL/60)}:${String(restL%60).padStart(2,'0')}</span></span><button data-a="skipRest">Saltar</button></div>` : ''}${msgH}
 `;
+  const cf = !done && !ls.length && !S.conflictOk[si] ? conflictFor(si) : null;
+  const conflictWarn = cf != null ? (() => { const m = share(si, cf).filter(x => x !== 'front').map(x => MUS[x].toLowerCase()); return `<div class="note warn ord-note"><div><b>Ojo: ${d.name.toLowerCase()} antes de ${DAY[cf].name.toLowerCase()}.</b><span>Cansa ${m.join(' y ') || 'los mismos músculos'}, que necesitas en ${DAY[cf].name.toLowerCase()} (prioridad alta). Puedes rendir menos ahí.</span></div><button class="ok-btn" data-a="conflictOk">OK</button></div>`; })() : '';
   const ordChanged = e.last && e.last.pos !== p;
   const orderShort = ordChanged ? ` Hoy va de ${ord(p)} (antes ${ord(e.last.pos)}): ${p > e.last.pos ? 'es normal rendir algo menos' : 'es normal rendir algo más'}.` : '';
   const orderWarn = ordChanged && !S.orderOk[si] ? `<div class="note warn ord-note"><div><b>La última vez lo hiciste de ${ord(e.last.pos)}, hoy va de ${ord(p)}.</b><span>${p > e.last.pos ? 'Llegas más cansado: es normal rendir algo menos. No es pérdida de fuerza.' : 'Llegas más fresco: es normal rendir algo más.'}</span></div><button class="ok-btn" data-a="orderOk">OK</button></div>` : '';
@@ -738,6 +737,7 @@ function viewHoy() {
           chico: `La vez pasada, con ${fmt(toU(pl.from))} ${S.unit}, te sobraron 3 o más: el salto fue chico. Hoy sube a ${fmt(toU(pl.w))} ${S.unit}.`,
           grande: `La vez pasada, con ${fmt(toU(pl.from))} ${S.unit}, no llegaste al mínimo: el salto fue grande. Hoy baja a ${fmt(toU(pl.w))} ${S.unit}.`
         })[pl.why]; })()}${d.type === 'comp' ? ' Descansa 2-3 min entre series para que las reps caigan menos.' : ''}</p></details>
+      ${conflictWarn}
       ${orderWarn}
       ${actions}
       <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>` : ''}`}
