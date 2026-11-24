@@ -93,6 +93,19 @@ p { margin: 0; }
 .alt.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 .alt.on .letter { background: var(--accent); color: var(--accent-ink); }
 .alt.busy { opacity: .55; }
+.opts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+.opt { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 8px; text-align: left; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.opt-top { display: flex; justify-content: space-between; align-items: center; }
+.opt-l { font-family: var(--display); font-weight: 700; font-size: 13px; width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; background: var(--surface-2); }
+.opt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.opt-dot.taken { background: var(--bad); }
+.opt-n { font-size: 12.5px; font-weight: 600; line-height: 1.2; }
+.opt-s { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.opt-b { font-size: 10px; font-weight: 700; color: var(--bad); text-transform: uppercase; letter-spacing: .05em; }
+.opt.on { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent) inset; }
+.opt.on .opt-l { background: var(--accent); color: var(--accent-ink); }
+.opt.busy { opacity: .6; }
+.opt.busy .opt-n { text-decoration: line-through; }
 .alt.busy .name { text-decoration: line-through; }
 .alt .name { font-weight: 600; font-size: 14.5px; }
 .alt .sub { font-size: 12px; color: var(--muted); }
@@ -281,6 +294,7 @@ const DAY = [
   { name:'Press hombro', sets:2, reps:[8,12], prio:'media', type:'comp', alts:['pressHom','pressHomMaq','arnold'] },
   { name:'Tríceps', sets:3, reps:[10,15], prio:'baja', type:'iso', alts:['triPolea','fondos','frances'] }
 ];
+const SHORT = { banca:'Banca barra', mancPlana:'Mancuernas plano', smith:'Máquina / Smith', incl:'Inclinado manc.', inclSmith:'Inclinado Smith', flexPeso:'Flexiones c/ peso', cruces:'Cruces polea', pecdeck:'Pec deck', aperturas:'Aperturas manc.', latMan:'Laterales manc.', latPolea:'Laterales polea', latMaq:'Laterales máq.', pressHom:'Press manc.', pressHomMaq:'Press máquina', arnold:'Arnold', triPolea:'Polea', fondos:'Fondos asist.', frances:'Press francés' };
 const PRANK = { alta:3, media:2, baja:1 };
 const resetSession = () => { Object.assign(S, { si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
 const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
@@ -476,10 +490,11 @@ function viewHoy() {
 
   const alts = d.alts.map((id, k) => {
     const x = EX[id], on = k === altIdx(si), b = !!S.busy[id];
-    return `<button class="alt ${on?'on':''} ${b?'busy':''}" data-a="pick" data-v="${k}">
-      <span class="letter">${'ABC'[k]}</span>
-      <span style="min-width:0"><span class="name">${x.n}</span><br><span class="sub">${x.eq}${x.last ? ` · última: ${fmt(x.last.w)} kg` : ' · sin historial'}</span></span>
-      <span class="state ${b?'taken':'free'}">${b ? 'Ocupado' : on ? 'Usando' : 'Libre'}</span></button>`;
+    return `<button class="opt ${on?'on':''} ${b?'busy':''}" data-a="pick" data-v="${k}" aria-pressed="${on}">
+      <span class="opt-top"><span class="opt-l">${'ABC'[k]}</span><span class="opt-dot ${b?'taken':''}" aria-hidden="true"></span></span>
+      <span class="opt-n">${SHORT[id] || x.n}</span>
+      <span class="opt-s">${x.last ? `${fmt(x.last.w)} kg` : 'Nuevo'}</span>
+      ${b ? '<span class="opt-b">Ocupado</span>' : ''}</button>`;
   }).join('');
 
   let swapHtml = '';
@@ -554,7 +569,7 @@ function viewHoy() {
           <div class="meta"><span class="prio ${d.prio}">Prioridad ${d.prio}</span><span class="small muted">${d.type==='comp'?'Compuesto':'Aislado'}</span></div></div>
         <div class="target">${d.sets}×${d.reps[0]}-${d.reps[1]}<small>series × reps</small></div>
       </div>
-      <div class="alts">${alts}</div>
+      <div class="opts">${alts}</div>
       ${!allBusy || !S.swap ? `<button class="btn danger block" data-a="busy" ${allBusy?'disabled':''}>Ocupado / no disponible</button>` : ''}
       ${swapHtml}
       ${tag('perder tiempo decidiendo un reemplazo en el momento')}
