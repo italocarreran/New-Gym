@@ -549,6 +549,7 @@ function viewHoy() {
     swapHtml = `<div class="note info flash"><b>Cambiado: ${S.swap.to}.</b><span>Cuenta igual para la rutina. ${S.swap.from} quedó marcado como ocupado.</span></div>`;
   }
 
+  const orderWarn = e.last && e.last.pos !== p ? `<div class="note warn"><b>La última vez lo hiciste de ${ord(e.last.pos)}, hoy va de ${ord(p)}.</b><span>${p > e.last.pos ? 'Llegas más cansado: es normal rendir algo menos. No es pérdida de fuerza.' : 'Llegas más fresco: es normal rendir algo más.'}</span></div>` : '';
   const lastBlock = e.last ? (() => {
     const changed = e.last.pos !== p;
     const top = e.last.r.every(r => r >= d.reps[1]);
@@ -626,12 +627,12 @@ function viewHoy() {
         }).join('')}
       </div>
       <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en todas' : '1-2 en reserva, la última al fallo'}.<br>${({nuevo:'Primera vez: parte liviano y busca el piso del rango.', rep:'Hoy apunta a una repetición más por serie que la vez anterior.', peso:'Llegaste al tope la vez anterior: hoy sube el peso y vuelve al piso del rango.'})[target(si,0).why]}</p>
+      ${orderWarn}
       ${swapHtml}
       ${tag('perder tiempo decidiendo un reemplazo en el momento')}
       <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>
     </section>
 
-    <section class="card">${lastBlock}</section>
 
     <section class="card log">${logPanel}</section>
 
