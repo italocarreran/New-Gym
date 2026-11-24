@@ -463,7 +463,7 @@ function act(a, v) {
 }
 
 // ---------- Vistas ----------
-const tag = (t) => `<div class="why-tag"><b>Resuelve:</b><span>${t}</span></div>`;
+const tag = () => '';
 const ord = n => `${n}º`;
 
 function viewHoy() {
@@ -710,7 +710,7 @@ function render() {
   r.innerHTML = `<main class="app ${S.tags ? '' : 'hide-tags'}">
     <header class="top">
       <div><span class="eyebrow">Jueves 23 nov · Día 1</span><h1>${S.tab==='hoy'?'Pecho, hombro, tríceps':S.tab==='semana'?'Tu semana':S.tab==='rutina'?'Tu rutina':'Guía'}</h1></div>
-      <div class="top-right"><button class="toggle" data-a="tags" aria-pressed="${S.tags}"><span class="dot"></span>Qué resuelve</button></div>
+      
     </header>
     ${views[S.tab]()}
   </main>
