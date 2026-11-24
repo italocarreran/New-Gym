@@ -82,8 +82,13 @@ p { margin: 0; }
 
 /* tarjeta principal */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.fold-btn { display: flex; align-items: center; gap: 3px; min-width: 0; flex: 1; background: none; border: 0; padding: 0; text-align: left; color: inherit; cursor: pointer; }
+.fold-chev { display: inline-block; font-size: 17px; margin-left: -2px; line-height: 1; color: var(--muted); transition: transform .15s; }
+.fold-chev.open { transform: rotate(90deg); }
+.fold-sum { display: flex; flex-direction: column; gap: 2px; width: 100%; margin-top: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); text-align: left; font-size: 13px; color: var(--ink); cursor: pointer; }
+.fold-sum .muted { font-size: 12px; }
 .slot-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.slot-line { font-size: 19px; min-width: 0; }
+.slot-line { font-size: 18px; min-width: 0; }
 .slot-type { font-family: var(--body); font-size: 13px; font-weight: 500; }
 .pico { border: none; background: var(--surface-2); border-radius: 8px; width: 34px; height: 30px; display: grid; place-items: center; padding: 0; flex-shrink: 0; }
 .pico svg { width: 18px; height: 16px; }
@@ -354,7 +359,7 @@ const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) ret
 const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
 
 // ---------- Estado ----------
-const S = {
+const S = { fold: {},
   tab:'hoy', tags:true, pre:{}, chosen:{}, unit:'kg', si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
   minutes:null, draft:null, msg:null, swap:null, restEnd:null, restLen:0, sheet:null, showWhy:false
 };
@@ -577,6 +582,7 @@ function act(a, v) {
     case 'delSet': if (nS(si) > logsFor(si).length && nS(si) > 1) { S.extra = S.extra || {}; S.extra[si] = (S.extra[si] || 0) - 1; } break;
     case 'prioSheet': S.prioSheet = true; break;
     case 'prioClose': S.prioSheet = false; break;
+    case 'fold': S.fold[si] = !S.fold[si]; break;
     case 'altSheet': S.ed = si; S.altSheet = true; break;
     case 'altSheetClose': S.altSheet = false; break;
     case 'pickOpen': S.pick = v; S.q = ''; break;
@@ -683,9 +689,10 @@ function viewHoy() {
 
     <section class="card">
       <div class="slot-head">
-        <h2 class="slot-line">Slot ${si+1}: ${d.name} <span class="muted slot-type">· ${d.type==='comp'?'Compuesto':'Aislado'}</span></h2>
+        <button class="fold-btn" data-a="fold" aria-expanded="${!S.fold[si]}"><span class="fold-chev ${S.fold[si]?'':'open'}" aria-hidden="true">›</span><h2 class="slot-line">Slot ${si+1}: ${d.name} <span class="muted slot-type">· ${d.type==='comp'?'Compuesto':'Aislado'}</span></h2></button>
         ${prioIcon(d.prio)}
       </div>
+      ${S.fold[si] ? `<button class="fold-sum" data-a="fold"><span>${e.n}</span><span class="muted">${ls.length}/${nS(si)} series${ls.length ? ' · ' + ls.map(l=>`${fmt(toU(l.w))}×${l.r}`).join(', ') : ''}</span></button>` : `
       <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
       ${swapHtml}
       ${chosen ? `<div class="setlist">
@@ -713,7 +720,7 @@ function viewHoy() {
         })[pl.why]; })()}${d.type === 'comp' ? ' Descansa 2-3 min entre series para que las reps caigan menos.' : ''}</p></details>
       ${orderWarn}
       ${actions}
-      <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>` : ''}
+      <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>` : ''}`}
     </section>
 
 
