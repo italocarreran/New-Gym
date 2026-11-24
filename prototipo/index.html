@@ -63,7 +63,11 @@ p { margin: 0; }
 .top-l { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .top h1 { font-size: 22px; }
 .clock { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.clock b { color: var(--ink); font-weight: 600; }
+.clock { display: flex; align-items: center; gap: 6px; }
+.clock b { color: var(--ink); font-weight: 600; font-size: 15px; font-family: var(--display); letter-spacing: .02em; min-width: 34px; }
+.sw { width: 24px; height: 24px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; padding: 0; flex: none; }
+.sw.on { background: var(--surface-2); color: var(--ink); }
+.sw svg { width: 10px; height: 10px; fill: currentColor; }
 .top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .toggle { white-space: nowrap; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 10px; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; }
 .toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
@@ -383,7 +387,7 @@ const DAY = [
 const SHORT = { banca:'Banca barra', mancPlana:'Mancuernas plano', smith:'Máquina / Smith', incl:'Inclinado manc.', inclSmith:'Inclinado Smith', flexPeso:'Flexiones c/ peso', cruces:'Cruces polea', pecdeck:'Pec deck', aperturas:'Aperturas manc.', latMan:'Laterales manc.', latPolea:'Laterales polea', latMaq:'Laterales máq.', pressHom:'Press manc.', pressHomMaq:'Press máquina', arnold:'Arnold', triPolea:'Polea', fondos:'Fondos asist.', frances:'Press francés' };
 const PRANK = { alta:3, media:2, baja:1 };
 const afterAltEdit = () => { if (S.tab === 'rutina') { resetSession(); return; } S.alt[S.ed] = 0; DAY[S.ed].alts.forEach(x => delete S.busy[x]); S.draft = makeDraft(S.si); S.swap = null; };
-const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, startAt:null, fold:{}, orderOk:{}, conflictOk:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
+const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, startAt:null, pausedAt:null, pausedTotal:0, fold:{}, orderOk:{}, conflictOk:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
 const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
 const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
 
@@ -611,6 +615,11 @@ function act(a, v) {
     case 'orderOk': S.orderOk[si] = true; break;
     case 'conflictOk': S.conflictOk[si] = true; break;
     case 'bodyOpen': S.bodySheet = true; break;
+    case 'sw':
+      if (!S.startAt) S.startAt = Date.now();
+      else if (S.pausedAt) { S.pausedTotal = (S.pausedTotal || 0) + Date.now() - S.pausedAt; S.pausedAt = null; }
+      else S.pausedAt = Date.now();
+      break;
     case 'bodyClose': S.bodySheet = false; break;
     case 'bodyMode': S.bodyMode = v; break;
     case 'altSheet': S.ed = si; S.altSheet = true; break;
@@ -916,10 +925,11 @@ function clockTxt() {
   const fm = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
   const cut = cutSet();
   const left = Math.round(DAY.reduce((a, d, si) => a + (isDone(si) || cut.has(si) ? 0 : slotMins(si, nS(si) - logsFor(si).length)), 0));
-  if (!S.startAt) return `⏱ Rutina de ~${left} min`;
-  const el = Math.round((Date.now() - S.startAt) / 1000);
-  return `⏱ <b>${fm(el)}</b> · ${left ? `faltan ~${left} min` : 'terminada'}`;
+  const run = S.startAt && !S.pausedAt;
+  const btn = `<button class="sw ${run ? 'on' : ''}" data-a="sw" aria-label="${run ? 'Pausar cronómetro' : 'Iniciar cronómetro'}">${run ? '<svg viewBox="0 0 10 10"><rect x="2" y="1.5" width="2" height="7" rx=".5"/><rect x="6" y="1.5" width="2" height="7" rx=".5"/></svg>' : '<svg viewBox="0 0 10 10"><path d="M2.5 1.5v7l6-3.5z"/></svg>'}</button>`;
+  return `${btn}<b class="sw-t" id="swT">${fm(swElapsed())}</b><span> · ${!S.startAt ? `rutina de ~${left} min` : left ? `faltan ~${left} min` : 'terminada'}</span>`;
 }
+const swElapsed = () => !S.startAt ? 0 : Math.max(0, Math.round(((S.pausedAt || Date.now()) - S.startAt - (S.pausedTotal || 0)) / 1000));
 function bodyFab() {
   const total = DAY.reduce((a, d, si) => a + (cutSet().has(si) && !logsFor(si).length ? 0 : Math.max(nS(si), logsFor(si).length)), 0);
   return `<button class="bodyfab ${S.pulse ? 'pulse' : ''}" data-a="bodyOpen" aria-label="Ver músculos trabajados">${bodySvg(bodyLevels('hoy'))}<span class="bf-t">${S.logs.length}/${total}</span></button>`;
@@ -1054,7 +1064,7 @@ document.addEventListener('click', ev => {
   act(b.dataset.a, b.dataset.v);
 });
 setInterval(() => {
-  const ck = document.getElementById('clock'); if (ck && S.startAt) ck.innerHTML = clockTxt();
+  const ck = document.getElementById('swT'); if (ck && S.startAt && !S.pausedAt) { const e = swElapsed(); ck.textContent = `${Math.floor(e / 60)}:${String(e % 60).padStart(2, '0')}`; }
   if (!S.restEnd) return;
   const el = document.getElementById('restT'); if (!el) return;
   const left = Math.max(0, Math.round((S.restEnd - Date.now())/1000));
