@@ -109,7 +109,7 @@ p { margin: 0; }
 .sl-row:first-child { border-top: none; }
 .sl-row .num { font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sl-row small { display: block; font-size: 11px; color: var(--muted); }
-.sl-meta { grid-column: 2 / -1; font-size: 10.5px !important; }
+.sl-foot { font-size: 11.5px; color: var(--muted); margin-top: -4px; }
 .sl-h { background: var(--surface-2); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-block: 6px; }
 .sl-row.cur { background: var(--accent-soft); }
 .sl-row.cur .num:last-child { color: var(--accent); font-size: 14px; }
@@ -610,9 +610,10 @@ function viewHoy() {
             const w = l ? l.w : cur ? S.draft.w : pre.w, r = l ? l.r : cur ? S.draft.r : pre.r;
             const ph = e.last ? [toU(e.last.w), e.last.r[i] ?? ''] : ['', ''];
             return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label>`;
-          })()}</span><small class="sl-meta">${d.reps[0]}-${d.reps[1]} reps · ${lastIso ? 'al fallo' : '1-2 en reserva'}</small></div>`;
+          })()}</span></div>`;
         }).join('')}
       </div>
+      <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en todas' : '1-2 en reserva, la última al fallo'}</p>
       ${swapHtml}
       ${tag('perder tiempo decidiendo un reemplazo en el momento')}
       <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>
