@@ -22,6 +22,7 @@
   --bad-soft: #F8E0DE;
   --tag: #6B4FC4;
   --tag-soft: #ECE6FA;
+  --mus: #C0392B; --mus-0: #F2D3CF; --mus-off: #DCE1E8; --mus-dim: #BFC7D2;
   --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -31,6 +32,7 @@
     --accent: #7096FF; --accent-soft: #1C2A4D; --accent-ink: #0B1020;
     --ok: #4CC683; --ok-soft: #143222; --warn: #E8AE4C; --warn-soft: #3A2C12; --bad: #F2766B; --bad-soft: #3D1A18;
     --tag: #B39DFF; --tag-soft: #2A2245; color-scheme: dark;
+    --mus: #F0675B; --mus-0: #3C2523; --mus-off: #262C35; --mus-dim: #3A434F;
   }
 }
 :root[data-theme="dark"] {
@@ -38,6 +40,7 @@
   --accent: #7096FF; --accent-soft: #1C2A4D; --accent-ink: #0B1020;
   --ok: #4CC683; --ok-soft: #143222; --warn: #E8AE4C; --warn-soft: #3A2C12; --bad: #F2766B; --bad-soft: #3D1A18;
   --tag: #B39DFF; --tag-soft: #2A2245; color-scheme: dark;
+  --mus: #F0675B; --mus-0: #3C2523; --mus-off: #262C35; --mus-dim: #3A434F;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
@@ -275,6 +278,19 @@ details summary { cursor: pointer; font-weight: 600; font-size: 12px; color: var
 details[open] summary { margin-bottom: 6px; }
 
 /* hoja inferior */
+.bodyfab { position: fixed; right: max(10px, calc(50vw - 230px)); bottom: calc(74px + env(safe-area-inset-bottom, 0px)); z-index: 15; width: 76px; touch-action: none; user-select: none; padding: 5px 3px 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 6px 20px rgba(10, 20, 40, .16); display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; color: var(--ink); }
+.bodyfab svg { width: 100%; height: auto; display: block; }
+.bodyfab .bf-t { font-size: 10px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bodyfab.pulse { animation: bfpulse .7s ease-out; }
+@keyframes bfpulse { 0% { transform: scale(1); } 35% { transform: scale(1.12); box-shadow: 0 0 0 6px color-mix(in srgb, var(--mus) 30%, transparent); } 100% { transform: scale(1); } }
+.bodyfig .m { transition: fill .5s ease; stroke: var(--mus-off); stroke-width: 1.2; }
+.body-big svg { width: 100%; max-width: 340px; height: auto; display: block; margin: 0 auto; }
+.mus-list { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; font-size: 12.5px; }
+.mus-list > div { display: flex; justify-content: space-between; gap: 6px; border-bottom: 1px solid var(--line); padding: 3px 0; }
+.mus-list .muted { font-variant-numeric: tabular-nums; }
+.mus-scale { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); justify-content: center; }
+.mus-scale i { display: inline-block; width: 80px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--mus-0), var(--mus)); }
+.mus-scale b { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--mus-off); margin-left: 8px; }
 .sheet-bg { position: fixed; inset: 0; background: rgba(5, 8, 12, .5); display: flex; align-items: flex-end; justify-content: center; z-index: 30; }
 .sheet { background: var(--surface); width: 100%; max-width: 480px; border-radius: 18px 18px 0 0; padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 12px; }
 
@@ -546,7 +562,7 @@ function act(a, v) {
     case 'log': {
       if (S.draft.rir == null) { S.msg = { cls:'info', t:'Falta el RIR.', s:'Anota en la casilla RIR cuántas repeticiones más podías hacer.' }; break; }
       if (!S.order.includes(si)) S.order.push(si);
-      S.logs.push({ si, ex: exIdOf(si), w: S.draft.w, r: S.draft.r, rir: S.draft.rir });
+      S.logs.push({ si, ex: exIdOf(si), w: S.draft.w, r: S.draft.r, rir: S.draft.rir }); S.pulse = true;
       S.msg = feedback(si, S.draft.rir);
       const pn = progressionNote(si); if (pn) S.msg = { cls:'info', t:'Sube el peso la próxima vez.', s:pn };
       S.restLen = restSecs(si); S.restEnd = Date.now() + S.restLen * 1000;
@@ -589,6 +605,9 @@ function act(a, v) {
     case 'fold': S.fold[si] = !S.fold[si]; break;
     case 'orderOk': S.orderOk[si] = true; break;
     case 'conflictOk': S.conflictOk[si] = true; break;
+    case 'bodyOpen': if (fabDrag.moved) { fabDrag.moved = false; return; } S.bodySheet = true; break;
+    case 'bodyClose': S.bodySheet = false; break;
+    case 'bodyMode': S.bodyMode = v; break;
     case 'altSheet': S.ed = si; S.altSheet = true; break;
     case 'altSheetClose': S.altSheet = false; break;
     case 'pickOpen': S.pick = v; S.q = ''; break;
@@ -839,6 +858,74 @@ function pickerHtml() {
   return list.slice(0, 12).map(([id, e]) => `<button class="alt" data-a="pickEx" data-v="${id}"><span class="letter">+</span><span style="min-width:0"><span class="name">${e.n}</span><br><span class="sub">${e.eq} · ${e.p.map(m=>MUS[m]).join(', ')}${e.s.length ? ` (+ ${e.s.map(m=>MUS[m].toLowerCase()).join(', ')})` : ''}</span></span>${ref && e.p[0] === ref.p[0] ? '<span class="state free">Mismo músculo</span>' : '<span></span>'}</button>`).join('') || '<p class="small muted">No hay coincidencias.</p>';
 }
 
+// Muñeco de músculos: se pinta según lo que llevas hoy (o en la semana)
+function bodyLevels(mode) {
+  const lv = {};
+  if (mode === 'semana') {
+    const w = weekly(false);
+    Object.keys(META).forEach(m => lv[m] = { v: Math.min(1, w[m] / META[m][0]), a: w[m], b: META[m][0] });
+    lv.front = lv.lat ? { ...lv.lat, v: lv.pecho.v } : null;
+    return lv;
+  }
+  const plan = {}, done = {};
+  const add = (t, e, k) => { e.p.forEach(m => t[m] = (t[m] || 0) + k); e.s.forEach(m => t[m] = (t[m] || 0) + k * 0.5); };
+  const cut = cutSet();
+  DAY.forEach((d, si) => { if (!cut.has(si) || logsFor(si).length) add(plan, exOf(si), Math.max(nS(si), logsFor(si).length)); });
+  S.logs.forEach(l => add(done, EX[l.ex], 1));
+  Object.keys(plan).forEach(m => lv[m] = { v: Math.min(1, (done[m] || 0) / plan[m]), a: done[m] || 0, b: plan[m] });
+  return lv;
+}
+// silueta: media figura (lado derecho), se espeja; curvas suaves con Catmull-Rom
+const BODY_HALF = [[50,24],[55,25],[56,31],[65,35],[72,39],[77,45],[79,54],[80,66],[81,80],[83.5,94],[85,107],[87.5,117],[84,122],[80.5,113],[78.5,108],[76,96],[73,82],[71.5,68],[68,58],[64,74],[61.5,92],[64.5,104],[65,120],[63.5,140],[60.5,158],[61.5,176],[57.5,196],[60.5,205],[52.5,206],[52.5,196],[52,176],[52,160],[51.5,136],[50,114]];
+function smoothPath(pts) {
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0]},${p2[1]}`;
+  }
+  return d + 'Z';
+}
+const BODY_PATH = (() => { const r = BODY_HALF, l = r.slice(1, -1).reverse().map(([x, y]) => [100 - x, y]); return smoothPath([...r, ...l]); })();
+function bodySvg(lv) {
+  const f = m => { const x = lv[m]; if (!x) return 'var(--mus-dim)'; return `color-mix(in srgb, var(--mus) ${Math.round(x.v * 100)}%, var(--mus-0))`; };
+  const E = (m, cx, cy, rx, ry, rot = 0) => [cx, 100 - cx].map((x, k) => `<ellipse class="m" cx="${x}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${k ? -rot : rot} ${x} ${cy})" fill="${f(m)}"/>`).join('');
+  const P = (m, pts) => [pts, pts.map(([x, y]) => [100 - x, y])].map(q => `<path class="m" d="${smoothPath(q)}" fill="${f(m)}"/>`).join('');
+  const base = `<path d="${BODY_PATH}" fill="var(--mus-off)"/><ellipse cx="50" cy="13" rx="8.5" ry="10.5" fill="var(--mus-off)"/>`;
+  const front = `${base}
+    ${P('pecho', [[51,40],[60,37.5],[67,42],[68,51],[61,58],[52,58]])}
+    ${E('front', 69.5, 46, 5.5, 7.5, -15)}${E('lat', 76, 52, 3.2, 8, -10)}
+    ${E('bi', 75.5, 68, 3.8, 10, -6)}
+    ${E('cuad', 57.5, 134, 6.3, 21, -4)}
+    ${E('pant', 56.5, 180, 3.6, 13)}`;
+  const back = `${base}
+    ${P('espalda', [[51,27],[57,30],[66,36],[59,43],[51,51]])}
+    ${P('espalda', [[51,55],[60,47],[67,57],[64,76],[58,89],[51,93]])}
+    ${E('post', 69.5, 46, 5.5, 7.5, -15)}${E('lat', 76, 52, 3.2, 8, -10)}
+    ${E('tri', 75.5, 68, 3.8, 10, -6)}
+    ${E('isq', 57, 108, 7, 8.5)}${E('isq', 57.5, 139, 5.8, 17, -4)}
+    ${E('pant', 57, 177, 4.4, 13)}`;
+  return `<svg class="bodyfig" viewBox="0 0 210 210" aria-hidden="true"><g>${front}</g><g transform="translate(110,0)">${back}</g></svg>`;
+}
+function bodyFab() {
+  const total = DAY.reduce((a, d, si) => a + (cutSet().has(si) && !logsFor(si).length ? 0 : Math.max(nS(si), logsFor(si).length)), 0);
+  const pos = S.fabPos ? `style="left:${S.fabPos.x}px;top:${S.fabPos.y}px;right:auto;bottom:auto"` : '';
+  return `<button class="bodyfab ${S.pulse ? 'pulse' : ''}" ${pos} data-a="bodyOpen" aria-label="Ver músculos trabajados">${bodySvg(bodyLevels('hoy'))}<span class="bf-t">${S.logs.length}/${total}</span></button>`;
+}
+function bodySheet() {
+  const mode = S.bodyMode || 'hoy', lv = bodyLevels(mode);
+  const rows = Object.keys(MUS).filter(m => lv[m] && !(mode === 'semana' && m === 'front')).map(m => `<div><span>${MUS[m]}</span><span class="muted">${fmt(lv[m].a)}/${fmt(lv[m].b)}</span></div>`).join('');
+  return `<div class="sheet-bg" data-a="bodyClose"><div class="sheet" data-a="noop">
+    <span class="eyebrow">Músculos</span><h2>${mode === 'hoy' ? 'Lo que llevas hoy' : 'Lo que llevas en la semana'}</h2>
+    <div class="seg"><button class="${mode==='hoy'?'on':''}" data-a="bodyMode" data-v="hoy">Hoy</button><button class="${mode==='semana'?'on':''}" data-a="bodyMode" data-v="semana">Semana</button></div>
+    <div class="body-big">${bodySvg(lv)}</div>
+    <div class="mus-scale"><span>0%</span><i></i><span>100%</span><b></b><span>no toca</span></div>
+    <div class="mus-list">${rows || '<span class="muted">Nada planificado.</span>'}</div>
+    <p class="small muted">${mode === 'hoy' ? 'Series hechas sobre las que tocan hoy. Principal cuenta 1, secundario 0,5.' : 'Series de la semana sobre el mínimo semanal de cada músculo.'}</p>
+    <button class="btn primary block" data-a="bodyClose">Cerrar</button>
+  </div></div>`;
+}
+
 const PRIO_TXT = { alta: 'Compuesto pesado. Se protege: nunca se recorta si falta tiempo.', media: 'Compuesto liviano. Se recorta solo si no alcanza con sacar los de prioridad baja.', baja: 'Aislado. Es lo primero que se recorta si falta tiempo; los compuestos ya lo trabajan de forma indirecta.' };
 const prioSvg = lvl => { const n = { alta: 3, media: 2, baja: 1 }[lvl]; return `<svg viewBox="0 0 18 16" aria-hidden="true">${[0,1,2].map(i => `<rect x="${i*6+1}" y="${12 - i*5}" width="4" height="${4 + i*5}" rx="1" fill="currentColor" opacity="${i < n ? 1 : .25}"/>`).join('')}</svg>`; };
 const prioIcon = lvl => `<button class="pico ${lvl}" data-a="prioSheet" aria-label="Prioridad ${lvl}">${prioSvg(lvl)}</button>`;
@@ -896,6 +983,8 @@ function render() {
   <nav class="tabs"><div class="tabs-in">
     ${[['hoy','Rutina'],['semana','Semana'],['rutina','Editar'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
   </div></nav>
+  ${bodyFab()}
+  ${S.bodySheet ? bodySheet() : ''}
   ${S.prioSheet ? `<div class="sheet-bg" data-a="prioClose"><div class="sheet" data-a="noop">
     <span class="eyebrow">${DAY[S.si].name}</span><h2>Prioridad ${DAY[S.si].prio}</h2>
     <div class="plegend">${['alta','media','baja'].map(k => `<div class="${k === DAY[S.si].prio ? 'cur' : ''}"><span class="pico ${k}">${prioSvg(k)}</span><span><b>${k[0].toUpperCase() + k.slice(1)}.</b> ${PRIO_TXT[k]}</span></div>`).join('')}</div>
@@ -921,8 +1010,33 @@ ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" dat
     ${tag('cambiar el orden sin saber que afecta el rendimiento')}
     <div class="btn-row"><button class="btn ghost" data-a="sheetClose">Mantener orden</button><button class="btn primary" data-a="sheetGo">Hacerlo igual</button></div>
   </div></div>` : ''}`;
+  S.pulse = false;
   if (S.scrollCur) { S.scrollCur = false; const c = r.querySelector('.cur-card'); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 }
+
+// el muñeco se puede arrastrar a cualquier borde
+const fabDrag = { on: false, moved: false, dx: 0, dy: 0, sx: 0, sy: 0 };
+document.addEventListener('pointerdown', ev => {
+  const b = ev.target.closest('.bodyfab'); if (!b) return;
+  const r = b.getBoundingClientRect();
+  Object.assign(fabDrag, { on: true, moved: false, dx: ev.clientX - r.left, dy: ev.clientY - r.top, sx: ev.clientX, sy: ev.clientY });
+});
+document.addEventListener('pointermove', ev => {
+  if (!fabDrag.on) return;
+  if (!fabDrag.moved && Math.hypot(ev.clientX - fabDrag.sx, ev.clientY - fabDrag.sy) < 6) return;
+  fabDrag.moved = true;
+  const b = document.querySelector('.bodyfab'); if (!b) return;
+  Object.assign(b.style, { left: `${ev.clientX - fabDrag.dx}px`, top: `${ev.clientY - fabDrag.dy}px`, right: 'auto', bottom: 'auto' });
+});
+document.addEventListener('pointerup', () => {
+  if (!fabDrag.on) return; fabDrag.on = false;
+  if (!fabDrag.moved) return;
+  const b = document.querySelector('.bodyfab'); if (!b) return;
+  const r = b.getBoundingClientRect(), W = innerWidth, H = innerHeight;
+  const x = r.left + r.width / 2 < W / 2 ? 10 : W - r.width - 10;
+  const y = Math.min(Math.max(10, r.top), H - r.height - 80);
+  S.fabPos = { x, y }; b.style.left = `${x}px`; b.style.top = `${y}px`;
+});
 
 // deslizar una serie a la izquierda muestra "Eliminar"
 let swX = null, swRow = null;
