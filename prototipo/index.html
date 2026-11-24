@@ -888,7 +888,7 @@ function render() {
   const r = document.getElementById('root');
   r.innerHTML = `<main class="app ${S.tags ? '' : 'hide-tags'}">
     <header class="top">
-      <div><span class="eyebrow">Jueves 23 nov · Día 1</span><h1>${S.tab==='hoy'?'Pecho, hombro, tríceps':S.tab==='semana'?'Tu semana':S.tab==='rutina'?'Tu rutina':'Guía'}</h1></div>
+      <div><span class="eyebrow">Jueves 23 nov · Día 1</span><h1>${S.tab==='hoy'?'Pecho · Hombro · Tríceps':S.tab==='semana'?'Tu semana':S.tab==='rutina'?'Tu rutina':'Guía'}</h1></div>
       
     </header>
     ${views[S.tab]()}
