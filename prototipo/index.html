@@ -100,6 +100,10 @@ p { margin: 0; }
 .note.ord-note { flex-direction: row; align-items: center; gap: 10px; }
 .ord-note > div { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .ok-btn { flex: none; padding: 6px 14px; border-radius: 8px; border: 1px solid currentColor; background: transparent; color: inherit; font-weight: 600; font-size: 13px; cursor: pointer; }
+.slot-head { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.card.dragging { position: relative; z-index: 14; box-shadow: 0 14px 34px rgba(10, 20, 40, .28); opacity: .96; transition: none; }
+.drop-before { box-shadow: 0 -4px 0 0 var(--accent); }
+.drop-after { box-shadow: 0 4px 0 0 var(--accent); }
 .fold-card, .cur-card.folded { padding-block: 12px; gap: 2px; }
 .fold-card { cursor: pointer; }
 .fold-card.done .slot-line { color: var(--ok); }
@@ -392,8 +396,21 @@ const DAY = [
 ];
 const SHORT = { banca:'Banca barra', mancPlana:'Mancuernas plano', smith:'Máquina / Smith', incl:'Inclinado manc.', inclSmith:'Inclinado Smith', flexPeso:'Flexiones c/ peso', cruces:'Cruces polea', pecdeck:'Pec deck', aperturas:'Aperturas manc.', latMan:'Laterales manc.', latPolea:'Laterales polea', latMaq:'Laterales máq.', pressHom:'Press manc.', pressHomMaq:'Press máquina', arnold:'Arnold', triPolea:'Polea', fondos:'Fondos asist.', frances:'Press francés' };
 const PRANK = { alta:3, media:2, baja:1 };
+// orden de hoy (se puede cambiar arrastrando); no toca la rutina guardada
+const viewOrder = () => { const v = (S.view || []).filter(j => j < DAY.length); DAY.forEach((d, j) => { if (!v.includes(j)) v.push(j); }); return v; };
+function reorderCheck(oldV, newV, j) {
+  // ¿quedó algo de menor prioridad antes de uno más importante que usa los mismos músculos?
+  for (const k of newV) {
+    if (k === j) continue;
+    const was = oldV.indexOf(j) < oldV.indexOf(k), now = newV.indexOf(j) < newV.indexOf(k);
+    if (was === now) continue;
+    const [lo, hi] = now ? [j, k] : [k, j];
+    if (PRANK[DAY[hi].prio] > PRANK[DAY[lo].prio] && share(lo, hi).length && !logsFor(hi).length && !isDone(hi)) return { lo, hi };
+  }
+  return null;
+}
 const afterAltEdit = () => { if (S.tab === 'rutina') { resetSession(); return; } S.alt[S.ed] = 0; DAY[S.ed].alts.forEach(x => delete S.busy[x]); S.draft = makeDraft(S.si); S.swap = null; };
-const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, startAt:null, pausedAt:null, pausedTotal:0, fold:{}, orderOk:{}, conflictOk:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
+const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, view:null, startAt:null, pausedAt:null, pausedTotal:0, fold:{}, orderOk:{}, conflictOk:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
 const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
 const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
 
@@ -569,7 +586,7 @@ function act(a, v) {
       { S.si = j; S.fold[j] = false; S.draft = makeDraft(j); S.swap = null; S.showWhy = false; S.scrollCur = true; }
       break;
     }
-    case 'sheetGo': { const j = S.sheet.go; S.sheet = null; S.si = j; S.fold[j] = false; S.draft = makeDraft(j); S.swap = null; S.showWhy = false; S.scrollCur = true; break; }
+    case 'sheetGo': { if (S.sheet.reorder) { S.view = S.sheet.reorder; S.sheet = null; break; } const j = S.sheet.go; S.sheet = null; S.si = j; S.fold[j] = false; S.draft = makeDraft(j); S.swap = null; S.showWhy = false; S.scrollCur = true; break; }
     case 'sheetClose': S.sheet = null; break;
     case 'w': S.draft.w = Math.max(0, S.draft.w + (+v)); break;
     case 'r': S.draft.r = Math.max(0, S.draft.r + (+v)); break;
@@ -587,7 +604,7 @@ function act(a, v) {
     case 'next': {
       S.msg = null; S.restEnd = null;
       if (S.returnTo != null) { act('back'); return; }
-      const nx = DAY.map((d, j) => j).find(j => !isDone(j) && !cutSet().has(j));
+      const nx = viewOrder().find(j => !isDone(j) && !cutSet().has(j));
       if (nx != null) { S.si = nx; S.fold[nx] = false; S.draft = makeDraft(nx); S.showWhy = false; S.scrollCur = true; }
       break;
     }
@@ -664,7 +681,7 @@ function foldedCard(j) {
 function viewHoy() {
   return `
     ${S.returnTo != null ? `<div class="banner"><span>Haciendo esto mientras esperas <b>${DAY[S.returnTo].name.toLowerCase()}</b>.</span><button class="btn" data-a="back">Se liberó</button></div>` : ''}
-    ${DAY.map((x, j) => S.fold[j] ? foldedCard(j) : slotCard(j)).join('')}
+    ${viewOrder().map(j => S.fold[j] ? foldedCard(j) : slotCard(j)).join('')}
     <button class="btn ghost block" data-a="reset">Reiniciar el ejemplo</button>`;
 }
 
@@ -1048,6 +1065,44 @@ document.addEventListener('pointerup', ev => {
   if (S.swiped != null && dx > 30) { S.swiped = null; render(); return; }
   if (S.swiped != null && Math.abs(dx) < 5 && !ev.target.closest('.sl-del')) { S.swiped = null; render(); }
 });
+// mantener apretado el encabezado de un slot para moverlo
+const lp = { timer: null, active: false, el: null, slot: null, y0: 0, x0: 0, target: null, suppress: false };
+function lpEnd() { clearTimeout(lp.timer); lp.timer = null; document.querySelectorAll('.drop-before,.drop-after').forEach(x => x.classList.remove('drop-before', 'drop-after')); }
+document.addEventListener('pointerdown', ev => {
+  const h = ev.target.closest('.slot-head'); const c = h && h.closest('[data-slot]'); if (!c || S.tab !== 'hoy') return;
+  Object.assign(lp, { el: c, slot: +c.dataset.slot, y0: ev.clientY, x0: ev.clientX, active: false, target: null });
+  lp.timer = setTimeout(() => { lp.active = true; c.classList.add('dragging'); if (navigator.vibrate) navigator.vibrate(15); }, 450);
+});
+document.addEventListener('pointermove', ev => {
+  if (!lp.el) return;
+  if (!lp.active) { if (Math.hypot(ev.clientX - lp.x0, ev.clientY - lp.y0) > 8) { lpEnd(); lp.el = null; } return; }
+  ev.preventDefault();
+  lp.el.style.transform = `translateY(${ev.clientY - lp.y0}px)`;
+  if (ev.clientY < 110) scrollBy(0, -14); else if (ev.clientY > innerHeight - 90) scrollBy(0, 14);
+  const cards = [...document.querySelectorAll('main [data-slot]')].filter(x => x !== lp.el);
+  document.querySelectorAll('.drop-before,.drop-after').forEach(x => x.classList.remove('drop-before', 'drop-after'));
+  let t = cards.find(x => { const r = x.getBoundingClientRect(); return ev.clientY < r.top + r.height / 2; });
+  if (t) { t.classList.add('drop-before'); lp.target = { slot: +t.dataset.slot, after: false }; }
+  else if (cards.length) { const l = cards[cards.length - 1]; l.classList.add('drop-after'); lp.target = { slot: +l.dataset.slot, after: true }; }
+}, { passive: false });
+document.addEventListener('touchmove', ev => { if (lp.active) ev.preventDefault(); }, { passive: false });
+document.addEventListener('contextmenu', ev => { if (ev.target.closest('.slot-head')) ev.preventDefault(); });
+const lpDrop = () => {
+  const was = lp.active, el = lp.el, tg = lp.target, j = lp.slot; lpEnd(); lp.el = null; lp.active = false;
+  if (!was) return; lp.suppress = true; setTimeout(() => { lp.suppress = false; }, 350);
+  if (el) { el.classList.remove('dragging'); el.style.transform = ''; }
+  if (!tg) { render(); return; }
+  const oldV = viewOrder(), nv = oldV.filter(x => x !== j); let at = nv.indexOf(tg.slot) + (tg.after ? 1 : 0); nv.splice(at, 0, j);
+  const c = reorderCheck(oldV, nv, j);
+  if (c) {
+    const m = share(c.lo, c.hi).filter(x => x !== 'front').map(x => MUS[x].toLowerCase());
+    S.sheet = { title: `${DAY[c.lo].name} antes de ${DAY[c.hi].name}`, body: `${DAY[c.lo].name} cansa ${m.join(' y ') || 'los mismos músculos'}, que vas a necesitar en ${DAY[c.hi].name.toLowerCase()} (prioridad ${DAY[c.hi].prio}). Es posible que rindas menos ahí y no notes el progreso que esperas.`, foot: 'Si igual lo haces, la app guarda el orden y ajusta la comparación con la vez anterior.', reorder: nv };
+  } else S.view = nv;
+  render();
+};
+document.addEventListener('pointerup', lpDrop);
+document.addEventListener('pointercancel', lpDrop);
+
 // cada tarjeta abierta es su propio ejercicio: tocar dentro la vuelve la activa
 function selSlot(ev) {
   const c = ev.target.closest && ev.target.closest('[data-slot]'); if (!c) return;
@@ -1071,6 +1126,7 @@ document.addEventListener('input', ev => {
   if (k === 'q') { S.q = ev.target.value; const l = document.getElementById('pickList'); if (l) l.innerHTML = pickerHtml(); }
 });
 document.addEventListener('click', ev => {
+  if (lp.suppress) { lp.suppress = false; ev.preventDefault(); return; }
   const b = ev.target.closest('[data-a]'); if (!b) return;
   selSlot(ev);
   act(b.dataset.a, b.dataset.v);
