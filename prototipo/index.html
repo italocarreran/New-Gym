@@ -105,11 +105,11 @@ p { margin: 0; }
 .cell:focus { outline: 2px solid var(--accent); outline-offset: 0; }
 .sl-row.cur .cell { border-color: var(--accent); }
 .sl-row.done .cell { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
-.sl-row { display: grid; grid-template-columns: 22px minmax(0,1fr) 48px; row-gap: 2px; gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.sl-row { display: grid; grid-template-columns: 22px minmax(0,1fr) 56px; row-gap: 2px; gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
 .sl-row:first-child { border-top: none; }
 .sl-row .num { font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sl-row small { display: block; font-size: 11px; color: var(--muted); }
-.antes { font-size: 11px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.antes { font-size: 11px; line-height: 1.25; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
 .sl-h .antes, .sl-h span:last-child { text-align: right; }
 .sl-foot { font-size: 11.5px; color: var(--muted); margin-top: -4px; }
 .sl-h { background: var(--surface-2); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-block: 6px; }
@@ -282,22 +282,22 @@ const META = { espalda:[14,16], pecho:[12,14], cuad:[10,12], isq:[10,12], lat:[8
 const BASE = { espalda:11, pecho:0, cuad:5, isq:8.5, lat:0, post:4.5, tri:0, bi:7.5, pant:0, front:0 };
 
 const EX = {
-  banca:{ n:'Press banca con barra', eq:'Barra', p:['pecho'], s:['tri','front'], why:'El ejercicio base del día. Mueve más peso y es el que mejor muestra tu progreso.', adj:'Es tu referencia: los demás se calculan a partir de este.', tec:'Junta las escápulas, pies firmes en el suelo y baja la barra a la parte baja del pecho.', last:{w:70,r:[8,8,8],pos:1,d:'jue 16 nov'} },
-  mancPlana:{ n:'Press plano con mancuernas', eq:'Mancuernas', p:['pecho'], s:['tri','front'], why:'Mismo empuje horizontal y mismo músculo. Baja un poco más y cada brazo trabaja por su cuenta.', adj:'Cada mancuerna pesa cerca del 40% de la barra. Si haces 70 kg en barra, parte con 26-28 kg por mano.', tec:'Baja hasta sentir el estiramiento en el pecho, con los codos a unos 45° del cuerpo.', last:{w:28,r:[9,8,8],pos:1,d:'jue 2 nov'} },
+  banca:{ n:'Press banca con barra', eq:'Barra', p:['pecho'], s:['tri','front'], why:'El ejercicio base del día. Mueve más peso y es el que mejor muestra tu progreso.', adj:'Es tu referencia: los demás se calculan a partir de este.', tec:'Junta las escápulas, pies firmes en el suelo y baja la barra a la parte baja del pecho.', last:{w:70,r:[10,9,8],rir:[2,2,1],pos:1,d:'jue 16 nov'} },
+  mancPlana:{ n:'Press plano con mancuernas', eq:'Mancuernas', p:['pecho'], s:['tri','front'], why:'Mismo empuje horizontal y mismo músculo. Baja un poco más y cada brazo trabaja por su cuenta.', adj:'Cada mancuerna pesa cerca del 40% de la barra. Si haces 70 kg en barra, parte con 26-28 kg por mano.', tec:'Baja hasta sentir el estiramiento en el pecho, con los codos a unos 45° del cuerpo.', last:{w:28,r:[9,8,7],rir:[2,1,1],pos:1,d:'jue 2 nov'} },
   smith:{ n:'Press en máquina o Smith', eq:'Máquina', p:['pecho'], s:['tri','front'], why:'Mismo patrón con el recorrido guiado. Pide menos equilibrio, así que puedes empujar fuerte con menos riesgo.', adj:'Usa cerca de 10% menos que en barra libre. Anota qué máquina usas, porque cada una pesa distinto.', tec:'Ajusta el banco para que la barra baje a la altura de los pezones.', last:null, sugW:62.5 },
-  incl:{ n:'Press inclinado con mancuernas', eq:'Mancuernas', p:['pecho'], s:['tri','front'], why:'Trabaja la parte alta del pecho, que el press plano toca menos.', adj:'Banco a 30°. Más inclinado ya trabaja sobre todo el hombro.', tec:'Baja controlado hasta la altura del pecho alto, sin rebotar.', last:{w:24,r:[10,9,8],pos:2,d:'jue 16 nov'} },
+  incl:{ n:'Press inclinado con mancuernas', eq:'Mancuernas', p:['pecho'], s:['tri','front'], why:'Trabaja la parte alta del pecho, que el press plano toca menos.', adj:'Banco a 30°. Más inclinado ya trabaja sobre todo el hombro.', tec:'Baja controlado hasta la altura del pecho alto, sin rebotar.', last:{w:24,r:[10,9,8],rir:[2,2,1],pos:2,d:'jue 16 nov'} },
   inclSmith:{ n:'Press inclinado en Smith o máquina', eq:'Máquina', p:['pecho'], s:['tri','front'], why:'Mismo ángulo de empuje y mismo músculo, con recorrido guiado.', adj:'Parte con el peso de las dos mancuernas sumadas, menos 10%.', tec:'Banco a 30°, la barra baja a la parte alta del pecho.', last:null, sugW:40 },
   flexPeso:{ n:'Flexiones con peso', eq:'Sin máquina', p:['pecho'], s:['tri','front'], why:'No hay que esperar a nadie. Mismo empuje y mismo músculo; súbele dificultad con un disco.', adj:'Si haces más de 15 sin peso, pide que te pongan un disco de 10 kg en la espalda.', tec:'Cuerpo recto como tabla, pecho casi al suelo en cada repetición.', last:null, sugW:10 },
-  cruces:{ n:'Cruces en polea', eq:'Polea', p:['pecho'], s:[], why:'Mismo movimiento de cerrar los brazos que el pec deck, con tensión constante, y cambias el peso en segundos.', adj:'Si vienes del pec deck, el número no se compara. Busca un peso que te deje 12-15 con 1-2 en reserva.', tec:'Codos levemente doblados y fijos. Imagina que abrazas un árbol.', last:{w:15,r:[15,13],pos:3,d:'jue 16 nov'} },
-  pecdeck:{ n:'Pec deck (apertura en máquina)', eq:'Máquina', p:['pecho'], s:[], why:'Mismo movimiento de apertura con el recorrido guiado. Fácil de aprender.', adj:'La primera vez busca un peso en que llegues a 12-15 con 1-2 en reserva.', tec:'Espalda pegada al respaldo, junta las manos sin chocar los brazos.', last:{w:45,r:[15,14],pos:3,d:'jue 9 nov'} },
+  cruces:{ n:'Cruces en polea', eq:'Polea', p:['pecho'], s:[], why:'Mismo movimiento de cerrar los brazos que el pec deck, con tensión constante, y cambias el peso en segundos.', adj:'Si vienes del pec deck, el número no se compara. Busca un peso que te deje 12-15 con 1-2 en reserva.', tec:'Codos levemente doblados y fijos. Imagina que abrazas un árbol.', last:{w:15,r:[15,13],rir:[2,0],pos:3,d:'jue 16 nov'} },
+  pecdeck:{ n:'Pec deck (apertura en máquina)', eq:'Máquina', p:['pecho'], s:[], why:'Mismo movimiento de apertura con el recorrido guiado. Fácil de aprender.', adj:'La primera vez busca un peso en que llegues a 12-15 con 1-2 en reserva.', tec:'Espalda pegada al respaldo, junta las manos sin chocar los brazos.', last:{w:45,r:[15,14],rir:[2,1],pos:3,d:'jue 9 nov'} },
   aperturas:{ n:'Aperturas con mancuernas', eq:'Mancuernas', p:['pecho'], s:[], why:'Mismo patrón de cerrar los brazos. Más tensión cuando el brazo está abierto y menos al cerrar.', adj:'Usa 30-40% menos que en la polea por lado. Parte liviano: el estiramiento abajo es fuerte.', tec:'Baja abriendo los brazos hasta la altura del pecho, no más.', last:null, sugW:10 },
-  latMan:{ n:'Elevaciones laterales con mancuernas', eq:'Mancuernas', p:['lat'], s:[], why:'El ejercicio más directo para el hombro lateral, que da el ancho de hombros.', adj:'Peso liviano y muchas repeticiones. Si balanceas el cuerpo, baja el peso.', tec:'Sube los brazos hacia los lados hasta la altura de los hombros, con el codo apenas doblado.', last:{w:10,r:[15,14,12],pos:4,d:'jue 16 nov'} },
+  latMan:{ n:'Elevaciones laterales con mancuernas', eq:'Mancuernas', p:['lat'], s:[], why:'El ejercicio más directo para el hombro lateral, que da el ancho de hombros.', adj:'Peso liviano y muchas repeticiones. Si balanceas el cuerpo, baja el peso.', tec:'Sube los brazos hacia los lados hasta la altura de los hombros, con el codo apenas doblado.', last:{w:10,r:[15,14,12],rir:[2,1,0],pos:4,d:'jue 16 nov'} },
   latPolea:{ n:'Laterales en polea', eq:'Polea', p:['lat'], s:[], why:'Mismo movimiento. La polea mantiene tensión también abajo, donde la mancuerna no pesa.', adj:'A un brazo, parte con 5-7 kg.', tec:'Polea baja, cable por delante del cuerpo, sube hacia el lado.', last:null, sugW:5 },
   latMaq:{ n:'Máquina de laterales', eq:'Máquina', p:['lat'], s:[], why:'Mismo músculo con recorrido guiado.', adj:'La primera vez busca un peso que te deje 15-20.', tec:'Codos contra los rodillos, sube hasta la altura del hombro.', last:null, sugW:20 },
-  pressHom:{ n:'Press de hombro con mancuernas', eq:'Mancuernas', p:['front'], s:['tri','lat'], why:'Empuje vertical: trabaja el hombro frontal y ayuda al lateral y al tríceps.', adj:'Sentado con respaldo, para no arquear la espalda.', tec:'Empuja hacia arriba sin chocar las mancuernas arriba.', last:{w:20,r:[10,9],pos:5,d:'jue 16 nov'} },
+  pressHom:{ n:'Press de hombro con mancuernas', eq:'Mancuernas', p:['front'], s:['tri','lat'], why:'Empuje vertical: trabaja el hombro frontal y ayuda al lateral y al tríceps.', adj:'Sentado con respaldo, para no arquear la espalda.', tec:'Empuja hacia arriba sin chocar las mancuernas arriba.', last:{w:22,r:[12,11],rir:[3,3],jump:true,pos:5,d:'jue 16 nov'} },
   pressHomMaq:{ n:'Press de hombro en máquina', eq:'Máquina', p:['front'], s:['tri','lat'], why:'Mismo empuje vertical con recorrido guiado.', adj:'Parte con el peso de las dos mancuernas sumadas.', tec:'Asiento a una altura en que las manijas queden a la altura de los hombros.', last:null, sugW:40 },
   arnold:{ n:'Press Arnold', eq:'Mancuernas', p:['front'], s:['tri','lat'], why:'Mismo empuje vertical; el giro de muñeca suma recorrido para el hombro.', adj:'Usa 10-15% menos que en el press normal.', tec:'Parte con las palmas hacia ti y gíralas mientras subes.', last:null, sugW:16 },
-  triPolea:{ n:'Tríceps en polea', eq:'Polea', p:['tri'], s:[], why:'Aísla el tríceps sin cansar el pecho ni el hombro.', adj:'Con cuerda o barra recta: elige el que no te moleste el codo.', tec:'Codos pegados al cuerpo; solo se mueve el antebrazo.', last:{w:30,r:[14,12,11],pos:6,d:'jue 16 nov'} },
+  triPolea:{ n:'Tríceps en polea', eq:'Polea', p:['tri'], s:[], why:'Aísla el tríceps sin cansar el pecho ni el hombro.', adj:'Con cuerda o barra recta: elige el que no te moleste el codo.', tec:'Codos pegados al cuerpo; solo se mueve el antebrazo.', last:{w:35,r:[10,8,7],rir:[1,0,0],jump:true,pos:6,d:'jue 16 nov'} },
   fondos:{ n:'Fondos asistidos', eq:'Máquina', p:['tri'], s:['pecho'], why:'Mismo músculo usando tu cuerpo como peso. El pecho ayuda un poco.', adj:'En la máquina asistida, más contrapeso es más fácil. Parte con uno que te deje 10-15.', tec:'Cuerpo vertical para cargar más el tríceps.', last:null, sugW:30 },
   frances:{ n:'Press francés', eq:'Barra Z', p:['tri'], s:[], why:'Trabaja el tríceps estirado, que es donde más crece. Solo necesitas una barra Z.', adj:'Parte con la barra Z vacía o con poco peso; cuida los codos.', tec:'Baja la barra hacia la frente doblando solo los codos.', last:null, sugW:20 },
   sentadilla:{ n:'Sentadilla con barra', eq:'Barra', p:['cuad'], s:['isq'], why:'Compuesto base de pierna.', adj:'Parte con un peso que te deje 8 con 2 en reserva.', tec:'Pies al ancho de hombros, baja con la espalda neutra.', last:null, sugW:60 },
@@ -345,14 +345,41 @@ const slotMins = (si, setsLeft) => (setsLeft ?? DAY[si].sets) * (45 + restSecs(s
 
 // Sobrecarga progresiva (progresión doble): +1 rep por serie hasta el tope del rango;
 // si la vez anterior llegaste al tope en todas, sube el peso y vuelve al piso del rango.
-function target(si, i) {
-  const d = DAY[si], e = exOf(si);
-  if (!e.last) return { w: e.sugW ?? 0, r: d.reps[0], why: 'nuevo' };
-  const [lo, hi] = d.reps, lr = e.last.r;
-  if (lr.every(x => x >= hi)) return { w: e.last.w + (d.type === 'comp' ? 2.5 : 1), r: lo, why: 'peso' };
-  const base = lr[i] ?? lr[lr.length - 1];
-  return { w: e.last.w, r: Math.min(base + 1, hi), why: 'rep' };
+// Regla de progresión:
+// - Cada serie busca 1-2 en reserva; es normal que las reps bajen de serie en serie (10, 9, 8).
+// - Se sube el peso cuando la ÚLTIMA serie llega al tope del rango con 1-2 en reserva (en aislados, hasta el fallo).
+// - El salto es ~5-8% (o el salto mínimo del equipo); con el peso nuevo la última serie cae cerca del mínimo.
+// - La sesión siguiente a un salto lo valida: 3+ en reserva = salto chico; bajo el mínimo = salto grande.
+const stepOf = e => e.eq === 'Mancuernas' ? 2 : (e.eq === 'Sin máquina' ? 5 : 2.5);
+const roundTo = (x, st) => Math.round(x / st) * st;
+function plan(si) {
+  const d = DAY[si], e = exOf(si), [lo, hi] = d.reps, n = d.sets;
+  if (!e.last) return { why: 'nuevo', w: e.sugW ?? 0, reps: Array.from({length: n}, () => lo) };
+  const L = e.last, lr = L.r, rr = L.rir || lr.map(() => 2), k = lr.length - 1, st = stepOf(e);
+  const descend = Array.from({length: n}, (_, i) => Math.min(hi, lo + (n - 1 - i)));
+  // validación de un salto reciente
+  if (L.jump && lr.some(x => x < lo)) {
+    const w = Math.max(st, Math.min(L.w - st, roundTo(L.w * 0.95, st)));
+    return { why: 'grande', w, reps: descend, from: L.w };
+  }
+  if (L.jump && rr[k] >= 3) {
+    const w = Math.max(L.w + st, roundTo(L.w * 1.05, st));
+    return { why: 'chico', w, reps: descend, from: L.w };
+  }
+  // subir peso: la última serie llegó al tope con 1-2 en reserva (aislados: 0-2)
+  const minRir = d.type === 'iso' ? 0 : 1;
+  if (lr[k] >= hi && rr[k] >= minRir && rr[k] <= 2) {
+    const w = Math.max(L.w + st, roundTo(L.w * 1.06, st));
+    return { why: 'peso', w, reps: descend, from: L.w, pct: Math.round((w / L.w - 1) * 100) };
+  }
+  // mismo peso: suma una rep donde sobró reserva
+  const reps = Array.from({length: n}, (_, i) => {
+    const base = lr[i] ?? lr[k], ri = rr[i] ?? rr[k];
+    return Math.min(hi, Math.max(base, base + (ri >= 3 ? 2 : ri >= 2 ? 1 : 0)));
+  });
+  return { why: 'rep', w: L.w, reps };
 }
+function target(si, i) { const p = plan(si); return { w: p.w, r: p.reps[i] ?? p.reps[p.reps.length - 1], why: p.why }; }
 function makeDraft(si) {
   const n = logsFor(si).length, prev = logsFor(si).slice(-1)[0], t = target(si, n);
   const w = prev ? prev.w : t.w;
@@ -406,7 +433,11 @@ function guideFor(si) {
 }
 
 function feedback(si, rir) {
-  const d = DAY[si], n = logsFor(si).length, last = n === d.sets;
+  const d = DAY[si], n = logsFor(si).length, last = n === d.sets, e = exOf(si), lg = logsFor(si)[n - 1];
+  if (e.last && lg && lg.w > e.last.w) {
+    if (lg.r < d.reps[0]) return { cls:'warn', t:'El salto de peso fue muy grande.', s:`No llegaste al mínimo del rango (${d.reps[0]}). Baja un poco el peso (2,5-5%) en la próxima serie.` };
+    if (rir >= 3) return { cls:'warn', t:'El salto de peso quedó chico.', s:'Te sobraron 3 o más repeticiones. La próxima vez sube un poco más.' };
+  }
   if (d.type === 'comp') {
     if (rir === 0) return { cls:'bad', t:'Llegaste al fallo en un compuesto.', s:'Descansa los 3 minutos completos. Si en la próxima no llegas al rango, baja 5% el peso. Aquí el fallo suma poco músculo y mucho cansancio para las series que vienen.' };
     if (rir >= 3) return { cls:'warn', t:'Te sobraron 3 o más repeticiones.', s:'En la próxima serie sube 2,5 kg o haz más repeticiones, hasta quedar a 1-2 del fallo.' };
@@ -419,11 +450,12 @@ function feedback(si, rir) {
 }
 
 function progressionNote(si) {
-  const d = DAY[si], ls = logsFor(si);
+  const d = DAY[si], ls = logsFor(si), e = exOf(si);
   if (ls.length < d.sets) return null;
-  if (ls.every(l => l.r >= d.reps[1])) {
-    const w = ls[0].w, inc = DAY[si].type === 'comp' ? Math.max(2.5, Math.round(w * 0.03 / 2.5) * 2.5) : 1;
-    return `Llegaste al tope (${d.reps[1]}) en todas las series. La próxima vez sube a ${fmt(w + inc)} kg.`;
+  const l = ls[ls.length - 1], minRir = d.type === 'iso' ? 0 : 1;
+  if (l.r >= d.reps[1] && l.rir >= minRir && l.rir <= 2) {
+    const st = stepOf(e), w = Math.max(l.w + st, roundTo(l.w * 1.06, st));
+    return `La última serie llegó al tope (${d.reps[1]}) con ${l.rir} en reserva. La próxima vez sube a ${fmt(toU(w))} ${S.unit} (+${Math.round((w / l.w - 1) * 100)}%): la última serie debería caer cerca de ${d.reps[0]}.`;
   }
   return null;
 }
@@ -475,7 +507,7 @@ function act(a, v) {
       if (!S.order.includes(si)) S.order.push(si);
       S.logs.push({ si, ex: exIdOf(si), w: S.draft.w, r: S.draft.r, rir: S.draft.rir });
       S.msg = feedback(si, S.draft.rir);
-      const pn = progressionNote(si); if (pn) S.msg = { cls:'info', t:'Serie registrada. Toca subir peso.', s:pn };
+      const pn = progressionNote(si); if (pn) S.msg = { cls:'info', t:'Sube el peso la próxima vez.', s:pn };
       S.restLen = restSecs(si); S.restEnd = Date.now() + S.restLen * 1000;
       S.draft = makeDraft(si); S.swap = null;
       break;
@@ -550,14 +582,6 @@ function viewHoy() {
   }
 
   const orderWarn = e.last && e.last.pos !== p ? `<div class="note warn"><b>La última vez lo hiciste de ${ord(e.last.pos)}, hoy va de ${ord(p)}.</b><span>${p > e.last.pos ? 'Llegas más cansado: es normal rendir algo menos. No es pérdida de fuerza.' : 'Llegas más fresco: es normal rendir algo más.'}</span></div>` : '';
-  const lastBlock = e.last ? (() => {
-    const changed = e.last.pos !== p;
-    const top = e.last.r.every(r => r >= d.reps[1]);
-    return `<div class="last"><span class="eyebrow">La última vez · ${e.last.d}</span><span class="small muted">de ${ord(e.last.pos)} en la sesión</span></div>
-      <div class="last"><span class="val">${fmt(e.last.w)} kg × ${e.last.r.join(' · ')}</span></div>
-      ${top ? `<div class="note info"><b>Llegaste al tope en todas las series.</b><span>Hoy prueba con ${fmt(e.last.w + 2.5)} kg.</span></div>` : ''}
-      ${changed ? `<div class="note warn"><b>La última vez lo hiciste de ${ord(e.last.pos)}, hoy va de ${ord(p)}.</b><span>${p > e.last.pos ? 'Llegas más cansado: es normal rendir algo menos. No es pérdida de fuerza.' : 'Llegas más fresco: es normal rendir algo más.'}</span></div>${tag('creer que perdiste fuerza cuando solo cambió el orden')}` : ''}`;
-  })() : `<div class="note info"><b>Primera vez con este ejercicio.</b><span>${e.adj}</span></div>`;
 
   const why = `<div class="explain">
       <div class="row"><span class="k">Por qué</span><span>${e.why}</span></div>
@@ -615,7 +639,7 @@ function viewHoy() {
       <div class="setlist">
         <div class="sl-row sl-h"><span>#</span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span>Antes</span></div>
         ${Array.from({length: d.sets}, (_, i) => {
-          const l = ls[i], prev = e.last ? `${fmt(toU(e.last.w))}×${e.last.r[i] ?? '–'}` : '–';
+          const l = ls[i], prev = e.last && e.last.r[i] != null ? `${fmt(toU(e.last.w))}×${e.last.r[i]}<br>${e.last.rir ? `${e.last.rir[i] === 3 ? '3+' : e.last.rir[i]} RIR` : ''}` : '–';
           const cur = i === ls.length;
           const lastIso = d.type === 'iso' && i === d.sets - 1;
           return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span class="cells">${(() => {
@@ -626,7 +650,13 @@ function viewHoy() {
           })()}</span><span class="antes">${prev}</span></div>`;
         }).join('')}
       </div>
-      <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en todas' : '1-2 en reserva, la última al fallo'}.<br>${({nuevo:'Primera vez: parte liviano y busca el piso del rango.', rep:'Hoy apunta a una repetición más por serie que la vez anterior.', peso:'Llegaste al tope la vez anterior: hoy sube el peso y vuelve al piso del rango.'})[target(si,0).why]}</p>
+      <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en cada serie' : '1-2 en reserva, la última al fallo'}.<br>${(() => { const pl = plan(si); return ({
+          nuevo: 'Primera vez: parte liviano y busca el mínimo del rango.',
+          rep: 'Mismo peso. Suma una repetición donde te sobró reserva. Que las reps bajen de serie en serie es normal.',
+          peso: `La última serie llegó al tope con 1-2 en reserva: sube a ${fmt(toU(pl.w))} ${S.unit} (+${pl.pct}%). Hoy la última serie debería caer cerca de ${d.reps[0]}.`,
+          chico: `La vez pasada, con ${fmt(toU(pl.from))} ${S.unit}, te sobraron 3 o más: el salto fue chico. Hoy sube a ${fmt(toU(pl.w))} ${S.unit}.`,
+          grande: `La vez pasada, con ${fmt(toU(pl.from))} ${S.unit}, no llegaste al mínimo: el salto fue grande. Hoy baja a ${fmt(toU(pl.w))} ${S.unit}.`
+        })[pl.why]; })()}${d.type === 'comp' ? ' Descansa 2-3 min entre series para que las reps caigan menos.' : ''}</p>
       ${orderWarn}
       ${swapHtml}
       ${tag('perder tiempo decidiendo un reemplazo en el momento')}
@@ -714,7 +744,13 @@ function viewGuia() {
     </section>
     <section class="card">
       <h3>Cómo subir de peso</h3>
-      <p class="small">Progresión doble: dentro del rango (por ejemplo 6-8) primero subes repeticiones. Cuando llegas al tope en todas las series, subes el peso 2,5-5% y vuelves al piso del rango. La app te avisa cuándo toca.</p>
+      <ul class="plain small">
+        <li>Cada serie busca quedar a 1-2 del fallo. Por el cansancio, las repeticiones bajan de serie en serie (por ejemplo 10, 9, 8). Es normal.</li>
+        <li>Subes el peso cuando la <b>última</b> serie llega al tope del rango con 1-2 en reserva. No hace falta que todas lleguen al tope.</li>
+        <li>El salto es de 5-8% (o el mínimo que permita el equipo). Con el peso nuevo, la última serie cae cerca del mínimo del rango.</li>
+        <li>La sesión siguiente valida el salto: si te sobran 3 o más, fue chico y subes más; si no llegas al mínimo, fue grande y bajas un poco.</li>
+        <li>En compuestos descansa 2-3 min para que las reps caigan menos entre series.</li>
+      </ul>
       <p class="small muted">Si en una serie no llegas al rango, lo mejor es descansar más. Bajar el peso y seguir (serie descendente) también vale. Cada 5-6 semanas, una semana liviana.</p>
     </section>
     ${tag('entrenar todo al fallo por no saber que hay una mejor forma')}`;
