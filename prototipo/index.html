@@ -94,7 +94,13 @@ p { margin: 0; }
 .alt.on .letter { background: var(--accent); color: var(--accent-ink); }
 .alt.busy { opacity: .55; }
 .setlist { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.sl-row { display: grid; grid-template-columns: 44px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr); gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.cells { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.cell { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 4px; text-align: center; font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cell::placeholder { color: var(--muted); opacity: .6; }
+.cell:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+.sl-row.cur .cell { border-color: var(--accent); }
+.sl-row.done .cell { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
+.sl-row { display: grid; grid-template-columns: 28px minmax(0,1.1fr) minmax(0,.8fr) minmax(0,1.5fr); gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
 .sl-row:first-child { border-top: none; }
 .sl-row .num { font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sl-row small { display: block; font-size: 11px; color: var(--muted); }
@@ -311,7 +317,7 @@ const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de
 
 // ---------- Estado ----------
 const S = {
-  tab:'hoy', tags:true, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
+  tab:'hoy', tags:true, pre:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
   minutes:null, draft:null, msg:null, swap:null, restEnd:null, restLen:0, sheet:null, showWhy:false
 };
 
@@ -331,7 +337,8 @@ function makeDraft(si) {
   const e = exOf(si), n = logsFor(si).length, prev = logsFor(si).slice(-1)[0];
   const w = prev ? prev.w : (e.last ? e.last.w : e.sugW ?? 0);
   const r = prev ? prev.r : (e.last ? (e.last.r[n] ?? e.last.r[e.last.r.length-1]) : DAY[si].reps[0]);
-  return { w, r, rir: null };
+  const pre = S.pre[`${si}-${n}`] || {};
+  return { w: pre.w ?? w, r: pre.r ?? r, rir: null };
 }
 
 function weekly(includePlan) {
@@ -584,12 +591,17 @@ function viewHoy() {
       </div>
       <div class="opts">${alts}</div>
       <div class="setlist">
-        <div class="sl-row sl-h"><span>Serie</span><span>Meta</span><span>Anterior</span><span>Hoy</span></div>
+        <div class="sl-row sl-h"><span>#</span><span>Meta</span><span>Antes</span><span class="cells"><span>Kg</span><span>Reps</span></span></div>
         ${Array.from({length: d.sets}, (_, i) => {
           const l = ls[i], prev = e.last ? `${fmt(e.last.w)}×${e.last.r[i] ?? '–'}` : '–';
           const cur = i === ls.length;
           const lastIso = d.type === 'iso' && i === d.sets - 1;
-          return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span>${d.reps[0]}-${d.reps[1]} reps<small>${lastIso ? 'al fallo' : '1-2 en reserva'}</small></span><span class="num">${prev}</span><span class="num">${l ? `${fmt(l.w)}×${l.r}` : cur ? 'Ahora' : ''}</span></div>`;
+          return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span>${d.reps[0]}-${d.reps[1]} reps<small>${lastIso ? 'al fallo' : '1-2 en reserva'}</small></span><span class="num">${prev}</span><span class="cells">${(() => {
+            const pre = S.pre[`${si}-${i}`] || {};
+            const w = l ? l.w : cur ? S.draft.w : pre.w, r = l ? l.r : cur ? S.draft.r : pre.r;
+            const ph = e.last ? [e.last.w, e.last.r[i] ?? ''] : ['kg', 'reps'];
+            return `<input class="cell" inputmode="decimal" aria-label="Kilos serie ${i+1}" data-set="${i}" data-f="w" value="${w ?? ''}" placeholder="${ph[0]}"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}">`;
+          })()}</span></div>`;
         }).join('')}
       </div>
       ${swapHtml}
@@ -760,6 +772,16 @@ function render() {
   </div></div>` : ''}`;
 }
 
+document.addEventListener('change', ev => {
+  const t = ev.target; if (!t.dataset || t.dataset.set == null) return;
+  const i = +t.dataset.set, f = t.dataset.f, v = parseFloat(String(t.value).replace(',', '.'));
+  if (isNaN(v)) return;
+  const si = S.si, l = logsFor(si)[i];
+  if (l) l[f] = v;
+  else if (i === logsFor(si).length) S.draft[f] = v;
+  else { const k = `${si}-${i}`; S.pre[k] = { ...(S.pre[k] || {}), [f]: v }; }
+  render();
+});
 document.addEventListener('input', ev => {
   const k = ev.target.dataset && ev.target.dataset.in; if (!k) return;
   if (k === 'edName') { DAY[S.ed].name = ev.target.value; }
