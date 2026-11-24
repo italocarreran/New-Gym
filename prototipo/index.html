@@ -129,6 +129,7 @@ p { margin: 0; }
 .opt.on .opt-l { background: var(--accent); color: var(--accent-ink); }
 .opt.busy { opacity: .6; }
 .opts.mini { gap: 4px; }
+.opt-more { justify-content: center; align-items: center; font-weight: 700; font-size: 16px; padding: 0 !important; color: var(--muted); }
 .opts.mini .opt { flex-direction: row; align-items: center; gap: 5px; padding: 5px 6px; border-radius: 9px; }
 .opts.mini .opt-top { order: 0; }
 .opts.mini .opt-l { width: 16px; height: 16px; font-size: 11px; border-radius: 4px; }
@@ -325,6 +326,7 @@ const DAY = [
 ];
 const SHORT = { banca:'Banca barra', mancPlana:'Mancuernas plano', smith:'Máquina / Smith', incl:'Inclinado manc.', inclSmith:'Inclinado Smith', flexPeso:'Flexiones c/ peso', cruces:'Cruces polea', pecdeck:'Pec deck', aperturas:'Aperturas manc.', latMan:'Laterales manc.', latPolea:'Laterales polea', latMaq:'Laterales máq.', pressHom:'Press manc.', pressHomMaq:'Press máquina', arnold:'Arnold', triPolea:'Polea', fondos:'Fondos asist.', frances:'Press francés' };
 const PRANK = { alta:3, media:2, baja:1 };
+const afterAltEdit = () => { if (S.tab === 'rutina') { resetSession(); return; } S.alt[S.ed] = 0; DAY[S.ed].alts.forEach(x => delete S.busy[x]); S.draft = makeDraft(S.si); S.swap = null; };
 const resetSession = () => { Object.assign(S, { chosen:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
 const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
 const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
@@ -539,8 +541,10 @@ function act(a, v) {
     case 'edHi': { const d = DAY[S.ed]; d.reps[1] = Math.max(d.reps[0], Math.min(30, d.reps[1] + (+v))); break; }
     case 'edPrio': DAY[S.ed].prio = v; break;
     case 'edType': DAY[S.ed].type = v; break;
-    case 'altMove': { const [i, d] = v.split(',').map(Number); move(DAY[S.ed].alts, i, d); resetSession(); break; }
-    case 'altDel': { const a = DAY[S.ed].alts; if (a.length > 1) { a.splice(+v, 1); resetSession(); } break; }
+    case 'altMove': { const [i, d] = v.split(',').map(Number); move(DAY[S.ed].alts, i, d); afterAltEdit(); break; }
+    case 'altDel': { const a = DAY[S.ed].alts; if (a.length > 1) { a.splice(+v, 1); afterAltEdit(); } break; }
+    case 'altSheet': S.ed = si; S.altSheet = true; break;
+    case 'altSheetClose': S.altSheet = false; break;
     case 'pickOpen': S.pick = v; S.q = ''; break;
     case 'pickClose': S.pick = null; break;
     case 'pickEx': {
@@ -548,8 +552,9 @@ function act(a, v) {
       if (S.pick === 'new') {
         DAY.push({ name: e.n.split(' ').slice(0, 2).join(' '), sets: 3, reps: e.s.length ? [8,10] : [12,15], prio: e.s.length ? 'alta' : 'baja', type: e.s.length ? 'comp' : 'iso', alts: [v] });
         S.ed = DAY.length - 1;
-      } else if (DAY[S.ed].alts.length < 3 && !DAY[S.ed].alts.includes(v)) DAY[S.ed].alts.push(v);
-      S.pick = null; resetSession(); break;
+        S.pick = null; resetSession(); break;
+      } else if (DAY[S.ed].alts.length < MAXALT && !DAY[S.ed].alts.includes(v)) DAY[S.ed].alts.push(v);
+      S.pick = null; afterAltEdit(); break;
     }
   }
   render();
@@ -570,7 +575,7 @@ function viewHoy() {
   const alts = d.alts.map((id, k) => {
     const x = EX[id], on = k === altIdx(si), b = !!S.busy[id];
     return `<button class="opt ${on?'on':''} ${b?'busy':''}" data-a="pick" data-v="${k}" aria-pressed="${on}">
-      <span class="opt-top"><span class="opt-l">${'ABC'[k]}</span><span class="opt-dot ${b?'taken':''}" aria-hidden="true"></span></span>
+      <span class="opt-top"><span class="opt-l">${LET[k]}</span><span class="opt-dot ${b?'taken':''}" aria-hidden="true"></span></span>
       <span class="opt-n">${SHORT[id] || x.n}</span>
       <span class="opt-s">${x.last ? `${fmt(x.last.w)} kg` : 'Nuevo'}</span>
       ${b ? '<span class="opt-b">Ocupado</span>' : ''}</button>`;
@@ -647,7 +652,7 @@ function viewHoy() {
         <div><span class="eyebrow">Slot ${si+1} de ${DAY.length} · va de ${ord(p)}</span><h2>${d.name}</h2>
           <div class="meta"><span class="prio ${d.prio}">Prioridad ${d.prio}</span><span class="small muted">${d.type==='comp'?'Compuesto':'Aislado'}</span></div></div>
       </div>
-      <div class="opts ${chosen ? 'mini' : ''}">${alts}</div>
+      <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
       ${swapHtml}
       ${chosen ? `<div class="setlist">
         <div class="sl-row sl-h"><span>#</span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span>Antes</span></div>
@@ -777,6 +782,9 @@ function pickerHtml() {
   return list.slice(0, 12).map(([id, e]) => `<button class="alt" data-a="pickEx" data-v="${id}"><span class="letter">+</span><span style="min-width:0"><span class="name">${e.n}</span><br><span class="sub">${e.eq} · ${e.p.map(m=>MUS[m]).join(', ')}${e.s.length ? ` (+ ${e.s.map(m=>MUS[m].toLowerCase()).join(', ')})` : ''}</span></span>${ref && e.p[0] === ref.p[0] ? '<span class="state free">Mismo músculo</span>' : '<span></span>'}</button>`).join('') || '<p class="small muted">No hay coincidencias.</p>';
 }
 
+const LET = 'ABCD', MAXALT = 4;
+const altRows = d => d.alts.map((a, k) => `<div class="alt"><span class="letter">${LET[k]}</span><span style="min-width:0"><span class="name">${EX[a].n}</span><br><span class="sub">${EX[a].eq} · ${EX[a].p.map(m=>MUS[m]).join(', ')}</span></span>
+        <span class="ed-move"><button data-a="altMove" data-v="${k},-1" aria-label="Subir" ${k===0?'disabled':''}>↑</button><button data-a="altMove" data-v="${k},1" aria-label="Bajar" ${k===d.alts.length-1?'disabled':''}>↓</button><button data-a="altDel" data-v="${k}" aria-label="Quitar" ${d.alts.length===1?'disabled':''}>✕</button></span></div>`).join('');
 function viewRutina() {
   const slots = DAY.map((d, i) => {
     const open = S.ed === i;
@@ -785,8 +793,7 @@ function viewRutina() {
         <span class="ed-move"><button data-a="edMove" data-v="${i},-1" aria-label="Subir" ${i===0?'disabled':''}>↑</button><button data-a="edMove" data-v="${i},1" aria-label="Bajar" ${i===DAY.length-1?'disabled':''}>↓</button></span>
       </div>`;
     if (!open) return `<section class="card ed">${head}</section>`;
-    const alts = d.alts.map((a, k) => `<div class="alt"><span class="letter">${'ABC'[k]}</span><span style="min-width:0"><span class="name">${EX[a].n}</span><br><span class="sub">${EX[a].eq} · ${EX[a].p.map(m=>MUS[m]).join(', ')}</span></span>
-        <span class="ed-move"><button data-a="altMove" data-v="${k},-1" aria-label="Subir" ${k===0?'disabled':''}>↑</button><button data-a="altMove" data-v="${k},1" aria-label="Bajar" ${k===d.alts.length-1?'disabled':''}>↓</button><button data-a="altDel" data-v="${k}" aria-label="Quitar" ${d.alts.length===1?'disabled':''}>✕</button></span></div>`).join('');
+    const alts = altRows(d);
     const seg = (act, cur, opts) => `<div class="seg">${opts.map(([v,l]) => `<button class="${cur===v?'on':''}" data-a="${act}" data-v="${v}">${l}</button>`).join('')}</div>`;
     const step = (lab, act, val) => `<div class="stepper"><span class="lab">${lab}</span><div class="ctl"><button data-a="${act}" data-v="-1">−</button><span class="v">${val}</span><button data-a="${act}" data-v="1">+</button></div></div>`;
     return `<section class="card ed open">${head}
@@ -796,7 +803,7 @@ function viewRutina() {
       <div class="ed-field"><span class="small muted">Prioridad (qué se recorta primero si falta tiempo)</span>${seg('edPrio', d.prio, [['alta','Alta'],['media','Media'],['baja','Baja']])}</div>
       <div class="ed-field"><span class="small muted">Tipo (define qué tan cerca del fallo ir)</span>${seg('edType', d.type, [['comp','Compuesto'],['iso','Aislado']])}</div>
       <div class="ed-field"><span class="small muted">Alternativas, en orden de preferencia</span><div class="alts">${alts}</div>
-      ${d.alts.length < 3 ? `<button class="btn ghost block" data-a="pickOpen" data-v="alt">+ Agregar alternativa ${'ABC'[d.alts.length]}</button>` : ''}</div>
+      ${d.alts.length < MAXALT ? `<button class="btn ghost block" data-a="pickOpen" data-v="alt">+ Agregar alternativa ${LET[d.alts.length]}</button>` : ''}</div>
       ${tag('armar tu rutina a tu manera, con plan B y C listos antes de llegar al gimnasio')}
       <button class="btn danger block" data-a="edDel" data-v="${i}" ${DAY.length===1?'disabled':''}>Eliminar slot</button>
     </section>`;
@@ -806,14 +813,7 @@ function viewRutina() {
     <p class="small muted">Los ejercicios de aquí son un ejemplo. En la app real partes en blanco y armas tus días. Al editar, la sesión de ejemplo se reinicia.</p>
     ${slots}
     <button class="btn primary block" data-a="pickOpen" data-v="new">+ Agregar slot</button>
-    ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" data-a="noop">
-      <span class="eyebrow">${S.pick === 'new' ? 'Nuevo slot' : `Alternativa ${'ABC'[DAY[S.ed].alts.length]} para ${DAY[S.ed].name}`}</span>
-      <h2>Elige un ejercicio</h2>
-      ${S.pick !== 'new' ? '<p class="small muted">Arriba salen los que trabajan el mismo músculo principal.</p>' : ''}
-      <input id="pickQ" class="txt" data-in="q" placeholder="Busca por nombre, equipo o músculo" value="${S.q||''}">
-      <div class="alts pick-list" id="pickList">${pickerHtml()}</div>
-      <button class="btn ghost block" data-a="pickClose">Cancelar</button>
-    </div></div>` : ''}`;
+`;
 }
 
 const ICONS = {
@@ -836,6 +836,21 @@ function render() {
   <nav class="tabs"><div class="tabs-in">
     ${[['hoy','Entrenar'],['semana','Semana'],['rutina','Rutina'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
   </div></nav>
+  ${S.altSheet && !S.pick ? `<div class="sheet-bg" data-a="altSheetClose"><div class="sheet" data-a="noop">
+    <span class="eyebrow">Opciones de ${DAY[S.ed].name.toLowerCase()}</span><h2>Ordena tus opciones</h2>
+    <p class="small muted">La de arriba es tu primera opción y la que sale elegida al iniciar.</p>
+    <div class="alts">${altRows(DAY[S.ed])}</div>
+    ${DAY[S.ed].alts.length < MAXALT ? `<button class="btn ghost block" data-a="pickOpen" data-v="alt">+ Agregar otra opción</button>` : ''}
+    <button class="btn primary block" data-a="altSheetClose">Listo</button>
+  </div></div>` : ''}
+${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" data-a="noop">
+      <span class="eyebrow">${S.pick === 'new' ? 'Nuevo slot' : `Opción ${LET[DAY[S.ed].alts.length]} para ${DAY[S.ed].name}`}</span>
+      <h2>Elige un ejercicio</h2>
+      ${S.pick !== 'new' ? '<p class="small muted">Arriba salen los que trabajan el mismo músculo principal.</p>' : ''}
+      <input id="pickQ" class="txt" data-in="q" placeholder="Busca por nombre, equipo o músculo" value="${S.q||''}">
+      <div class="alts pick-list" id="pickList">${pickerHtml()}</div>
+      <button class="btn ghost block" data-a="pickClose">Cancelar</button>
+    </div></div>` : ''}
   ${S.sheet ? `<div class="sheet-bg" data-a="sheetClose"><div class="sheet" data-a="noop">
     <span class="eyebrow">Ojo con el orden</span><h2>${S.sheet.title}</h2><p>${S.sheet.body}</p><p class="small muted">${S.sheet.foot}</p>
     ${tag('cambiar el orden sin saber que afecta el rendimiento')}
