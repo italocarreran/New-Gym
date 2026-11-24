@@ -128,6 +128,12 @@ p { margin: 0; }
 .opt.on { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent) inset; }
 .opt.on .opt-l { background: var(--accent); color: var(--accent-ink); }
 .opt.busy { opacity: .6; }
+.opts.mini { gap: 4px; }
+.opts.mini .opt { flex-direction: row; align-items: center; gap: 5px; padding: 5px 6px; border-radius: 9px; }
+.opts.mini .opt-top { order: 0; }
+.opts.mini .opt-l { width: 16px; height: 16px; font-size: 11px; border-radius: 4px; }
+.opts.mini .opt-dot, .opts.mini .opt-s, .opts.mini .opt-b { display: none; }
+.opts.mini .opt-n { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .opt.busy .opt-n { text-decoration: line-through; }
 .alt.busy .name { text-decoration: line-through; }
 .alt .name { font-weight: 600; font-size: 14.5px; }
@@ -319,13 +325,13 @@ const DAY = [
 ];
 const SHORT = { banca:'Banca barra', mancPlana:'Mancuernas plano', smith:'Máquina / Smith', incl:'Inclinado manc.', inclSmith:'Inclinado Smith', flexPeso:'Flexiones c/ peso', cruces:'Cruces polea', pecdeck:'Pec deck', aperturas:'Aperturas manc.', latMan:'Laterales manc.', latPolea:'Laterales polea', latMaq:'Laterales máq.', pressHom:'Press manc.', pressHomMaq:'Press máquina', arnold:'Arnold', triPolea:'Polea', fondos:'Fondos asist.', frances:'Press francés' };
 const PRANK = { alta:3, media:2, baja:1 };
-const resetSession = () => { Object.assign(S, { si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
+const resetSession = () => { Object.assign(S, { chosen:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
 const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
 const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
 
 // ---------- Estado ----------
 const S = {
-  tab:'hoy', tags:true, pre:{}, unit:'kg', si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
+  tab:'hoy', tags:true, pre:{}, chosen:{}, unit:'kg', si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
   minutes:null, draft:null, msg:null, swap:null, restEnd:null, restLen:0, sheet:null, showWhy:false
 };
 
@@ -469,8 +475,8 @@ function act(a, v) {
     case 'tags': S.tags = !S.tags; break;
     case 'pick': {
       const k = +v, id = DAY[si].alts[k];
-      if (k === altIdx(si) && !S.busy[id]) { act('busy'); return; }   // tocar la elegida otra vez = está ocupada
-      delete S.busy[id]; S.alt[si] = k; S.draft = makeDraft(si); S.swap = null; S.showWhy = true; break;
+      if (k === altIdx(si) && !S.busy[id] && S.chosen[si]) { act('busy'); return; }   // tocar la elegida otra vez = está ocupada
+      S.chosen[si] = true; delete S.busy[id]; S.alt[si] = k; S.draft = makeDraft(si); S.swap = null; S.showWhy = true; break;
     }
     case 'whyToggle': S.showWhy = !S.showWhy; break;
     case 'busy': {
@@ -562,7 +568,7 @@ function viewHoy() {
       <span class="n">${isDone(j) ? '✓' : j+1}</span><span class="l">${x.name}</span></button>`).join('');
 
   const alts = d.alts.map((id, k) => {
-    const x = EX[id], on = k === altIdx(si), b = !!S.busy[id];
+    const x = EX[id], on = k === altIdx(si) && (!!S.chosen[si] || ls.length > 0), b = !!S.busy[id];
     return `<button class="opt ${on?'on':''} ${b?'busy':''}" data-a="pick" data-v="${k}" aria-pressed="${on}">
       <span class="opt-top"><span class="opt-l">${'ABC'[k]}</span><span class="opt-dot ${b?'taken':''}" aria-hidden="true"></span></span>
       <span class="opt-n">${SHORT[id] || x.n}</span>
@@ -581,6 +587,7 @@ function viewHoy() {
     swapHtml = `<div class="note info flash"><b>Cambiado: ${S.swap.to}.</b><span>Cuenta igual para la rutina. ${S.swap.from} quedó marcado como ocupado.</span></div>`;
   }
 
+  const chosen = !!S.chosen[si] || ls.length > 0;
   const orderWarn = e.last && e.last.pos !== p ? `<div class="note warn"><b>La última vez lo hiciste de ${ord(e.last.pos)}, hoy va de ${ord(p)}.</b><span>${p > e.last.pos ? 'Llegas más cansado: es normal rendir algo menos. No es pérdida de fuerza.' : 'Llegas más fresco: es normal rendir algo más.'}</span></div>` : '';
 
   const why = `<div class="explain">
@@ -633,10 +640,10 @@ function viewHoy() {
       <div class="slot-head">
         <div><span class="eyebrow">Slot ${si+1} de ${DAY.length} · va de ${ord(p)}</span><h2>${d.name}</h2>
           <div class="meta"><span class="prio ${d.prio}">Prioridad ${d.prio}</span><span class="small muted">${d.type==='comp'?'Compuesto':'Aislado'}</span></div></div>
-        <div class="target">${d.sets}×${d.reps[0]}-${d.reps[1]}<small>series × reps</small></div>
       </div>
-      <div class="opts">${alts}</div>
-      <div class="setlist">
+      <div class="opts ${chosen ? 'mini' : ''}">${alts}</div>
+      ${swapHtml}
+      ${chosen ? `<div class="setlist">
         <div class="sl-row sl-h"><span>#</span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span>Antes</span></div>
         ${Array.from({length: d.sets}, (_, i) => {
           const l = ls[i], prev = e.last && e.last.r[i] != null ? `${fmt(toU(e.last.w))}×${e.last.r[i]}<br>${e.last.rir ? `${e.last.rir[i] === 3 ? '3+' : e.last.rir[i]} RIR` : ''}` : '–';
@@ -658,13 +665,10 @@ function viewHoy() {
           grande: `La vez pasada, con ${fmt(toU(pl.from))} ${S.unit}, no llegaste al mínimo: el salto fue grande. Hoy baja a ${fmt(toU(pl.w))} ${S.unit}.`
         })[pl.why]; })()}${d.type === 'comp' ? ' Descansa 2-3 min entre series para que las reps caigan menos.' : ''}</p>
       ${orderWarn}
-      ${swapHtml}
-      ${tag('perder tiempo decidiendo un reemplazo en el momento')}
-      <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>
+      <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>` : ''}
     </section>
 
-
-    <section class="card log">${logPanel}</section>
+    ${chosen ? `<section class="card log">${logPanel}</section>` : ''}
 
     <section class="card">
       <div><span class="eyebrow">Tiempo</span><h3>¿Cuánto te queda?</h3></div>
