@@ -93,6 +93,15 @@ p { margin: 0; }
 .alt.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 .alt.on .letter { background: var(--accent); color: var(--accent-ink); }
 .alt.busy { opacity: .55; }
+.setlist { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.sl-row { display: grid; grid-template-columns: 44px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr); gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.sl-row:first-child { border-top: none; }
+.sl-row .num { font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sl-row small { display: block; font-size: 11px; color: var(--muted); }
+.sl-h { background: var(--surface-2); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-block: 6px; }
+.sl-row.cur { background: var(--accent-soft); }
+.sl-row.cur .num:last-child { color: var(--accent); font-size: 14px; }
+.sl-row.done .num:last-child { color: var(--ok); }
 .opts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
 .opt { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 8px; text-align: left; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .opt-top { display: flex; justify-content: space-between; align-items: center; }
@@ -574,6 +583,15 @@ function viewHoy() {
         <div class="target">${d.sets}×${d.reps[0]}-${d.reps[1]}<small>series × reps</small></div>
       </div>
       <div class="opts">${alts}</div>
+      <div class="setlist">
+        <div class="sl-row sl-h"><span>Serie</span><span>Meta</span><span>Anterior</span><span>Hoy</span></div>
+        ${Array.from({length: d.sets}, (_, i) => {
+          const l = ls[i], prev = e.last ? `${fmt(e.last.w)}×${e.last.r[i] ?? '–'}` : '–';
+          const cur = i === ls.length;
+          const lastIso = d.type === 'iso' && i === d.sets - 1;
+          return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span>${d.reps[0]}-${d.reps[1]} reps<small>${lastIso ? 'al fallo' : '1-2 en reserva'}</small></span><span class="num">${prev}</span><span class="num">${l ? `${fmt(l.w)}×${l.r}` : cur ? 'Ahora' : ''}</span></div>`;
+        }).join('')}
+      </div>
       <p class="small muted">Si la elegida está ocupada, tócala otra vez y pasa a la siguiente libre.</p>
       ${swapHtml}
       ${tag('perder tiempo decidiendo un reemplazo en el momento')}
