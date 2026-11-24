@@ -725,8 +725,7 @@ function viewHoy() {
         }).join('')}
         <div class="sl-add"><button data-a="addSet">+ Agregar serie</button></div>
       </div>
-      <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en cada serie' : '1-2 en reserva, la última al fallo'}.</p>
-      <details><summary>Cómo progresar hoy</summary><p class="sl-foot">${(() => { const pl = plan(si); return ({
+      <details><summary>Cómo progresar hoy</summary><p class="sl-foot">Rango ${d.reps[0]}-${d.reps[1]} reps, ${d.type === 'comp' ? '1-2 en reserva en cada serie' : '1-2 en reserva y la última al fallo'}. ${(() => { const pl = plan(si); return ({
           nuevo: 'Primera vez: parte liviano y busca el mínimo del rango.',
           rep: 'Mismo peso. Suma una repetición donde te sobró reserva. Que las reps bajen de serie en serie es normal.',
           peso: `La última serie llegó al tope con 1-2 en reserva: sube a ${fmt(toU(pl.w))} ${S.unit} (+${pl.pct}%). Hoy la última serie debería caer cerca de ${d.reps[0]}.`,
