@@ -399,7 +399,11 @@ function act(a, v) {
   switch (a) {
     case 'tab': S.tab = v; window.scrollTo(0, 0); break;
     case 'tags': S.tags = !S.tags; break;
-    case 'pick': { S.alt[si] = +v; S.draft = makeDraft(si); S.swap = null; S.showWhy = true; break; }
+    case 'pick': {
+      const k = +v, id = DAY[si].alts[k];
+      if (k === altIdx(si) && !S.busy[id]) { act('busy'); return; }   // tocar la elegida otra vez = está ocupada
+      delete S.busy[id]; S.alt[si] = k; S.draft = makeDraft(si); S.swap = null; S.showWhy = true; break;
+    }
     case 'whyToggle': S.showWhy = !S.showWhy; break;
     case 'busy': {
       const id = exIdOf(si); S.busy[id] = true;
@@ -570,7 +574,7 @@ function viewHoy() {
         <div class="target">${d.sets}×${d.reps[0]}-${d.reps[1]}<small>series × reps</small></div>
       </div>
       <div class="opts">${alts}</div>
-      ${!allBusy || !S.swap ? `<button class="btn danger block" data-a="busy" ${allBusy?'disabled':''}>Ocupado / no disponible</button>` : ''}
+      <p class="small muted">Si la elegida está ocupada, tócala otra vez y pasa a la siguiente libre.</p>
       ${swapHtml}
       ${tag('perder tiempo decidiendo un reemplazo en el momento')}
       <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>
