@@ -105,10 +105,11 @@ p { margin: 0; }
 .cell:focus { outline: 2px solid var(--accent); outline-offset: 0; }
 .sl-row.cur .cell { border-color: var(--accent); }
 .sl-row.done .cell { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
-.sl-row { display: grid; grid-template-columns: 28px minmax(0,1.1fr) minmax(0,.8fr) minmax(0,1.5fr); gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.sl-row { display: grid; grid-template-columns: 24px minmax(0,.9fr) minmax(0,1.8fr); row-gap: 2px; gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
 .sl-row:first-child { border-top: none; }
 .sl-row .num { font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sl-row small { display: block; font-size: 11px; color: var(--muted); }
+.sl-meta { grid-column: 2 / -1; font-size: 10.5px !important; }
 .sl-h { background: var(--surface-2); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-block: 6px; }
 .sl-row.cur { background: var(--accent-soft); }
 .sl-row.cur .num:last-child { color: var(--accent); font-size: 14px; }
@@ -599,17 +600,17 @@ function viewHoy() {
       </div>
       <div class="opts">${alts}</div>
       <div class="setlist">
-        <div class="sl-row sl-h"><span>#</span><span>Meta</span><span>Antes</span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span></div>
+        <div class="sl-row sl-h"><span>#</span><span>Antes</span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span></div>
         ${Array.from({length: d.sets}, (_, i) => {
           const l = ls[i], prev = e.last ? `${fmt(toU(e.last.w))}×${e.last.r[i] ?? '–'}` : '–';
           const cur = i === ls.length;
           const lastIso = d.type === 'iso' && i === d.sets - 1;
-          return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span>${d.reps[0]}-${d.reps[1]} reps<small>${lastIso ? 'al fallo' : '1-2 en reserva'}</small></span><span class="num">${prev}</span><span class="cells">${(() => {
+          return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span class="num">${prev}</span><span class="cells">${(() => {
             const pre = S.pre[`${si}-${i}`] || {};
             const w = l ? l.w : cur ? S.draft.w : pre.w, r = l ? l.r : cur ? S.draft.r : pre.r;
             const ph = e.last ? [toU(e.last.w), e.last.r[i] ?? ''] : ['', ''];
             return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label>`;
-          })()}</span></div>`;
+          })()}</span><small class="sl-meta">${d.reps[0]}-${d.reps[1]} reps · ${lastIso ? 'al fallo' : '1-2 en reserva'}</small></div>`;
         }).join('')}
       </div>
       ${swapHtml}
