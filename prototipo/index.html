@@ -94,7 +94,7 @@ p { margin: 0; }
 .alt.on .letter { background: var(--accent); color: var(--accent-ink); }
 .alt.busy { opacity: .55; }
 .setlist { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.cells { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.cells { display: grid; grid-template-columns: 1.15fr 1fr .9fr; gap: 3px; }
 .cellw { display: flex; align-items: center; gap: 3px; min-width: 0; }
 .cellw .u { font-size: 10px; color: var(--muted); font-weight: 500; }
 .unit-sw { display: inline-flex; justify-self: start; background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 2px; gap: 2px; }
@@ -105,7 +105,7 @@ p { margin: 0; }
 .cell:focus { outline: 2px solid var(--accent); outline-offset: 0; }
 .sl-row.cur .cell { border-color: var(--accent); }
 .sl-row.done .cell { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
-.sl-row { display: grid; grid-template-columns: 22px minmax(0,1fr) 56px; row-gap: 2px; gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.sl-row { display: grid; grid-template-columns: 16px minmax(0,1fr) 50px; gap: 4px; row-gap: 2px; align-items: center; padding: 8px 8px; border-top: 1px solid var(--line); font-size: 13.5px; }
 .sl-row:first-child { border-top: none; }
 .sl-row .num { font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sl-row small { display: block; font-size: 11px; color: var(--muted); }
@@ -653,7 +653,7 @@ function viewHoy() {
             const pre = S.pre[`${si}-${i}`] || {};
             const w = l ? l.w : cur ? S.draft.w : pre.w ?? target(si, i).w, r = l ? l.r : cur ? S.draft.r : pre.r ?? target(si, i).r;
             const tg = target(si, i), ph = [toU(tg.w), tg.r];
-            return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label>`;
+            return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones en reserva serie ${i+1}" data-set="${i}" data-f="rir" value="${(l ? l.rir : cur ? S.draft.rir : pre.rir) ?? ''}" placeholder="${d.type === 'iso' && i === d.sets - 1 ? '0' : '1-2'}"><span class="u">RIR</span></label>`;
           })()}</span><span class="antes">${prev}</span></div>`;
         }).join('')}
       </div>
