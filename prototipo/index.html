@@ -105,10 +105,12 @@ p { margin: 0; }
 .cell:focus { outline: 2px solid var(--accent); outline-offset: 0; }
 .sl-row.cur .cell { border-color: var(--accent); }
 .sl-row.done .cell { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
-.sl-row { display: grid; grid-template-columns: 24px minmax(0,.9fr) minmax(0,1.8fr); row-gap: 2px; gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.sl-row { display: grid; grid-template-columns: 22px minmax(0,1fr) 48px; row-gap: 2px; gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
 .sl-row:first-child { border-top: none; }
 .sl-row .num { font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sl-row small { display: block; font-size: 11px; color: var(--muted); }
+.antes { font-size: 11px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.sl-h .antes, .sl-h span:last-child { text-align: right; }
 .sl-foot { font-size: 11.5px; color: var(--muted); margin-top: -4px; }
 .sl-h { background: var(--surface-2); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-block: 6px; }
 .sl-row.cur { background: var(--accent-soft); }
@@ -341,10 +343,20 @@ const share = (a, b) => muscles(a).filter(m => muscles(b).includes(m));
 const restSecs = si => DAY[si].type === 'comp' ? 150 : 75;
 const slotMins = (si, setsLeft) => (setsLeft ?? DAY[si].sets) * (45 + restSecs(si)) / 60 + 2;
 
+// Sobrecarga progresiva (progresión doble): +1 rep por serie hasta el tope del rango;
+// si la vez anterior llegaste al tope en todas, sube el peso y vuelve al piso del rango.
+function target(si, i) {
+  const d = DAY[si], e = exOf(si);
+  if (!e.last) return { w: e.sugW ?? 0, r: d.reps[0], why: 'nuevo' };
+  const [lo, hi] = d.reps, lr = e.last.r;
+  if (lr.every(x => x >= hi)) return { w: e.last.w + (d.type === 'comp' ? 2.5 : 1), r: lo, why: 'peso' };
+  const base = lr[i] ?? lr[lr.length - 1];
+  return { w: e.last.w, r: Math.min(base + 1, hi), why: 'rep' };
+}
 function makeDraft(si) {
-  const e = exOf(si), n = logsFor(si).length, prev = logsFor(si).slice(-1)[0];
-  const w = prev ? prev.w : (e.last ? e.last.w : e.sugW ?? 0);
-  const r = prev ? prev.r : (e.last ? (e.last.r[n] ?? e.last.r[e.last.r.length-1]) : DAY[si].reps[0]);
+  const n = logsFor(si).length, prev = logsFor(si).slice(-1)[0], t = target(si, n);
+  const w = prev ? prev.w : t.w;
+  const r = t.r;
   const pre = S.pre[`${si}-${n}`] || {};
   return { w: pre.w ?? w, r: pre.r ?? r, rir: null };
 }
@@ -600,20 +612,20 @@ function viewHoy() {
       </div>
       <div class="opts">${alts}</div>
       <div class="setlist">
-        <div class="sl-row sl-h"><span>#</span><span>Antes</span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span></div>
+        <div class="sl-row sl-h"><span>#</span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span>Antes</span></div>
         ${Array.from({length: d.sets}, (_, i) => {
           const l = ls[i], prev = e.last ? `${fmt(toU(e.last.w))}×${e.last.r[i] ?? '–'}` : '–';
           const cur = i === ls.length;
           const lastIso = d.type === 'iso' && i === d.sets - 1;
-          return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span class="num">${prev}</span><span class="cells">${(() => {
+          return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span class="cells">${(() => {
             const pre = S.pre[`${si}-${i}`] || {};
-            const w = l ? l.w : cur ? S.draft.w : pre.w, r = l ? l.r : cur ? S.draft.r : pre.r;
-            const ph = e.last ? [toU(e.last.w), e.last.r[i] ?? ''] : ['', ''];
+            const w = l ? l.w : cur ? S.draft.w : pre.w ?? target(si, i).w, r = l ? l.r : cur ? S.draft.r : pre.r ?? target(si, i).r;
+            const tg = target(si, i), ph = [toU(tg.w), tg.r];
             return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label>`;
-          })()}</span></div>`;
+          })()}</span><span class="antes">${prev}</span></div>`;
         }).join('')}
       </div>
-      <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en todas' : '1-2 en reserva, la última al fallo'}</p>
+      <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en todas' : '1-2 en reserva, la última al fallo'}.<br>${({nuevo:'Primera vez: parte liviano y busca el piso del rango.', rep:'Hoy apunta a una repetición más por serie que la vez anterior.', peso:'Llegaste al tope la vez anterior: hoy sube el peso y vuelve al piso del rango.'})[target(si,0).why]}</p>
       ${swapHtml}
       ${tag('perder tiempo decidiendo un reemplazo en el momento')}
       <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>
