@@ -105,12 +105,16 @@ p { margin: 0; }
 .cell:focus { outline: 2px solid var(--accent); outline-offset: 0; }
 .sl-row.cur .cell { border-color: var(--accent); }
 .sl-row.done .cell { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
-.sl-row { display: grid; grid-template-columns: 16px minmax(0,1fr) 50px; gap: 4px; row-gap: 2px; align-items: center; padding: 8px 8px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.sl-row { display: grid; grid-template-columns: 28px minmax(0,1fr) 50px; gap: 4px; row-gap: 2px; align-items: center; padding: 8px 8px; border-top: 1px solid var(--line); font-size: 13.5px; }
 .sl-row:first-child { border-top: none; }
 .sl-row .num { font-family: var(--display); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sl-row small { display: block; font-size: 11px; color: var(--muted); }
 .antes { font-size: 11px; line-height: 1.25; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
 .sl-h .antes, .sl-h span:last-child { text-align: right; }
+.chk { width: 26px; height: 26px; border-radius: 7px; border: 2px solid var(--line); background: var(--surface); color: var(--muted); font-family: var(--display); font-weight: 700; font-size: 13px; display: grid; place-items: center; padding: 0; }
+.chk.cur { border-color: var(--accent); color: var(--accent); }
+.chk.on { background: var(--ok); border-color: var(--ok); color: var(--surface); font-size: 15px; }
+.chk:disabled { opacity: .5; cursor: default; }
 .sl-foot { font-size: 11.5px; color: var(--muted); margin-top: -4px; }
 .sl-h { background: var(--surface-2); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-block: 6px; }
 .sl-row.cur { background: var(--accent-soft); }
@@ -596,9 +600,9 @@ function viewHoy() {
   const restL = S.restEnd ? Math.max(0, Math.round((S.restEnd - Date.now())/1000)) : null;
   const msgH = S.msg ? `<div class="note ${S.msg.cls} flash"><b>${S.msg.t}</b><span>${S.msg.s}</span></div>` : '';
   const actions = isDone(si)
-    ? `${msgH}<div class="btn-row"><button class="btn ghost" data-a="undo">Deshacer serie</button><button class="btn primary" data-a="next">${S.returnTo != null ? `Volver a ${DAY[S.returnTo].name.toLowerCase()}` : 'Siguiente ejercicio'}</button></div>`
+    ? `${msgH}<div><button class="btn primary block" data-a="next">${S.returnTo != null ? `Volver a ${DAY[S.returnTo].name.toLowerCase()}` : 'Siguiente ejercicio'}</button></div>`
     : `${restL != null ? `<div class="rest"><span><span class="small">Descanso</span><br><span class="t" id="restT">${Math.floor(restL/60)}:${String(restL%60).padStart(2,'0')}</span></span><button data-a="skipRest">Saltar</button></div>` : ''}${msgH}
-      <button class="btn primary block" data-a="log">Registrar serie ${ls.length+1}</button>`;
+`;
   const orderWarn = e.last && e.last.pos !== p ? `<div class="note warn"><b>La última vez lo hiciste de ${ord(e.last.pos)}, hoy va de ${ord(p)}.</b><span>${p > e.last.pos ? 'Llegas más cansado: es normal rendir algo menos. No es pérdida de fuerza.' : 'Llegas más fresco: es normal rendir algo más.'}</span></div>` : '';
 
   const why = `<div class="explain">
@@ -655,12 +659,12 @@ function viewHoy() {
       <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
       ${swapHtml}
       ${chosen ? `<div class="setlist">
-        <div class="sl-row sl-h"><span>#</span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span>Antes</span></div>
+        <div class="sl-row sl-h"><span></span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span>Antes</span></div>
         ${Array.from({length: d.sets}, (_, i) => {
           const l = ls[i], prev = e.last && e.last.r[i] != null ? `${fmt(toU(e.last.w))}×${e.last.r[i]}<br>${e.last.rir ? `${e.last.rir[i] === 3 ? '3+' : e.last.rir[i]} RIR` : ''}` : '–';
           const cur = i === ls.length;
           const lastIso = d.type === 'iso' && i === d.sets - 1;
-          return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span class="cells">${(() => {
+          return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><button class="chk ${l ? 'on' : ''} ${cur ? 'cur' : ''}" data-a="${l ? (i === ls.length - 1 ? 'undo' : 'noop') : cur ? 'log' : 'noop'}" ${!l && !cur ? 'disabled' : ''} aria-label="Serie ${i+1} completa" aria-pressed="${!!l}">${l ? '✓' : i + 1}</button><span class="cells">${(() => {
             const pre = S.pre[`${si}-${i}`] || {};
             const w = l ? l.w : cur ? S.draft.w : pre.w ?? target(si, i).w, r = l ? l.r : cur ? S.draft.r : pre.r ?? target(si, i).r;
             const tg = target(si, i), ph = [toU(tg.w), tg.r];
