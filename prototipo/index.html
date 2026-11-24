@@ -509,7 +509,7 @@ function act(a, v) {
     case 'r': S.draft.r = Math.max(0, S.draft.r + (+v)); break;
     case 'rir': S.draft.rir = +v; break;
     case 'log': {
-      if (S.draft.rir == null) { S.msg = { cls:'info', t:'Falta un dato.', s:'Marca cuántas repeticiones más podías hacer.' }; break; }
+      if (S.draft.rir == null) { S.msg = { cls:'info', t:'Falta el RIR.', s:'Anota en la casilla RIR cuántas repeticiones más podías hacer.' }; break; }
       if (!S.order.includes(si)) S.order.push(si);
       S.logs.push({ si, ex: exIdOf(si), w: S.draft.w, r: S.draft.r, rir: S.draft.rir });
       S.msg = feedback(si, S.draft.rir);
@@ -588,6 +588,12 @@ function viewHoy() {
   }
 
   const chosen = true; // opciones siempre compactas, la A elegida y las series a la vista
+  const restL = S.restEnd ? Math.max(0, Math.round((S.restEnd - Date.now())/1000)) : null;
+  const msgH = S.msg ? `<div class="note ${S.msg.cls} flash"><b>${S.msg.t}</b><span>${S.msg.s}</span></div>` : '';
+  const actions = isDone(si)
+    ? `${msgH}<div class="btn-row"><button class="btn ghost" data-a="undo">Deshacer serie</button><button class="btn primary" data-a="next">${S.returnTo != null ? `Volver a ${DAY[S.returnTo].name.toLowerCase()}` : 'Siguiente ejercicio'}</button></div>`
+    : `${restL != null ? `<div class="rest"><span><span class="small">Descanso</span><br><span class="t" id="restT">${Math.floor(restL/60)}:${String(restL%60).padStart(2,'0')}</span></span><button data-a="skipRest">Saltar</button></div>` : ''}${msgH}
+      <button class="btn primary block" data-a="log">Registrar serie ${ls.length+1}</button>`;
   const orderWarn = e.last && e.last.pos !== p ? `<div class="note warn"><b>La última vez lo hiciste de ${ord(e.last.pos)}, hoy va de ${ord(p)}.</b><span>${p > e.last.pos ? 'Llegas más cansado: es normal rendir algo menos. No es pérdida de fuerza.' : 'Llegas más fresco: es normal rendir algo más.'}</span></div>` : '';
 
   const why = `<div class="explain">
@@ -666,10 +672,11 @@ function viewHoy() {
           grande: `La vez pasada, con ${fmt(toU(pl.from))} ${S.unit}, no llegaste al mínimo: el salto fue grande. Hoy baja a ${fmt(toU(pl.w))} ${S.unit}.`
         })[pl.why]; })()}${d.type === 'comp' ? ' Descansa 2-3 min entre series para que las reps caigan menos.' : ''}</p></details>
       ${orderWarn}
+      ${actions}
       <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>` : ''}
     </section>
 
-    ${chosen ? `<section class="card log">${logPanel}</section>` : ''}
+
 
     <section class="card">
       <div><span class="eyebrow">Tiempo</span><h3>¿Cuánto te queda?</h3></div>
