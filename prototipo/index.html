@@ -476,7 +476,7 @@ function act(a, v) {
     case 'pick': {
       const k = +v, id = DAY[si].alts[k];
       if (k === altIdx(si) && !S.busy[id] && S.chosen[si]) { act('busy'); return; }   // tocar la elegida otra vez = está ocupada
-      S.chosen[si] = true; delete S.busy[id]; S.alt[si] = k; S.draft = makeDraft(si); S.swap = null; S.showWhy = true; break;
+      S.chosen[si] = true; delete S.busy[id]; S.alt[si] = k; S.draft = makeDraft(si); S.swap = null; S.showWhy = false; break;
     }
     case 'whyToggle': S.showWhy = !S.showWhy; break;
     case 'busy': {
@@ -657,13 +657,14 @@ function viewHoy() {
           })()}</span><span class="antes">${prev}</span></div>`;
         }).join('')}
       </div>
-      <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en cada serie' : '1-2 en reserva, la última al fallo'}.<br>${(() => { const pl = plan(si); return ({
+      <p class="sl-foot">Meta: ${d.reps[0]}-${d.reps[1]} reps · ${d.type === 'comp' ? '1-2 en reserva en cada serie' : '1-2 en reserva, la última al fallo'}.</p>
+      <details><summary>Cómo progresar hoy</summary><p class="sl-foot">${(() => { const pl = plan(si); return ({
           nuevo: 'Primera vez: parte liviano y busca el mínimo del rango.',
           rep: 'Mismo peso. Suma una repetición donde te sobró reserva. Que las reps bajen de serie en serie es normal.',
           peso: `La última serie llegó al tope con 1-2 en reserva: sube a ${fmt(toU(pl.w))} ${S.unit} (+${pl.pct}%). Hoy la última serie debería caer cerca de ${d.reps[0]}.`,
           chico: `La vez pasada, con ${fmt(toU(pl.from))} ${S.unit}, te sobraron 3 o más: el salto fue chico. Hoy sube a ${fmt(toU(pl.w))} ${S.unit}.`,
           grande: `La vez pasada, con ${fmt(toU(pl.from))} ${S.unit}, no llegaste al mínimo: el salto fue grande. Hoy baja a ${fmt(toU(pl.w))} ${S.unit}.`
-        })[pl.why]; })()}${d.type === 'comp' ? ' Descansa 2-3 min entre series para que las reps caigan menos.' : ''}</p>
+        })[pl.why]; })()}${d.type === 'comp' ? ' Descansa 2-3 min entre series para que las reps caigan menos.' : ''}</p></details>
       ${orderWarn}
       <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>` : ''}
     </section>
