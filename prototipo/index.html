@@ -592,7 +592,6 @@ function viewHoy() {
           return `<div class="sl-row ${l ? 'done' : ''} ${cur ? 'cur' : ''}"><span class="num">${i+1}</span><span>${d.reps[0]}-${d.reps[1]} reps<small>${lastIso ? 'al fallo' : '1-2 en reserva'}</small></span><span class="num">${prev}</span><span class="num">${l ? `${fmt(l.w)}×${l.r}` : cur ? 'Ahora' : ''}</span></div>`;
         }).join('')}
       </div>
-      <p class="small muted">Si la elegida está ocupada, tócala otra vez y pasa a la siguiente libre.</p>
       ${swapHtml}
       ${tag('perder tiempo decidiendo un reemplazo en el momento')}
       <details ${S.showWhy?'open':''}><summary>¿Por qué ${e.n.toLowerCase()} es equivalente?</summary>${why}</details>
