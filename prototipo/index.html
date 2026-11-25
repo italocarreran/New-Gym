@@ -689,15 +689,15 @@ function act(a, v) {
       if (S.draft.rir == null) { S.msg = { cls:'info', t:'Falta el RIR.', s:'Anota en la casilla RIR cuántas repeticiones más podías hacer.' }; break; }
       if (!S.order.includes(si)) S.order.push(si);
       S.logs.push({ si, ex: exIdOf(si), w: S.draft.w, r: S.draft.r, rir: S.draft.rir }); S.pulse = true; if (!S.startAt) S.startAt = Date.now();
-      S.msg = feedback(si, S.draft.rir);
+      S.msg = feedback(si, S.draft.rir); if (S.msg && S.msg.cls === 'ok') S.msg = null; // solo se avisa cuando hay algo que corregir
       const pn = progressionNote(si); if (pn) S.msg = { cls:'info', t:'Sube el peso la próxima vez.', s:pn };
       S.restLen = restSecs(si); S.restEnd = Date.now() + S.restLen * 1000;
       S.draft = makeDraft(si); S.swap = null;
       const pb = biPartner(si);
       if (pb != null && !isDone(pb) && !cutSet().has(pb)) {
         const fb = S.msg;
-        if (biFirst(si)) { S.restEnd = null; S.msg = { cls:'info', t:`Biserie: pasa directo a ${DAY[pb].name.toLowerCase()}.`, s:`Sin descanso entre los dos. ${fb ? fb.t : ''}` }; }
-        else S.msg = { cls:'info', t:`Vuelta lista. Descansa y vuelve a ${DAY[pb].name.toLowerCase()}.`, s:`${DAY[si].name}: ${fb ? fb.t : ''}` };
+        if (biFirst(si)) { S.restEnd = null; S.msg = { cls:'info', t:`Biserie: pasa directo a ${DAY[pb].name.toLowerCase()}.`, s:`Sin descanso entre los dos.${fb ? ' ' + fb.t : ''}` }; }
+        else S.msg = { cls:'info', t:`Vuelta lista. Descansa y vuelve a ${DAY[pb].name.toLowerCase()}.`, s: fb ? `${DAY[si].name}: ${fb.t}` : '' };
         S.si = pb; S.fold[pb] = false; S.draft = makeDraft(pb); S.scrollCur = true;
       }
       break;
