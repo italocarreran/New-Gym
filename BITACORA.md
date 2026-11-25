@@ -15,7 +15,6 @@ Quién está trabajando en qué ahora mismo. Anótate antes de empezar y sácate
 | Desde | Quién | Rama | Qué toca |
 |---|---|---|---|
 | 2026-11-25 | Hilo Claude "Planificar app personal de gimnasio" | `claude/project-thread-ly2hj8` | `prototipo/index.html` (todo salvo el dibujo del muñeco) |
-| 2026-11-25 | Hilo Claude "Rediseñar mapa de calor muscular" | `claude/project-thread-j37w1e` | `prototipo/index.html`: `bodyFigure`, `FRONT`, `BACK`, `REGION_GRUPO` |
 
 Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS.md` 8).
 
@@ -28,6 +27,13 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 - [ ] **Decidir si el repo vuelve a privado.** Hoy es público.
 
 ---
+
+## 2026-11-25 · Claude (hilo "Rediseñar mapa de calor muscular") · nuevo muñeco del mapa de calor
+
+- Muñeco nuevo según el modelo de Italo: figura musculosa de frente y espalda, piel durazno `#F6CBA8` con contorno café `#B5714A`, cada músculo como región propia (`bodyFigure`, `FRONT`, `BACK`; `REGION_GRUPO` dice qué grupo de la app pinta cada región). Incluye abdomen, oblicuos, antebrazo, lumbar y aductores aunque el prototipo aún no los mide.
+- Pedidos de Italo en comentarios: sin series hechas, los músculos que tocan hoy solo llevan borde rojo suave (`#D2604E`) y el relleno pasa de piel a rojo según el avance; muñeco del encabezado sin recuadro.
+- Tema claro fijo: se quitó el `@media (prefers-color-scheme: dark)`; el oscuro queda solo con `data-theme="dark"`.
+- Todo esto ya está en `main` (llegó vía `ly2hj8` y la versión publicada). Nada pendiente de este hilo.
 
 ## 2026-11-25 · Claude (hilo "Ordenar repo y documentar para IA") · repo ordenado en `main`
 
