@@ -164,6 +164,21 @@ p { margin: 0; }
 .sl-swipe .sl-row.cur { background: var(--accent-soft); }
 .sl-swipe.open .sl-row { transform: translateX(-84px); }
 .sl-del { position: absolute; top: 0; bottom: 0; right: 0; width: 84px; border: none; background: var(--bad); color: #fff; font-weight: 600; font-size: 13px; }
+.sl-drop { padding-block: 4px 6px; border-top: 1px dashed var(--line); background: var(--surface-2); }
+.sl-drop .cell { font-size: 14px; padding: 4px 2px; }
+.drop-ar { text-align: center; color: var(--muted); font-size: 15px; }
+.drop-t { align-self: center; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; text-align: center; }
+.drop-x { justify-self: end; border: 0; background: transparent; color: var(--muted); font-size: 13px; width: 28px; height: 28px; }
+.sl-dropadd { display: flex; padding: 0 8px; border-top: 1px dashed var(--line); }
+.sl-dropadd button { border: none; background: transparent; color: var(--muted); font-weight: 600; font-size: 11.5px; padding: 5px 2px; }
+.bi-link { display: flex; justify-content: center; align-items: center; gap: 8px; margin: -12px 0; min-height: 24px; }
+.bi-link button { border: 0; background: transparent; color: var(--muted); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
+.bi-link:not(.on) button { opacity: .7; }
+.bi-link.on { justify-content: space-between; padding: 4px 10px; margin: -14px 0; border-left: 3px solid var(--accent); border-right: 3px solid var(--accent); background: var(--accent-soft); }
+.bi-link.on .bi-tag { font-size: 11px; font-weight: 700; color: var(--accent); }
+.bi-link.on button { color: var(--accent); text-decoration: underline; padding: 2px 0; }
+.card.bi-a { border-color: var(--accent); border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; border-width: 1px 3px 1px 3px; }
+.card.bi-b { border-color: var(--accent); border-top-left-radius: 4px; border-top-right-radius: 4px; border-width: 1px 3px 1px 3px; }
 .sl-foot { font-size: 11.5px; color: var(--muted); margin-top: -4px; }
 .sl-h { background: var(--surface-2); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-block: 6px; }
 .sl-row.cur { background: var(--accent-soft); }
@@ -486,14 +501,19 @@ function reorderCheck(oldV, newV, j) {
   return null;
 }
 const afterAltEdit = () => { if (S.tab === 'rutina') { resetSession(); return; } S.alt[S.ed] = 0; DAY[S.ed].alts.forEach(x => delete S.busy[x]); S.draft = makeDraft(S.si); S.swap = null; };
-const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, view:null, startAt:null, pausedAt:null, pausedTotal:0, fold:{}, orderOk:{}, conflictOk:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null }); S.draft = makeDraft(0); };
+const resetSession = () => { Object.assign(S, { chosen:{}, extra:{}, view:null, startAt:null, pausedAt:null, pausedTotal:0, fold:{}, orderOk:{}, conflictOk:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null, minutes:null, msg:null, swap:null, restEnd:null, sheet:null, bi:{} }); S.draft = makeDraft(0); };
+// biserie: dos slots seguidos que se alternan sin descanso entre ellos
+const biKey = (a, b) => `${Math.min(a, b)}-${Math.max(a, b)}`;
+function biPartner(j) { const v = viewOrder(), k = v.indexOf(j); for (const n of [v[k - 1], v[k + 1]]) if (n != null && S.bi[biKey(j, n)]) return n; return null; }
+const biFirst = j => { const n = biPartner(j); return n != null && viewOrder().indexOf(j) < viewOrder().indexOf(n); };
+const dropW = w => Math.max(0, Math.round(w * 0.8 / 2.5) * 2.5);
 const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
 const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de pie', pecho:'Press plano con mancuernas', lat:'Elevaciones laterales', post:'Face pull', tri:'Tríceps en polea', bi:'Curl en polea', espalda:'Remo en polea', isq:'Curl femoral' };
 
 // ---------- Estado ----------
 const S = { fold: {}, orderOk: {}, conflictOk: {},
   tab:'hoy', tags:true, pre:{}, chosen:{}, units:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
-  minutes:null, draft:null, msg:null, swap:null, restEnd:null, restLen:0, sheet:null, showWhy:false
+  minutes:null, draft:null, msg:null, swap:null, restEnd:null, restLen:0, sheet:null, showWhy:false, bi:{}
 };
 
 const fmt = n => (Math.round(n*10)/10).toString().replace('.', ',');
@@ -678,6 +698,13 @@ function act(a, v) {
       const pn = progressionNote(si); if (pn) S.msg = { cls:'info', t:'Sube el peso la próxima vez.', s:pn };
       S.restLen = restSecs(si); S.restEnd = Date.now() + S.restLen * 1000;
       S.draft = makeDraft(si); S.swap = null;
+      const pb = biPartner(si);
+      if (pb != null && !isDone(pb) && !cutSet().has(pb)) {
+        const fb = S.msg;
+        if (biFirst(si)) { S.restEnd = null; S.msg = { cls:'info', t:`Biserie: pasa directo a ${DAY[pb].name.toLowerCase()}.`, s:`Sin descanso entre los dos. ${fb ? fb.t : ''}` }; }
+        else S.msg = { cls:'info', t:`Vuelta lista. Descansa y vuelve a ${DAY[pb].name.toLowerCase()}.`, s:`${DAY[si].name}: ${fb ? fb.t : ''}` };
+        S.si = pb; S.fold[pb] = false; S.draft = makeDraft(pb); S.scrollCur = true;
+      }
       break;
     }
     case 'next': {
@@ -727,6 +754,10 @@ function act(a, v) {
     case 'altSheet': S.ed = si; S.altSheet = true; break;
     case 'altSheetClose': S.altSheet = false; break;
     case 'exInfo': S.exInfo = v; break;
+    case 'biOn': { const [a, b] = v.split(',').map(Number); Object.keys(S.bi).forEach(k => { const [x, y] = k.split('-').map(Number); if ([x, y].some(z => z === a || z === b)) delete S.bi[k]; }); S.bi[biKey(a, b)] = true; S.fold[a] = false; S.fold[b] = false; break; }
+    case 'biOff': delete S.bi[v]; break;
+    case 'dropAdd': { const ls = logsFor(si), l = ls[ls.length - 1]; if (!l) break; l.drops = l.drops || []; const base = l.drops.length ? l.drops[l.drops.length - 1].w : l.w; l.drops.push({ w: dropW(base), r: null }); if (S.restEnd) S.restEnd = Date.now() + S.restLen * 1000; break; }
+    case 'dropDel': { const [i, k] = v.split(',').map(Number), l = logsFor(si)[i]; if (l && l.drops) l.drops.splice(k, 1); break; }
     case 'exInfoClose': S.exInfo = null; break;
     case 'pickOpen': S.pick = v; S.q = ''; break;
     case 'pickClose': S.pick = null; break;
@@ -751,7 +782,7 @@ function foldedCard(j) {
   unitSlot = j;
   const x = DAY[j], ex = exOf(j), lg = logsFor(j), dn = isDone(j), ct = cutSet().has(j);
   const st = dn ? `✓ ${lg.map(l=>`${fmt(toU(l.w))}×${l.r}`).join(', ')}` : ct ? 'Se recorta hoy' : lg.length ? `${lg.length}/${nS(j)} series · ${lg.map(l=>`${fmt(toU(l.w))}×${l.r}`).join(', ')}` : `${nS(j)} series · ${x.reps[0]}-${x.reps[1]} reps`;
-  return `<section class="card fold-card ${dn?'done':''} ${ct?'cut':''}" data-slot="${j}" data-a="fold">
+  return `<section class="card fold-card ${dn?'done':''} ${ct?'cut':''} ${biPartner(j) != null ? (biFirst(j) ? 'bi-a' : 'bi-b') : ''}" data-slot="${j}" data-a="fold">
       <div class="slot-head">
         <button class="fold-btn" data-a="fold" aria-expanded="false"><span class="fold-chev" aria-hidden="true">›</span><h2 class="slot-line">Slot ${j+1}: ${x.name} <span class="muted slot-type">· ${x.type==='comp'?'Compuesto':'Aislado'}</span></h2></button>
         ${prioIcon(x.prio)}
@@ -760,10 +791,14 @@ function foldedCard(j) {
     </section>`;
 }
 
+function biLink(a, b) {
+  if (S.bi[biKey(a, b)]) return `<div class="bi-link on"><span class="bi-tag">⇅ Biserie · sin descanso entre los dos</span><button data-a="biOff" data-v="${biKey(a, b)}">Separar</button></div>`;
+  return `<div class="bi-link"><button data-a="biOn" data-v="${a},${b}" aria-label="Hacer ${DAY[a].name} y ${DAY[b].name} en biserie">⇅ Unir en biserie</button></div>`;
+}
 function viewHoy() {
   return `
     ${S.returnTo != null ? `<div class="banner"><span>Haciendo esto mientras esperas <b>${DAY[S.returnTo].name.toLowerCase()}</b>.</span><button class="btn" data-a="back">Se liberó</button></div>` : ''}
-    ${viewOrder().map(j => S.fold[j] ? foldedCard(j) : slotCard(j)).join('')}${(unitSlot = null, '')}
+    ${viewOrder().map((j, k, v) => (k ? biLink(v[k - 1], j) : '') + (S.fold[j] ? foldedCard(j) : slotCard(j))).join('')}${(unitSlot = null, '')}
     <button class="btn ghost block" data-a="reset">Reiniciar el ejemplo</button>`;
 }
 
@@ -851,7 +886,7 @@ function slotCard(si) {
   const totalMin = Math.round(tp.rows.filter(r=>!tp.cut.has(r.si)).reduce((a,r)=>a+r.mins,0));
 
   return `
-    <section data-slot="${si}" class="card ${act0 ? 'cur-card' : ''} ${S.fold[si]?'folded':''}">
+    <section data-slot="${si}" class="card ${act0 ? 'cur-card' : ''} ${S.fold[si]?'folded':''} ${biPartner(si) != null ? (biFirst(si) ? 'bi-a' : 'bi-b') : ''}">
       <div class="slot-head">
         <button class="fold-btn" data-a="fold" aria-expanded="${!S.fold[si]}"><span class="fold-chev ${S.fold[si]?'':'open'}" aria-hidden="true">›</span><h2 class="slot-line">Slot ${si+1}: ${d.name} <span class="muted slot-type">· ${d.type==='comp'?'Compuesto':'Aislado'}</span></h2></button>
         ${prioIcon(d.prio)}
@@ -871,7 +906,7 @@ function slotCard(si) {
             const w = l ? l.w : cur ? DR.w : pre.w ?? target(si, i).w, r = l ? l.r : cur ? DR.r : pre.r ?? target(si, i).r;
             const tg = target(si, i), ph = [toU(tg.w), tg.r];
             return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones en reserva serie ${i+1}" data-set="${i}" data-f="rir" value="${(l ? l.rir : cur ? DR.rir : pre.rir ?? defRir(si, i)) ?? ''}" placeholder="${d.type === 'iso' && i === nS(si) - 1 ? '0' : '1-2'}"><span class="u">RIR</span></label>`;
-          })()}</span><span class="antes">${prev}</span></div><button class="sl-del" data-a="delSetAt" data-v="${i}">Eliminar</button></div>`;
+          })()}</span><span class="antes">${prev}</span></div><button class="sl-del" data-a="delSetAt" data-v="${i}">Eliminar</button></div>${l ? (l.drops || []).map((dp, k) => `<div class="sl-row sl-drop"><span class="drop-ar" aria-hidden="true">↳</span><span class="cells"><label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso bajada ${k+1} de la serie ${i+1}" data-drop="${i},${k}" data-f="w" value="${toU(dp.w)}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones bajada ${k+1} de la serie ${i+1}" data-drop="${i},${k}" data-f="r" value="${dp.r ?? ''}" placeholder="reps"><span class="u">reps</span></label><span class="drop-t">Bajada</span></span><button class="drop-x" data-a="dropDel" data-v="${i},${k}" aria-label="Quitar bajada">✕</button></div>`).join('') + (i === ls.length - 1 && act0 ? `<div class="sl-dropadd"><button data-a="dropAdd">↓ Bajar peso y seguir (drop set)</button></div>` : '') : ''}`;
         }).join('')}
         <div class="sl-add"><button data-a="addSet">+ Agregar serie</button></div>
       </div>
@@ -1261,7 +1296,9 @@ function selSlot(ev) {
   S.si = j; S.draft = makeDraft(j); S.swap = null; S.msg = null; S.showWhy = false;
 }
 document.addEventListener('change', ev => {
-  const t = ev.target; if (!t.dataset || t.dataset.set == null) return;
+  const t = ev.target;
+  if (t.dataset && t.dataset.drop != null) { selSlot(ev); const [i, k] = t.dataset.drop.split(',').map(Number), raw = parseFloat(String(t.value).replace(',', '.')); const l = logsFor(S.si)[i]; if (!isNaN(raw) && l && l.drops && l.drops[k]) l.drops[k][t.dataset.f] = t.dataset.f === 'w' ? fromU(raw) : raw; render(); return; }
+  if (!t.dataset || t.dataset.set == null) return;
   selSlot(ev);
   const i = +t.dataset.set, f = t.dataset.f, raw = parseFloat(String(t.value).replace(',', '.')), v = f === 'w' ? fromU(raw) : raw;
   if (isNaN(v)) return;
