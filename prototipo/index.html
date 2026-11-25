@@ -198,6 +198,15 @@ p { margin: 0; }
 .opt-pic .opt-l { position: absolute; left: 3px; top: 3px; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
 .opt-pic .opt-n { padding: 4px; text-align: center; white-space: normal !important; color: #333; }
 .opt.busy .opt-pic img { filter: grayscale(1); }
+.opt-info { position: absolute; right: 3px; top: 3px; width: 22px; height: 20px; border-radius: 6px; display: grid; place-items: center; background: rgba(255,255,255,.88); color: #222; box-shadow: 0 1px 3px rgba(0,0,0,.25); cursor: pointer; }
+.opt-info svg { fill: currentColor; display: block; }
+.opts.mini .opt-info { width: 18px; height: 16px; right: 2px; top: 2px; }
+.exi { max-height: 85vh; overflow-y: auto; }
+.exi-pics { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.exi-pics img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 10px; background: #fff; display: block; }
+.exi-h { font-family: var(--display); font-size: 15px; margin: 4px 0 -4px; }
+.exi-l { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.4; }
+.exi-l.ojo li::marker { color: var(--bad); }
 .opt-cap { margin: -6px 0 0; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .opt-cap b { color: var(--accent); }
 .alt.busy .name { text-decoration: line-through; }
@@ -408,6 +417,48 @@ const EX = {
   facePull:{ n:'Face pull', eq:'Polea', p:['post'], s:[], why:'Trabaja el hombro posterior sin cansar la espalda.', adj:'Peso liviano, controla la vuelta.', tec:'Tira la cuerda hacia la frente abriendo los codos.', last:null, sugW:15 },
   pantorrilla:{ n:'Pantorrillas de pie', eq:'Máquina', p:['pant'], s:[], why:'Aísla la pantorrilla.', adj:'Pausa de un segundo abajo.', tec:'Baja hasta estirar y sube en punta de pies.', last:null, sugW:60 }
 };
+
+// técnica de cada ejercicio (se abre con los tres puntitos de la foto)
+const TEC = {
+  banca:{ como:['Acuéstate con los ojos bajo la barra y toma la barra un poco más ancho que los hombros.','Junta las escápulas y bájalas; deja un arco natural en la espalda baja.','Baja controlado hasta tocar la parte baja del pecho, con los codos a unos 45° del cuerpo.','Empuja hacia arriba y un poco hacia atrás, hasta estirar los brazos.'], ojo:['No rebotes la barra en el pecho.','Glúteos y pies siempre apoyados.','Muñecas rectas, la barra sobre el talón de la mano.','Con peso alto, pide a alguien que te asista.'] },
+  mancPlana:{ como:['Siéntate con las mancuernas sobre los muslos y acuéstate llevándolas al pecho.','Junta las escápulas y apoya bien los pies.','Baja hasta que los codos queden un poco bajo el banco, con las palmas mirando a los pies.','Empuja hacia arriba juntando las mancuernas sin chocarlas.'], ojo:['Codos a unos 45°, no abiertos en cruz.','Baja lento: la mancuerna da más recorrido que la barra.','Al terminar, bájalas al pecho y siéntate; no las sueltes hacia los lados.'] },
+  smith:{ como:['Ajusta el banco para que la barra baje a la parte baja del pecho.','Toma la barra un poco más ancho que los hombros y destrábala girando las muñecas.','Baja controlado hasta rozar el pecho.','Empuja hasta estirar los brazos.'], ojo:['Revisa dónde están los seguros antes de empezar.','Escápulas juntas, igual que en barra libre.','La barra guiada no corrige una mala posición del banco.'] },
+  incl:{ como:['Banco a 30°. Siéntate y lleva las mancuernas a los hombros.','Junta las escápulas y apoya la espalda completa.','Baja hasta la altura del pecho alto, codos un poco bajo el banco.','Empuja hacia arriba juntando las mancuernas sin chocarlas.'], ojo:['Más de 30-40° de inclinación ya trabaja sobre todo el hombro.','No despegues los glúteos del asiento.','Baja controlado, sin rebotar.'] },
+  inclSmith:{ como:['Banco a 30° bajo la barra, de modo que baje a la parte alta del pecho.','Toma la barra un poco más ancho que los hombros.','Baja controlado hasta rozar el pecho alto.','Empuja hasta estirar los brazos.'], ojo:['Revisa los seguros antes de empezar.','Si la barra cae en el cuello o en la panza, mueve el banco.'] },
+  flexPeso:{ como:['Manos un poco más anchas que los hombros, cuerpo recto de cabeza a talones.','Con el disco apoyado en la espalda alta, baja hasta casi tocar el suelo con el pecho.','Empuja el suelo hasta estirar los brazos.'], ojo:['Abdomen y glúteos apretados: la cadera no se cae ni se sube.','Codos a unos 45°, no abiertos en cruz.','Si se te cae la técnica, saca el disco.'] },
+  cruces:{ como:['Poleas a la altura de los hombros o un poco más arriba. Un paso adelante.','Brazos abiertos con los codos un poco doblados, que no cambian durante el movimiento.','Junta las manos frente al pecho en arco, como abrazando un árbol.','Vuelve lento hasta sentir el estiramiento del pecho.'], ojo:['No conviertas el movimiento en un press doblando los codos.','El torso no se mueve.','Peso que puedas controlar en la vuelta.'] },
+  pecdeck:{ como:['Ajusta el asiento para que las manijas queden a la altura del pecho.','Espalda pegada al respaldo y codos un poco doblados.','Junta las manos frente al pecho sin chocar las placas.','Vuelve lento hasta sentir el estiramiento.'], ojo:['No despegues la espalda ni los hombros del respaldo.','No dejes que el peso caiga de golpe.'] },
+  aperturas:{ como:['Acostado, mancuernas arriba del pecho con las palmas enfrentadas.','Codos un poco doblados, fijos durante todo el movimiento.','Abre los brazos en arco hasta sentir el estiramiento del pecho.','Cierra en el mismo arco hasta juntar las mancuernas arriba.'], ojo:['No bajes más allá de la línea del hombro.','Peso liviano: el estiramiento abajo carga mucho el hombro.'] },
+  latMan:{ como:['De pie, mancuernas a los costados y torso un poco inclinado hacia adelante.','Sube los brazos hacia los lados con los codos un poco doblados.','Para a la altura de los hombros, como si vaciaras un jarro.','Baja lento.'], ojo:['No balancees el cuerpo para subir.','Los codos van un poco por delante de las manos.','No subas los hombros hacia las orejas.'] },
+  latPolea:{ como:['Polea baja. Párate de lado y toma el agarre con la mano más lejana.','Cable por delante del cuerpo.','Sube el brazo hacia el lado hasta la altura del hombro.','Baja lento sin dejar que el peso toque.'], ojo:['El cuerpo no se inclina para ayudar.','Codo un poco doblado y fijo.'] },
+  latMaq:{ como:['Ajusta el asiento para que los hombros queden alineados con el eje de la máquina.','Codos contra los rodillos.','Sube hasta la altura del hombro.','Baja lento.'], ojo:['Empuja con los codos, no con las manos.','No subas los hombros hacia las orejas.'] },
+  pressHom:{ como:['Sentado con respaldo casi vertical, mancuernas a la altura de los hombros.','Palmas hacia adelante y codos un poco por delante del cuerpo.','Empuja hacia arriba hasta casi estirar los brazos.','Baja hasta que las mancuernas lleguen a la altura de las orejas.'], ojo:['No arquees la espalda baja: mantenla pegada al respaldo.','No choques las mancuernas arriba.'] },
+  pressHomMaq:{ como:['Ajusta el asiento para que las manijas queden a la altura de los hombros.','Espalda pegada al respaldo.','Empuja hasta casi estirar los brazos.','Baja controlado.'], ojo:['No arquees la espalda baja.','No bloquees los codos de golpe arriba.'] },
+  arnold:{ como:['Sentado, mancuernas frente a la cara con las palmas mirándote.','Mientras subes, abre los codos y gira las palmas hacia adelante.','Termina arriba con las palmas hacia adelante.','Baja deshaciendo el giro.'], ojo:['El giro es suave y continuo, no en dos tiempos.','Usa menos peso que en el press normal.'] },
+  triPolea:{ como:['Polea alta con cuerda o barra. Párate cerca, torso un poco inclinado.','Codos pegados al cuerpo.','Estira los brazos hacia abajo hasta extenderlos por completo.','Vuelve lento hasta que los antebrazos queden paralelos al suelo o un poco más arriba.'], ojo:['Solo se mueve el antebrazo: los codos no se van adelante.','No ayudes con el peso del cuerpo.'] },
+  fondos:{ como:['En la máquina asistida, rodillas sobre la plataforma y manos en las barras.','Cuerpo vertical para cargar más el tríceps.','Baja hasta que los codos queden a 90°.','Empuja hasta estirar los brazos.'], ojo:['No bajes más si te molesta el hombro.','Más contrapeso = más fácil.'] },
+  frances:{ como:['Acostado en el banco, barra Z arriba con los brazos estirados.','Codos fijos apuntando al techo.','Baja la barra hacia la frente doblando solo los codos.','Sube hasta estirar los brazos.'], ojo:['Los codos no se abren hacia los lados.','Baja lento y con poco peso al principio: cuida los codos.'] },
+  sentadilla:{ como:['Barra sobre la espalda alta, pies al ancho de hombros.','Respira, aprieta el abdomen y baja como sentándote atrás.','Baja hasta que el muslo quede paralelo al suelo o un poco más.','Sube empujando el suelo con todo el pie.'], ojo:['Rodillas en la dirección de la punta de los pies.','Espalda neutra; no te redondees abajo.','Usa los seguros del rack.'] },
+  prensa:{ como:['Espalda completa contra el respaldo, pies al ancho de hombros en la plataforma.','Quita los seguros y baja hasta que las rodillas queden a 90° o un poco más.','Empuja con todo el pie sin bloquear las rodillas arriba.'], ojo:['No despegues la espalda baja del respaldo.','No bloquees las rodillas.'] },
+  remoBarra:{ como:['Toma la barra al ancho de hombros e inclínate con la espalda neutra, casi paralela al suelo.','Rodillas un poco dobladas.','Lleva la barra al ombligo juntando las escápulas.','Baja controlado.'], ojo:['Espalda neutra todo el tiempo.','No te enderezas para subir la barra.'] },
+  dominadas:{ como:['Toma la barra un poco más ancho que los hombros.','Cuelga con los brazos estirados.','Sube llevando el pecho hacia la barra hasta pasar el mentón.','Baja completo.'], ojo:['Sin balanceo.','Si no llegas a 6, usa la máquina asistida.'] },
+  curlZ:{ como:['De pie, barra Z con las palmas hacia adelante.','Codos quietos al costado.','Sube doblando solo los codos.','Baja lento hasta estirar los brazos.'], ojo:['No balancees el cuerpo.','Los codos no se van adelante.'] },
+  facePull:{ como:['Polea a la altura de la cara con cuerda.','Toma la cuerda con las palmas hacia abajo y da un paso atrás.','Tira hacia la frente abriendo los codos y separando las manos.','Vuelve lento.'], ojo:['Peso liviano.','Los codos quedan a la altura de los hombros o más arriba.'] },
+  pantorrilla:{ como:['Hombros bajo las almohadillas y punta de pies en el borde.','Baja el talón hasta estirar la pantorrilla.','Pausa de un segundo abajo.','Sube en punta de pies lo más alto posible.'], ojo:['No rebotes abajo.','Rodillas estiradas pero sin bloquear.'] }
+};
+
+function exInfoSheet(id) {
+  const x = EX[id], t = TEC[id] || { como: [x.tec], ojo: [] };
+  const mus = [...x.p.map(m => `<b>${MUS[m]}</b>`), ...x.s.map(m => MUS[m])].join(' · ');
+  return `<div class="sheet-bg" data-a="exInfoClose"><div class="sheet exi" data-a="noop">
+    <span class="eyebrow">${x.eq}</span><h2>${x.n}</h2>
+    ${IMG[id] ? `<div class="exi-pics"><img src="${IMG[id][0]}" alt=""><img src="${IMG[id][1]}" alt=""></div>` : ''}
+    <p class="small muted">${mus}</p>
+    <h3 class="exi-h">Cómo se hace</h3><ol class="exi-l">${t.como.map(c => `<li>${c}</li>`).join('')}</ol>
+    ${t.ojo.length ? `<h3 class="exi-h">Cosas que cuidar</h3><ul class="exi-l ojo">${t.ojo.map(c => `<li>${c}</li>`).join('')}</ul>` : ''}
+    <button class="btn primary block" data-a="exInfoClose">Entendido</button>
+  </div></div>`;
+}
 
 const DAY = [
   { name:'Press pesado', sets:3, reps:[6,8], prio:'alta', type:'comp', alts:['banca','mancPlana','smith'] },
@@ -675,6 +726,8 @@ function act(a, v) {
     case 'bodyMode': S.bodyMode = v; break;
     case 'altSheet': S.ed = si; S.altSheet = true; break;
     case 'altSheetClose': S.altSheet = false; break;
+    case 'exInfo': S.exInfo = v; break;
+    case 'exInfoClose': S.exInfo = null; break;
     case 'pickOpen': S.pick = v; S.q = ''; break;
     case 'pickClose': S.pick = null; break;
     case 'pickEx': {
@@ -727,7 +780,7 @@ function slotCard(si) {
   const alts = d.alts.map((id, k) => {
     const x = EX[id], on = k === altIdx(si), b = !!S.busy[id];
     return `<button class="opt ${on?'on':''} ${b?'busy':''}" data-a="pick" data-v="${k}" aria-pressed="${on}" aria-label="${LET[k]}: ${x.n}">
-      <span class="opt-pic">${IMG[id] ? `<img src="${IMG[id][0]}" alt=""><img class="f2" src="${IMG[id][1]}" alt="">` : `<span class="opt-n">${SHORT[id] || x.n}</span>`}<span class="opt-l">${LET[k]}</span></span>
+      <span class="opt-pic">${IMG[id] ? `<img src="${IMG[id][0]}" alt=""><img class="f2" src="${IMG[id][1]}" alt="">` : `<span class="opt-n">${SHORT[id] || x.n}</span>`}<span class="opt-l">${LET[k]}</span><span class="opt-info" role="button" tabindex="0" data-a="exInfo" data-v="${id}" aria-label="Técnica de ${x.n}"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="2" cy="6" r="1.4"/><circle cx="6" cy="6" r="1.4"/><circle cx="10" cy="6" r="1.4"/></svg></span></span>
       <span class="opt-s">${x.last ? `${fmt(x.last.w)} kg` : 'Nuevo'}</span>
       ${b ? '<span class="opt-b">Ocupado</span>' : ''}</button>`;
   }).join('');
@@ -1118,6 +1171,7 @@ function render() {
     ${[['hoy','Rutina'],['semana','Semana'],['rutina','Editar'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
   </div></nav>
   ${S.bodySheet ? bodySheet() : ''}
+  ${S.exInfo ? exInfoSheet(S.exInfo) : ''}
   ${S.prioSheet ? `<div class="sheet-bg" data-a="prioClose"><div class="sheet" data-a="noop">
     <span class="eyebrow">${DAY[S.si].name}</span><h2>Prioridad ${DAY[S.si].prio}</h2>
     <div class="plegend">${['alta','media','baja'].map(k => `<div class="${k === DAY[S.si].prio ? 'cur' : ''}"><span class="pico ${k}">${prioSvg(k)}</span><span><b>${k[0].toUpperCase() + k.slice(1)}.</b> ${PRIO_TXT[k]}</span></div>`).join('')}</div>
