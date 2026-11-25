@@ -1,0 +1,22 @@
+{
+  "_nota": "Grupos musculares que usa la app. 'meta_semanal' = series duras ponderadas por semana [min, max]; vacías hasta que el usuario las defina en la app. Los grupos sin meta se registran pero no generan aviso de atraso.",
+  "pesos": {
+    "principal": 1.0,
+    "secundario": 0.5
+  },
+  "grupos": {
+    "espalda":          { "nombre": "Espalda",           "meta_semanal": null },
+    "pecho":            { "nombre": "Pecho",             "meta_semanal": null },
+    "cuadriceps":       { "nombre": "Cuádriceps",        "meta_semanal": null },
+    "isquios_gluteos":  { "nombre": "Isquios y glúteos", "meta_semanal": null },
+    "hombro_lateral":   { "nombre": "Hombro lateral",    "meta_semanal": null },
+    "hombro_posterior": { "nombre": "Hombro posterior",  "meta_semanal": null },
+    "triceps":          { "nombre": "Tríceps",           "meta_semanal": null },
+    "biceps":           { "nombre": "Bíceps",            "meta_semanal": null },
+    "pantorrillas":     { "nombre": "Pantorrillas",      "meta_semanal": null },
+    "hombro_anterior":  { "nombre": "Hombro anterior",   "meta_semanal": null },
+    "abdomen":          { "nombre": "Abdomen",           "meta_semanal": null },
+    "lumbar":           { "nombre": "Lumbar",            "meta_semanal": null },
+    "antebrazo":        { "nombre": "Antebrazo",         "meta_semanal": null }
+  }
+}
