@@ -22,11 +22,20 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 - [ ] **Feedback de Italo sobre el prototipo y el mapa de calor** (2026-11-25).
 - [ ] **Estilo de íconos** (2026-11-25): pipeline propio, ChatGPT o compra. Si es Gymvisual, falta que confirmen **por escrito** que se pueden editar y usar con IA.
+- [ ] **Rotación de rutinas en la PWA real** (2026-11-25): que avance al terminar una rutina y se pueda reordenar.
 - [ ] **Empezar la PWA real** en `app/` cuando Italo dé el visto bueno al prototipo (ver `ROADMAP.md`).
 - [ ] **Hacer `main` la rama por defecto en GitHub** (Settings → General → Default branch). Hoy GitHub sigue mostrando una rama `claude/*`.
 - [ ] **Decidir si el repo vuelve a privado.** Hoy es público.
 
 ---
+
+## 2026-11-25 · Claude (hilo "Agregar inicio de rutinas") · inicio de la pestaña Rutina
+
+- Pedido de Italo: al entrar a **Rutina** aparece primero un inicio para elegir qué rutina hacer. Arriba, destacada, **la que toca** según la rotación (Día 1 → 2 → 3 → 1), con músculos, ejercicios, minutos estimados y última vez; abajo **las demás** para elegir cualquiera; botón **+ Crear rutina**. Cada una tiene **Editar**.
+- En la sesión hay un "‹ Rutinas" para volver; si ya empezaste, la rutina aparece **En curso** y el botón dice **Seguir**. Tocar la pestaña Rutina estando en la sesión también vuelve al inicio.
+- **Editar** ahora cambia de verdad entre rutinas (chips Día 1, Día 2…, "+ Nueva"), con nombre de rutina editable y "Eliminar rutina". Editar otra rutina no borra la sesión de hoy.
+- Código: `RUT` (rutinas con sus `slots`), `DAY` pasó a `let` y apunta a la rutina que se mira (`useDay`), `nextRut`, `rutMins`, `viewInicio`, acciones `home`, `rutGo`, `rutEdit`, `rutNew`, `rutDel`. Ejemplos nuevos: Día 2 Espalda · Bíceps y Día 3 Pierna.
+- Pendiente: en el prototipo la rotación no avanza sola (no hay "terminar sesión"); en la PWA real debe avanzar al terminar la rutina. Reordenar rutinas en la rotación tampoco está.
 
 ## 2026-11-25 · Claude (hilo "Rediseñar mapa de calor muscular") · nuevo muñeco del mapa de calor
 

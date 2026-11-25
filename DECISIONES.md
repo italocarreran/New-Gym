@@ -51,6 +51,7 @@
 - Encabezado fijo: título chico, cronómetro iniciar/pausar con estimado, muñeco de músculos. (2026-11-24)
 - Opciones A/B/C con foto animada de 2 cuadros; solo se anima la del ejercicio en curso. kg/lb por slot. (2026-11-24 / 2026-11-25)
 - Sin advertencias en las tarjetas; progresión y equivalencia van en un "Detalles" discreto. Sin mensaje cuando la serie salió bien. (2026-11-24 / 2026-11-25)
+- **Rutina parte en un inicio**: la rutina que toca según la rotación (sugerida), las demás para elegir cualquiera, y botón para crear rutina; cada una se puede editar. Editar tiene chips por rutina. (Italo, 2026-11-25)
 - Técnica por ejercicio con los tres puntitos de la foto; drop sets; biseries entre slots seguidos; descanso con barra y ±15 s; agregar ejercicio entre slots; deslizar para borrar serie. (2026-11-25)
 
 ## Mapa de calor muscular (Italo, 2026-11-25)

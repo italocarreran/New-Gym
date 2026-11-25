@@ -44,7 +44,8 @@ Un solo `<script>`. Usa **datos de ejemplo propios**, no lee `data/`.
 | `MUS`, `META`, `BASE` | grupos musculares, metas de ejemplo y lo hecho en la semana (ejemplo) |
 | `EX` | ejercicios de ejemplo: `n` nombre, `eq` equipo, `p`/`s` músculos, `why` equivalencia, `adj` ajuste de peso, `last` sesión anterior |
 | `TEC` | técnica por ejercicio (`como`, `ojo`) |
-| `DAY` | slots del día: series, rango de reps, prioridad, `comp`/`iso`, alternativas A/B/C |
+| `RUT` | rutinas guardadas en orden de rotación (`name`, `last`, `slots`); `nextRut()` dice cuál toca, `rutMins()` estima minutos |
+| `DAY` | slots de la rutina que se mira (`let`; `useDay(k)` lo apunta a `RUT[k].slots`): series, rango de reps, prioridad, `comp`/`iso`, alternativas A/B/C |
 | `IMG` | fotos de free-exercise-db **en base64, una línea de ~270 KB**. No la leas: búscala o sáltatela |
 | `S` | estado global de la app |
 | `act(a, v)` | único despachador de acciones (los botones llevan `data-a` / `data-v`) |
@@ -54,6 +55,7 @@ Un solo `<script>`. Usa **datos de ejemplo propios**, no lee `data/`.
 | `findFiller`, `conflictFor`, `reorderCheck` | relleno mientras se espera y avisos de orden |
 | `bodyFigure`, `bodySvg`, `REGION_GRUPO`, `FRONT`, `BACK` | muñeco del mapa de calor (SVG a mano) |
 | `bodyFab` | muñeco + conteo en el encabezado |
+| `viewInicio` | inicio de Rutina: la que toca, las demás y "+ Crear rutina" (`S.home`, `S.rut`, `S.edRut`, `S.lastDone`) |
 | `viewHoy`, `slotCard`, `viewSemana`, `viewGuia`, `pickerHtml` | vistas |
 
 Pestañas (clave interna → nombre en pantalla): `hoy` → Rutina, `semana` → Semana, `rutina` → Editar, `guia` → Esfuerzo.
