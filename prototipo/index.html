@@ -136,9 +136,9 @@ p { margin: 0; }
 .cells { display: grid; grid-template-columns: 1.15fr 1fr .9fr; gap: 3px; }
 .cellw { display: flex; align-items: center; gap: 3px; min-width: 0; }
 .cellw .u { font-size: 10px; color: var(--muted); font-weight: 500; }
-.unit-sw { display: inline-flex; justify-self: start; background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 2px; gap: 2px; }
-.unit-sw button { border: none; background: transparent; border-radius: 5px; padding: 2px 8px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: none; letter-spacing: 0; }
-.unit-sw button.on { background: var(--accent); color: var(--accent-ink); }
+.unit-sw { display: inline-flex; justify-self: start; background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 2px; gap: 2px; cursor: pointer; font: inherit; }
+.unit-sw span { border: none; background: transparent; border-radius: 5px; padding: 2px 8px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: none; letter-spacing: 0; }
+.unit-sw span.on { background: var(--accent); color: var(--accent-ink); }
 .cell { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 2px; text-align: center; font-family: var(--display); font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .cell::placeholder { color: var(--muted); opacity: .6; }
 .cell:focus { outline: 2px solid var(--accent); outline-offset: 0; }
@@ -626,7 +626,7 @@ function act(a, v) {
     }
     case 'undo': { let ix = -1; S.logs.forEach((x, k) => { if (x.si === si) ix = k; }); const l = ix >= 0 ? S.logs.splice(ix, 1)[0] : null; if (l && !logsFor(l.si).length) S.order = S.order.filter(x => x !== l.si); S.msg = null; S.restEnd = null; S.draft = makeDraft(si); break; }
     case 'skipRest': S.restEnd = null; break;
-    case 'unit': S.unit = v; break;
+    case 'unit': S.unit = S.unit === 'kg' ? 'lb' : 'kg'; break;
     case 'min': S.minutes = S.minutes === +v ? null : +v; break;
     case 'reset': resetSession(); break;
     // --- editor de rutina ---
@@ -796,7 +796,7 @@ function slotCard(si) {
       <p class="opt-cap"><b>${LET[altIdx(si)]}</b> · ${e.n}</p>
       ${act0 ? swapHtml : ''}
       ${chosen ? `<div class="setlist">
-        <div class="sl-row sl-h"><span></span><span class="unit-sw"><button class="${S.unit==='kg'?'on':''}" data-a="unit" data-v="kg">kg</button><button class="${S.unit==='lb'?'on':''}" data-a="unit" data-v="lb">lb</button></span><span class="antes">Última vez</span></div>
+        <div class="sl-row sl-h"><span></span><button class="unit-sw" data-a="unit" aria-label="Cambiar a ${S.unit==='kg'?'libras':'kilos'}"><span class="${S.unit==='kg'?'on':''}">kg</span><span class="${S.unit==='lb'?'on':''}">lb</span></button><span class="antes">Última vez</span></div>
         ${Array.from({length: nS(si)}, (_, i) => {
           const l = ls[i], prev = e.last && e.last.r[i] != null ? `<b>${fmt(toU(e.last.w))}×${e.last.r[i]}</b>${e.last.rir ? `${e.last.rir[i] === 3 ? '3+' : e.last.rir[i]} RIR` : ''}` : '–';
           const cur = i === ls.length;
