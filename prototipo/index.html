@@ -429,11 +429,14 @@ const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de
 
 // ---------- Estado ----------
 const S = { fold: {}, orderOk: {}, conflictOk: {},
-  tab:'hoy', tags:true, pre:{}, chosen:{}, unit:'kg', si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
+  tab:'hoy', tags:true, pre:{}, chosen:{}, units:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
   minutes:null, draft:null, msg:null, swap:null, restEnd:null, restLen:0, sheet:null, showWhy:false
 };
 
 const fmt = n => (Math.round(n*10)/10).toString().replace('.', ',');
+// kg/lb se elige por slot: S.unit lee el del slot que se está dibujando (o el activo)
+let unitSlot = null;
+Object.defineProperty(S, 'unit', { get() { return S.units[unitSlot ?? S.si] || 'kg'; }, set(v) { S.units[S.si] = v; } });
 const toU = kg => kg == null || kg === '' ? kg : S.unit === 'lb' ? Math.round(kg * 2.20462 * 2) / 2 : kg;
 const fromU = v => S.unit === 'lb' ? Math.round(v / 2.20462 * 100) / 100 : v;
 const altIdx = si => S.alt[si] ?? 0;
@@ -680,6 +683,7 @@ const tag = () => '';
 const ord = n => `${n}º`;
 
 function foldedCard(j) {
+  unitSlot = j;
   const x = DAY[j], ex = exOf(j), lg = logsFor(j), dn = isDone(j), ct = cutSet().has(j);
   const st = dn ? `✓ ${lg.map(l=>`${fmt(toU(l.w))}×${l.r}`).join(', ')}` : ct ? 'Se recorta hoy' : lg.length ? `${lg.length}/${nS(j)} series · ${lg.map(l=>`${fmt(toU(l.w))}×${l.r}`).join(', ')}` : `${nS(j)} series · ${x.reps[0]}-${x.reps[1]} reps`;
   return `<section class="card fold-card ${dn?'done':''} ${ct?'cut':''}" data-slot="${j}" data-a="fold">
@@ -694,11 +698,12 @@ function foldedCard(j) {
 function viewHoy() {
   return `
     ${S.returnTo != null ? `<div class="banner"><span>Haciendo esto mientras esperas <b>${DAY[S.returnTo].name.toLowerCase()}</b>.</span><button class="btn" data-a="back">Se liberó</button></div>` : ''}
-    ${viewOrder().map(j => S.fold[j] ? foldedCard(j) : slotCard(j)).join('')}
+    ${viewOrder().map(j => S.fold[j] ? foldedCard(j) : slotCard(j)).join('')}${(unitSlot = null, '')}
     <button class="btn ghost block" data-a="reset">Reiniciar el ejemplo</button>`;
 }
 
 function slotCard(si) {
+  unitSlot = si;
   const act0 = si === S.si, DR = act0 ? S.draft : makeDraft(si);
   const d = DAY[si], e = exOf(si), ls = logsFor(si), done = isDone(si), cut = cutSet();
   const p = pos(si), filler = findFiller(si);
