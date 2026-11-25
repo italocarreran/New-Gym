@@ -26,15 +26,7 @@
   --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0D1015; --surface: #161A21; --surface-2: #20262F; --ink: #E8ECF2; --muted: #96A0AD; --line: #2A313B;
-    --accent: #7096FF; --accent-soft: #1C2A4D; --accent-ink: #0B1020;
-    --ok: #4CC683; --ok-soft: #143222; --warn: #E8AE4C; --warn-soft: #3A2C12; --bad: #F2766B; --bad-soft: #3D1A18;
-    --tag: #B39DFF; --tag-soft: #2A2245; color-scheme: dark;
-    --mus: #F0675B; --mus-0: #3C2523; --mus-off: #262C35; --mus-dim: #3A434F; --heat-0: #F3A188; --heat-1: #C42A1F;
-  }
-}
+/* tema claro fijo (Italo 2026-11-25); el oscuro queda solo con data-theme="dark" */
 :root[data-theme="dark"] {
   --bg: #0D1015; --surface: #161A21; --surface-2: #20262F; --ink: #E8ECF2; --muted: #96A0AD; --line: #2A313B;
   --accent: #7096FF; --accent-soft: #1C2A4D; --accent-ink: #0B1020;
