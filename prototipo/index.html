@@ -367,7 +367,26 @@ details.det { margin-top: -4px; }
 
 /* pestañas */
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); display: flex; justify-content: center; padding: 6px max(16px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); z-index: 20; }
-.tabs-in { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.tabs-in { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+/* inicio: calendario de días entrenados */
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.cal-h { font-size: 10.5px; font-weight: 600; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: .04em; }
+.cal-d { aspect-ratio: 1; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); display: grid; place-items: center; padding: 0; font-family: var(--display); font-size: 14px; font-weight: 600; color: var(--muted); position: relative; }
+.cal-d.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.cal-d.r1 { background: var(--tag); border-color: var(--tag); }
+.cal-d.r2 { background: var(--ok); border-color: var(--ok); }
+.cal-d.hoy { box-shadow: 0 0 0 2px var(--ink); }
+.cal-d.fut { opacity: .35; }
+.cal-d.sel { outline: 2px solid var(--ink); outline-offset: 2px; }
+.cal-d .m1 { position: absolute; top: 1px; left: 3px; font-family: var(--body); font-size: 8.5px; font-weight: 700; text-transform: uppercase; opacity: .8; }
+.cal-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.cal-stats div { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; }
+.cal-stats b { font-family: var(--display); font-size: 24px; line-height: 1.1; }
+.cal-stats span { font-size: 11.5px; color: var(--muted); }
+.cal-leg { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.cal-leg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; background: var(--accent); }
+.cal-leg i.r1 { background: var(--tag); } .cal-leg i.r2 { background: var(--ok); }
+.cal-det { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
 .ed { gap: 10px; }
 .ed-head { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: center; }
 .ed-title { border: none; background: none; padding: 0; text-align: left; display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 10px; align-items: center; }
@@ -555,7 +574,7 @@ const D4LIB = { cuad:'Prensa o extensión de cuádriceps', pant:'Pantorrillas de
 
 // ---------- Estado ----------
 const S = { fold: {}, orderOk: {}, conflictOk: {},
-  tab:'hoy', tags:true, pre:{}, chosen:{}, units:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
+  tab:'inicio', tags:true, pre:{}, chosen:{}, units:{}, si:0, alt:{}, busy:{}, logs:[], order:[], returnTo:null,
   minutes:null, draft:null, msg:null, swap:null, restEnd:null, restLen:0, sheet:null, showWhy:false, bi:{},
   rut:0, edRut:0, home:true, lastDone:2
 };
@@ -709,6 +728,8 @@ function act(a, v) {
   switch (a) {
     case 'tab': if (v === 'hoy' && S.tab === 'hoy') S.home = true; if (v === 'rutina' && S.tab !== 'rutina') { S.edRut = S.rut; S.ed = null; } S.tab = v; window.scrollTo(0, 0); break;
     // --- inicio de Rutina ---
+    case 'calDay': S.calDay = S.calDay === v ? null : v; break;
+    case 'goSesion': S.tab = 'hoy'; S.home = true; window.scrollTo(0, 0); break;
     case 'home': S.home = true; window.scrollTo(0, 0); break;
     case 'rutGo': {
       const k = +v; if (!RUT[k] || !RUT[k].slots.length) break;
@@ -878,6 +899,42 @@ function biLink(a, b) {
 const rutLv = sl => { const lv = {}; sl.forEach(d => { const e = EX[d.alts[0]]; e.s.forEach(m => lv[m] = lv[m] || { v: .25 }); e.p.forEach(m => lv[m] = { v: .75 }); }); return lv; };
 const rutCanDel = k => RUT.length > 1 && RUT.some((r, i) => i !== k && r.slots.length);
 const enCurso = k => k === S.rut && (S.logs.length > 0 || !!S.startAt);
+// ---------- Inicio: calendario de días entrenados (historial de ejemplo) ----------
+// El prototipo vive en "jueves 23 nov" (fechas de 2023 para que los días de la semana calcen).
+const HOY = new Date(2023, 10, 23);
+const DIAS_C = ['dom','lun','mar','mié','jue','vie','sáb'], MESES_C = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const fechaTxt = f => `${DIAS_C[f.getDay()]} ${f.getDate()} ${MESES_C[f.getMonth()]}`;
+const diaKey = f => `${f.getFullYear()}-${f.getMonth() + 1}-${f.getDate()}`;
+// fechas entrenadas; la rutina sale de la rotación (la última fue Día 3 el mié 22 nov)
+const HIST = [[9,2],[9,4],[9,6],[9,9],[9,11],[9,13],[9,16],[9,18],[9,23],[9,25],[9,27],[9,30],[10,2],[10,6],[10,8],[10,10],[10,13],[10,15],[10,16],[10,20],[10,22]]
+  .map(([m, d], i, a) => ({ f: new Date(2023, m, d), k: ((2 - (a.length - 1 - i)) % 3 + 3) % 3 }));
+function viewInicioApp() {
+  const SEM = 8, lunes = new Date(HOY); lunes.setDate(HOY.getDate() - (HOY.getDay() + 6) % 7 - 7 * (SEM - 1));
+  const porDia = {}; HIST.forEach(h => porDia[diaKey(h.f)] = h);
+  let celdas = '';
+  for (let i = 0; i < SEM * 7; i++) {
+    const f = new Date(lunes); f.setDate(lunes.getDate() + i);
+    const h = porDia[diaKey(f)], key = diaKey(f), fut = f > HOY, hoy = key === diaKey(HOY);
+    const cls = ['cal-d', h ? `on r${h.k}` : '', hoy ? 'hoy' : '', fut ? 'fut' : '', S.calDay === key ? 'sel' : ''].join(' ');
+    celdas += `<button class="${cls}" ${fut ? 'disabled' : `data-a="calDay" data-v="${key}"`} aria-label="${fechaTxt(f)}${h ? ` · ${RUT[h.k] ? RUT[h.k].name : 'entrenado'}` : ''}">${f.getDate() === 1 ? `<span class="m1">${MESES_C[f.getMonth()]}</span>` : ''}${f.getDate()}</button>`;
+  }
+  const ult30 = HIST.filter(h => (HOY - h.f) / 864e5 < 30).length;
+  const porSem = (HIST.filter(h => (HOY - h.f) / 864e5 < 28).length / 4).toFixed(1).replace('.', ',');
+  let racha = 0; { const l = new Date(HOY); l.setDate(HOY.getDate() - (HOY.getDay() + 6) % 7); for (;;) { const fin = new Date(l); fin.setDate(l.getDate() + 7); if (HIST.some(h => h.f >= l && h.f < fin)) { racha++; l.setDate(l.getDate() - 7); } else break; } }
+  const sel = S.calDay ? (porDia[S.calDay] || { f: (() => { const [y, m, d] = S.calDay.split('-').map(Number); return new Date(y, m - 1, d); })() }) : null;
+  const det = !sel ? '' : sel.k != null
+    ? `<div class="cal-det"><b>${fechaTxt(sel.f)}</b> · Día ${sel.k + 1}: ${RUT[sel.k] ? RUT[sel.k].name : ''}${RUT[sel.k] ? ` · ${RUT[sel.k].slots.length} ejercicios · ~${rutMins(RUT[sel.k].slots)} min` : ''}</div>`
+    : `<div class="cal-det"><b>${fechaTxt(sel.f)}</b> · Descanso</div>`;
+  return `
+    <section class="card">
+      <div class="slot-head"><h2>Tus entrenamientos</h2><span class="small muted">últimas ${SEM} semanas</span></div>
+      <div class="cal">${['lun','mar','mié','jue','vie','sáb','dom'].map(d => `<span class="cal-h">${d}</span>`).join('')}${celdas}</div>
+      <div class="cal-leg">${RUT.slice(0, 3).map((x, k) => `<span><i class="r${k}"></i>Día ${k + 1}</span>`).join('')}<span>Toca un día para ver qué hiciste</span></div>
+      ${det}
+      <div class="cal-stats"><div><b>${ult30}</b><span>últimos 30 días</span></div><div><b>${porSem}</b><span>por semana</span></div><div><b>${racha}</b><span>semanas seguidas</span></div></div>
+    </section>
+    <button class="btn primary block" data-a="goSesion">Ir a la sesión de hoy</button>`;
+}
 function viewInicio() {
   const nx = nextRut(), r = RUT[nx];
   const meta = (x, k) => x.slots.length ? `Día ${k + 1} · ${x.slots.length} ejercicios · ~${rutMins(x.slots)} min` : `Día ${k + 1} · sin ejercicios todavía`;
@@ -1297,6 +1354,7 @@ function viewRutina() {
 }
 
 const ICONS = {
+  inicio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6"/></svg>',
   rutina:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
   hoy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12"/></svg>',
   semana:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
@@ -1304,21 +1362,21 @@ const ICONS = {
 };
 
 function render() {
-  const views = { hoy: viewHoy, semana: viewSemana, guia: viewGuia, rutina: viewRutina };
+  const views = { inicio: viewInicioApp, hoy: viewHoy, semana: viewSemana, guia: viewGuia, rutina: viewRutina };
   const r = document.getElementById('root');
   const home = S.tab === 'hoy' && S.home;
   useDay(S.rut);
-  const fab = home ? bodyFab('semana') : bodyFab(), clk = home ? `${RUT.length} rutinas en rotación` : clockTxt();
+  const fab = home || S.tab === 'inicio' ? bodyFab('semana') : bodyFab(), clk = S.tab === 'inicio' ? `${HIST.filter(h => h.f.getMonth() === HOY.getMonth()).length} entrenamientos en noviembre` : home ? `${RUT.length} rutinas en rotación` : clockTxt();
   useDay(S.tab === 'rutina' ? S.edRut : S.rut);
   r.innerHTML = `<main class="app ${S.tags ? '' : 'hide-tags'}">
     <header class="top">
-      <div class="top-l"><span class="eyebrow">Jueves 23 nov${home ? '' : ` · Día ${S.rut + 1}`}</span><h1>${S.tab==='hoy'?(home ? '¿Qué entrenas hoy?' : RUT[S.rut].name):S.tab==='semana'?'Tu semana':S.tab==='rutina'?'Tu rutina':'Guía'}</h1><span class="clock" id="clock">${clk}</span></div>
+      <div class="top-l"><span class="eyebrow">Jueves 23 nov${home || S.tab === 'inicio' ? '' : ` · Día ${S.rut + 1}`}</span><h1>${S.tab==='inicio'?'Inicio':S.tab==='hoy'?(home ? '¿Qué entrenas hoy?' : RUT[S.rut].name):S.tab==='semana'?'Tu semana':S.tab==='rutina'?'Tu rutina':'Guía'}</h1><span class="clock" id="clock">${clk}</span></div>
       ${fab}
     </header>
     ${views[S.tab]()}
   </main>
   <nav class="tabs"><div class="tabs-in">
-    ${[['hoy','Sesión'],['semana','Semana'],['rutina','Editar'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
+    ${[['inicio','Inicio'],['hoy','Sesión'],['semana','Semana'],['rutina','Editar'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
   </div></nav>
   ${S.bodySheet ? (() => { useDay(S.rut); const h = bodySheet(); useDay(S.tab === 'rutina' ? S.edRut : S.rut); return h; })() : ''}
   ${S.exInfo ? exInfoSheet(S.exInfo) : ''}

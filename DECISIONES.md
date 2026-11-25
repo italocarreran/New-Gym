@@ -46,7 +46,7 @@
 
 - Celular primero: una columna de máx. 480 px, todo con el pulgar, registrar una serie en pocos toques. (2026-11-23)
 - **Tema claro fijo.** El oscuro solo existe forzado con `data-theme="dark"`; no seguir el modo del sistema. (Italo, 2026-11-25)
-- Pestañas: **Sesión** (entrenar; antes se llamaba "Rutina"), **Semana**, **Editar** (editor de rutina), **Esfuerzo** (guía). (2026-11-23; nombre "Sesión" por Italo, 2026-11-25)
+- Pestañas: **Inicio** (primera; calendario de días entrenados, se le agregarán cosas), **Sesión** (entrenar; antes se llamaba "Rutina"), **Semana**, **Editar** (editor de rutina), **Esfuerzo** (guía). (2026-11-23; nombre "Sesión" e Inicio por Italo, 2026-11-25)
 - Todos los slots abiertos por defecto; se pliegan a mano. Mantener apretado para reordenar; advierte solo si queda antes de uno más importante. (2026-11-24)
 - Encabezado fijo: título chico, cronómetro iniciar/pausar con estimado, muñeco de músculos. (2026-11-24)
 - Opciones A/B/C con foto animada de 2 cuadros; solo se anima la del ejercicio en curso. kg/lb por slot. (2026-11-24 / 2026-11-25)
