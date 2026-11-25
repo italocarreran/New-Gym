@@ -158,6 +158,8 @@ p { margin: 0; }
 .chk.on { background: var(--ok); border-color: var(--ok); color: var(--surface); font-size: 15px; }
 .chk:disabled { opacity: .5; cursor: default; }
 .sl-add { display: flex; padding: 0 8px; border-top: 1px solid var(--line); }
+.sl-add { justify-content: space-between; }
+.sl-add .drop-now { color: var(--muted); }
 .sl-add button { border: none; background: transparent; color: var(--accent); font-weight: 600; font-size: 11.5px; padding: 5px 2px; }
 .sl-swipe { position: relative; overflow: hidden; border-top: 1px solid var(--line); }
 .sl-swipe .sl-row { border-top: none; background: var(--surface); position: relative; z-index: 1; transition: transform .2s ease; touch-action: pan-y; }
@@ -757,6 +759,7 @@ function act(a, v) {
     case 'biOn': { const [a, b] = v.split(',').map(Number); Object.keys(S.bi).forEach(k => { const [x, y] = k.split('-').map(Number); if ([x, y].some(z => z === a || z === b)) delete S.bi[k]; }); S.bi[biKey(a, b)] = true; S.fold[a] = false; S.fold[b] = false; break; }
     case 'biOff': delete S.bi[v]; break;
     case 'dropAdd': { const ls = logsFor(si), l = ls[ls.length - 1]; if (!l) break; l.drops = l.drops || []; const base = l.drops.length ? l.drops[l.drops.length - 1].w : l.w; l.drops.push({ w: dropW(base), r: null }); if (S.restEnd) S.restEnd = Date.now() + S.restLen * 1000; break; }
+    case 'dropNow': { if (isDone(si)) break; const n = logsFor(si).length; act('log'); if (logsFor(si).length === n) return; if (S.si !== si) { S.si = si; S.draft = makeDraft(si); S.msg = null; S.scrollCur = false; } act('dropAdd'); return; }
     case 'dropDel': { const [i, k] = v.split(',').map(Number), l = logsFor(si)[i]; if (l && l.drops) l.drops.splice(k, 1); break; }
     case 'exInfoClose': S.exInfo = null; break;
     case 'pickOpen': S.pick = v; S.q = ''; break;
@@ -906,9 +909,9 @@ function slotCard(si) {
             const w = l ? l.w : cur ? DR.w : pre.w ?? target(si, i).w, r = l ? l.r : cur ? DR.r : pre.r ?? target(si, i).r;
             const tg = target(si, i), ph = [toU(tg.w), tg.r];
             return `<label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso serie ${i+1}" data-set="${i}" data-f="w" value="${toU(w) ?? ''}" placeholder="${ph[0]}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones serie ${i+1}" data-set="${i}" data-f="r" value="${r ?? ''}" placeholder="${ph[1]}"><span class="u">reps</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones en reserva serie ${i+1}" data-set="${i}" data-f="rir" value="${(l ? l.rir : cur ? DR.rir : pre.rir ?? defRir(si, i)) ?? ''}" placeholder="${d.type === 'iso' && i === nS(si) - 1 ? '0' : '1-2'}"><span class="u">RIR</span></label>`;
-          })()}</span><span class="antes">${prev}</span></div><button class="sl-del" data-a="delSetAt" data-v="${i}">Eliminar</button></div>${l ? (l.drops || []).map((dp, k) => `<div class="sl-row sl-drop"><span class="drop-ar" aria-hidden="true">↳</span><span class="cells"><label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso bajada ${k+1} de la serie ${i+1}" data-drop="${i},${k}" data-f="w" value="${toU(dp.w)}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones bajada ${k+1} de la serie ${i+1}" data-drop="${i},${k}" data-f="r" value="${dp.r ?? ''}" placeholder="reps"><span class="u">reps</span></label><span class="drop-t">Bajada</span></span><button class="drop-x" data-a="dropDel" data-v="${i},${k}" aria-label="Quitar bajada">✕</button></div>`).join('') + (i === ls.length - 1 && act0 ? `<div class="sl-dropadd"><button data-a="dropAdd">↓ Bajar peso y seguir (drop set)</button></div>` : '') : ''}`;
+          })()}</span><span class="antes">${prev}</span></div><button class="sl-del" data-a="delSetAt" data-v="${i}">Eliminar</button></div>${l ? (l.drops || []).map((dp, k) => `<div class="sl-row sl-drop"><span class="drop-ar" aria-hidden="true">↳</span><span class="cells"><label class="cellw"><input class="cell" inputmode="decimal" aria-label="Peso bajada ${k+1} de la serie ${i+1}" data-drop="${i},${k}" data-f="w" value="${toU(dp.w)}"><span class="u">${S.unit}</span></label><label class="cellw"><input class="cell" inputmode="numeric" aria-label="Repeticiones bajada ${k+1} de la serie ${i+1}" data-drop="${i},${k}" data-f="r" value="${dp.r ?? ''}" placeholder="–"><span class="u">reps</span></label><span class="drop-t">Bajada</span></span><button class="drop-x" data-a="dropDel" data-v="${i},${k}" aria-label="Quitar bajada">✕</button></div>`).join('') + (i === ls.length - 1 && act0 ? `<div class="sl-dropadd"><button data-a="dropAdd">↓ Bajar peso y seguir (drop set)</button></div>` : '') : ''}`;
         }).join('')}
-        <div class="sl-add"><button data-a="addSet">+ Agregar serie</button></div>
+        <div class="sl-add"><button data-a="addSet">+ Agregar serie</button>${act0 && !isDone(si) ? `<button class="drop-now" data-a="dropNow">↓ Drop set en la serie ${ls.length + 1}</button>` : ''}</div>
       </div>
       ${act0 ? actions : ''}
       <details class="det"><summary>Detalles</summary><div class="det-sec"><span class="det-h">Cómo progresar hoy</span><p>Rango ${d.reps[0]}-${d.reps[1]} reps, ${d.type === 'comp' ? '1-2 en reserva en cada serie' : '1-2 en reserva y la última al fallo'}.${orderShort} ${(() => { const pl = plan(si); return ({
