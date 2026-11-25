@@ -169,6 +169,8 @@ p { margin: 0; }
 .bi-link { display: flex; justify-content: center; align-items: center; gap: 8px; margin: -12px 0; min-height: 24px; }
 .bi-link button { border: 0; background: transparent; color: var(--muted); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
 .bi-link:not(.on) button { opacity: .7; }
+.bi-link { gap: 0; }
+.bi-sep { color: var(--muted); opacity: .5; font-size: 11px; }
 .bi-link.on { justify-content: space-between; padding: 4px 10px; margin: -14px 0; border-left: 3px solid var(--accent); border-right: 3px solid var(--accent); background: var(--accent-soft); }
 .bi-link.on .bi-tag { font-size: 11px; font-weight: 700; color: var(--accent); }
 .bi-link.on button { color: var(--accent); text-decoration: underline; padding: 2px 0; }
@@ -192,7 +194,7 @@ p { margin: 0; }
 .opt.on .opt-l { background: var(--accent); color: var(--accent-ink); }
 .opt.busy { opacity: .6; }
 .opts.mini { gap: 4px; }
-.opt-more { justify-content: center; align-items: center; font-weight: 700; font-size: 16px; padding: 0 !important; color: var(--muted); }
+.opt-more { grid-column: -2 / -1; justify-content: center; align-items: center; font-weight: 700; font-size: 16px; padding: 0 !important; color: var(--muted); }
 .opts.mini .opt { flex-direction: row; align-items: center; gap: 5px; padding: 5px 6px; border-radius: 9px; }
 .opts.mini .opt-top { order: 0; }
 .opts.mini .opt-l { width: 16px; height: 16px; font-size: 11px; border-radius: 4px; }
@@ -268,9 +270,17 @@ p { margin: 0; }
 .set-pill { font-family: var(--display); font-size: 15px; font-weight: 600; background: var(--surface-2); border-radius: 8px; padding: 3px 8px; }
 .set-pill.f { background: var(--bad-soft); color: var(--bad); }
 
-.rest { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--ink); color: var(--bg); border-radius: 12px; padding: 10px 14px; }
-.rest .t { font-family: var(--display); font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.rest button { background: transparent; border: 1px solid currentColor; border-radius: 8px; padding: 4px 10px; font-size: 12px; color: inherit; }
+.rest { position: relative; overflow: hidden; display: flex; align-items: center; gap: 8px; background: var(--surface-2); color: var(--ink); border-radius: 10px; padding: 6px 8px 6px 12px; font-size: 12.5px; }
+.rest::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: calc(100% * var(--p, 0)); background: var(--accent-soft); transition: width 1s linear; z-index: 0; }
+.rest > * { position: relative; z-index: 1; }
+.rest-l { color: var(--muted); font-weight: 500; }
+.rest .t { font-family: var(--display); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 38px; }
+.rest.done .t { color: var(--ok); }
+.rest-adj { display: inline-flex; gap: 4px; margin-left: auto; }
+.rest-adj button { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 3px 7px; font-size: 11.5px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rest-skip { border: 0; background: transparent; color: var(--accent); font-size: 12px; font-weight: 600; padding: 3px 4px; }
+.rest.enter { animation: restIn .45s ease-out; }
+@keyframes restIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
 .banner { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; }
 .banner .btn { padding: 8px 10px; font-size: 13px; background: var(--warn); color: var(--surface); white-space: nowrap; }
@@ -526,7 +536,12 @@ const isDone = si => logsFor(si).length >= nS(si);
 const pos = si => { const i = S.order.indexOf(si); return i >= 0 ? i + 1 : S.order.length + 1; };
 const muscles = si => { const e = exOf(si); return [...e.p, ...e.s]; };
 const share = (a, b) => muscles(a).filter(m => muscles(b).includes(m));
-const restSecs = si => DAY[si].type === 'comp' ? 150 : 75;
+const restSecs = si => (S.restPref && S.restPref[si]) || (DAY[si].type === 'comp' ? 150 : 75);
+// descanso: barra discreta con el tiempo, ajustable de a 15 s (se recuerda por slot)
+function restHtml(left) {
+  const p = S.restLen ? Math.min(1, left / S.restLen) : 0;
+  return `<div class="rest ${S.restIn ? 'enter' : ''}" id="restBox" style="--p:${p.toFixed(3)}"><span class="rest-l">Descanso</span><span class="t" id="restT">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span><span class="rest-adj"><button data-a="restAdj" data-v="-15" aria-label="Quitar 15 segundos">−15</button><button data-a="restAdj" data-v="15" aria-label="Sumar 15 segundos">+15</button></span><button class="rest-skip" data-a="skipRest">Saltar</button></div>`;
+}
 const slotMins = (si, setsLeft) => (setsLeft ?? nS(si)) * (45 + restSecs(si)) / 60 + 2;
 
 // Sobrecarga progresiva (progresión doble): +1 rep por serie hasta el tope del rango;
@@ -689,15 +704,15 @@ function act(a, v) {
       if (S.draft.rir == null) { S.msg = { cls:'info', t:'Falta el RIR.', s:'Anota en la casilla RIR cuántas repeticiones más podías hacer.' }; break; }
       if (!S.order.includes(si)) S.order.push(si);
       S.logs.push({ si, ex: exIdOf(si), w: S.draft.w, r: S.draft.r, rir: S.draft.rir }); S.pulse = true; if (!S.startAt) S.startAt = Date.now();
-      S.msg = feedback(si, S.draft.rir);
+      S.msg = feedback(si, S.draft.rir); if (S.msg && S.msg.cls === 'ok') S.msg = null; // solo se avisa cuando hay algo que corregir
       const pn = progressionNote(si); if (pn) S.msg = { cls:'info', t:'Sube el peso la próxima vez.', s:pn };
-      S.restLen = restSecs(si); S.restEnd = Date.now() + S.restLen * 1000;
+      S.restLen = restSecs(si); S.restEnd = Date.now() + S.restLen * 1000; S.restIn = true; S.restSlot = si;
       S.draft = makeDraft(si); S.swap = null;
       const pb = biPartner(si);
       if (pb != null && !isDone(pb) && !cutSet().has(pb)) {
         const fb = S.msg;
-        if (biFirst(si)) { S.restEnd = null; S.msg = { cls:'info', t:`Biserie: pasa directo a ${DAY[pb].name.toLowerCase()}.`, s:`Sin descanso entre los dos. ${fb ? fb.t : ''}` }; }
-        else S.msg = { cls:'info', t:`Vuelta lista. Descansa y vuelve a ${DAY[pb].name.toLowerCase()}.`, s:`${DAY[si].name}: ${fb ? fb.t : ''}` };
+        if (biFirst(si)) { S.restEnd = null; S.msg = { cls:'info', t:`Biserie: pasa directo a ${DAY[pb].name.toLowerCase()}.`, s:`Sin descanso entre los dos.${fb ? ' ' + fb.t : ''}` }; }
+        else S.msg = { cls:'info', t:`Vuelta lista. Descansa y vuelve a ${DAY[pb].name.toLowerCase()}.`, s: fb ? `${DAY[si].name}: ${fb.t}` : '' };
         S.si = pb; S.fold[pb] = false; S.draft = makeDraft(pb); S.scrollCur = true;
       }
       break;
@@ -711,6 +726,7 @@ function act(a, v) {
     }
     case 'undo': { let ix = -1; S.logs.forEach((x, k) => { if (x.si === si) ix = k; }); const l = ix >= 0 ? S.logs.splice(ix, 1)[0] : null; if (l && !logsFor(l.si).length) S.order = S.order.filter(x => x !== l.si); S.msg = null; S.restEnd = null; S.draft = makeDraft(si); break; }
     case 'skipRest': S.restEnd = null; break;
+    case 'restAdj': { if (!S.restEnd) break; const d = +v, left = (S.restEnd - Date.now()) / 1000; if (left + d < 5) break; S.restEnd += d * 1000; S.restLen = Math.max(15, S.restLen + d); const k = S.restSlot ?? si; S.restPref = S.restPref || {}; S.restPref[k] = Math.max(15, restSecs(k) + d); break; }
     case 'unit': S.unit = S.unit === 'kg' ? 'lb' : 'kg'; break;
     case 'min': S.minutes = S.minutes === +v ? null : +v; break;
     case 'reset': resetSession(); break;
@@ -751,6 +767,8 @@ function act(a, v) {
     case 'exInfo': S.exInfo = v; break;
     case 'biOn': { const [a, b] = v.split(',').map(Number); Object.keys(S.bi).forEach(k => { const [x, y] = k.split('-').map(Number); if ([x, y].some(z => z === a || z === b)) delete S.bi[k]; }); S.bi[biKey(a, b)] = true; S.fold[a] = false; S.fold[b] = false; break; }
     case 'biOff': delete S.bi[v]; break;
+    case 'addToday': S.insAfter = v === '' || v == null ? null : +v; S.insBi = false; S.pick = 'today'; S.q = ''; break;
+    case 'insBi': S.insBi = v === '1'; break;
     case 'dropAdd': { const ls = logsFor(si), l = ls[ls.length - 1]; if (!l) break; l.drops = l.drops || []; const base = l.drops.length ? l.drops[l.drops.length - 1].w : l.w; l.drops.push({ w: dropW(base), r: null }); if (S.restEnd) S.restEnd = Date.now() + S.restLen * 1000; break; }
     case 'dropNow': { if (isDone(si)) break; const n = logsFor(si).length; act('log'); if (logsFor(si).length === n) return; if (S.si !== si) { S.si = si; S.draft = makeDraft(si); S.msg = null; S.scrollCur = false; } act('dropAdd'); return; }
     case 'dropDel': { const [i, k] = v.split(',').map(Number), l = logsFor(si)[i]; if (l && l.drops) l.drops.splice(k, 1); break; }
@@ -759,6 +777,14 @@ function act(a, v) {
     case 'pickClose': S.pick = null; break;
     case 'pickEx': {
       const e = EX[v];
+      if (S.pick === 'today') {
+        const order = viewOrder();
+        DAY.push({ name: e.n.split(' ').slice(0, 2).join(' '), sets: 3, reps: e.s.length ? [8,10] : [12,15], prio: e.s.length ? 'alta' : 'baja', type: e.s.length ? 'comp' : 'iso', alts: [v] });
+        const j = DAY.length - 1, a = S.insAfter;
+        order.splice(a != null ? order.indexOf(a) + 1 : order.length, 0, j); S.view = order; S.fold[j] = false;
+        if (a != null && S.insBi) act('biOn', `${a},${j}`);
+        S.pick = null; S.insBi = false; break;
+      }
       if (S.pick === 'new') {
         DAY.push({ name: e.n.split(' ').slice(0, 2).join(' '), sets: 3, reps: e.s.length ? [8,10] : [12,15], prio: e.s.length ? 'alta' : 'baja', type: e.s.length ? 'comp' : 'iso', alts: [v] });
         S.ed = DAY.length - 1;
@@ -789,12 +815,13 @@ function foldedCard(j) {
 
 function biLink(a, b) {
   if (S.bi[biKey(a, b)]) return `<div class="bi-link on"><span class="bi-tag">⇅ Biserie · sin descanso entre los dos</span><button data-a="biOff" data-v="${biKey(a, b)}">Separar</button></div>`;
-  return `<div class="bi-link"><button data-a="biOn" data-v="${a},${b}" aria-label="Hacer ${DAY[a].name} y ${DAY[b].name} en biserie">⇅ Unir en biserie</button></div>`;
+  return `<div class="bi-link"><button data-a="biOn" data-v="${a},${b}" aria-label="Hacer ${DAY[a].name} y ${DAY[b].name} en biserie">⇅ Unir en biserie</button><span class="bi-sep" aria-hidden="true">·</span><button data-a="addToday" data-v="${a}" aria-label="Agregar un ejercicio después de ${DAY[a].name}">+ Agregar ejercicio</button></div>`;
 }
 function viewHoy() {
   return `
     ${S.returnTo != null ? `<div class="banner"><span>Haciendo esto mientras esperas <b>${DAY[S.returnTo].name.toLowerCase()}</b>.</span><button class="btn" data-a="back">Se liberó</button></div>` : ''}
     ${viewOrder().map((j, k, v) => (k ? biLink(v[k - 1], j) : '') + (S.fold[j] ? foldedCard(j) : slotCard(j))).join('')}${(unitSlot = null, '')}
+    <button class="btn ghost block" data-a="addToday" data-v="">+ Agregar ejercicio a hoy</button>
     <button class="btn ghost block" data-a="reset">Reiniciar el ejemplo</button>`;
 }
 
@@ -832,7 +859,7 @@ function slotCard(si) {
   const msgH = S.msg ? `<div class="note ${S.msg.cls} flash"><b>${S.msg.t}</b><span>${S.msg.s}</span></div>` : '';
   const actions = isDone(si)
     ? `${msgH}<div><button class="btn primary block" data-a="next">${S.returnTo != null ? `Volver a ${DAY[S.returnTo].name.toLowerCase()}` : 'Siguiente ejercicio'}</button></div>`
-    : `${restL != null ? `<div class="rest"><span><span class="small">Descanso</span><br><span class="t" id="restT">${Math.floor(restL/60)}:${String(restL%60).padStart(2,'0')}</span></span><button data-a="skipRest">Saltar</button></div>` : ''}${msgH}
+    : `${restL != null ? restHtml(restL) : ''}${msgH}
 `;
   const cf = !done && !ls.length && !S.conflictOk[si] ? conflictFor(si) : null;
   const conflictWarn = cf != null ? (() => { const m = share(si, cf).filter(x => x !== 'front').map(x => MUS[x].toLowerCase()); return `<div class="note warn ord-note"><div><b>Ojo: ${d.name.toLowerCase()} antes de ${DAY[cf].name.toLowerCase()}.</b><span>Cansa ${m.join(' y ') || 'los mismos músculos'}, que necesitas en ${DAY[cf].name.toLowerCase()} (prioridad alta). Puedes rendir menos ahí.</span></div><button class="ok-btn" data-a="conflictOk">OK</button></div>`; })() : '';
@@ -854,7 +881,7 @@ function slotCard(si) {
       ${S.msg ? `<div class="note ${S.msg.cls}"><b>${S.msg.t}</b><span>${S.msg.s}</span></div>` : ''}
       <div class="btn-row"><button class="btn ghost" data-a="undo">Deshacer serie</button><button class="btn primary" data-a="next">${S.returnTo != null ? `Volver a ${DAY[S.returnTo].name.toLowerCase()}` : 'Siguiente ejercicio'}</button></div>`
     : `${ls.length ? `<div class="sets-done">${ls.map((l,i)=>`<span class="set-pill ${l.rir===0?'f':''}">${i+1}: ${fmt(l.w)}×${l.r} · ${l.rir===3?'3+':l.rir} RIR</span>`).join('')}</div>` : ''}
-      ${restLeft != null ? `<div class="rest"><span><span class="small">Descanso</span><br><span class="t" id="restT">${Math.floor(restLeft/60)}:${String(restLeft%60).padStart(2,'0')}</span></span><button data-a="skipRest">Saltar</button></div>` : ''}
+      ${restLeft != null ? restHtml(restLeft) : ''}
       ${S.msg ? `<div class="note ${S.msg.cls} flash"><b>${S.msg.t}</b><span>${S.msg.s}</span></div>` : ''}
       <div class="guide ${g.cls}"><span class="g1">${g.g1}</span><span class="g2">${g.g2}</span></div>
       ${tag(d.type==='comp' ? 'llegar al fallo en todo y necesitar descansos eternos' : 'no saber cuándo sí conviene llegar al fallo')}
@@ -888,7 +915,7 @@ function slotCard(si) {
         ${prioIcon(d.prio)}
       </div>
       ${S.fold[si] ? `<button class="fold-sub" data-a="fold"><span>${e.n}</span><span class="muted"> · ${ls.length}/${nS(si)} series${ls.length ? ' · ' + ls.map(l=>`${fmt(toU(l.w))}×${l.r}`).join(', ') : ''}</span></button>` : `
-      <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
+      <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) ${d.alts.length < 3 ? `minmax(0,${3 - d.alts.length}fr)` : ''} 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
       <p class="opt-cap"><b>${LET[altIdx(si)]}</b> · ${e.n}</p>
       ${act0 ? swapHtml : ''}
       ${chosen ? `<div class="setlist">
@@ -999,8 +1026,9 @@ function viewGuia() {
 }
 
 function pickerHtml() {
-  const used = S.pick === 'new' ? [] : DAY[S.ed].alts;
-  const ref = S.pick === 'new' ? null : EX[DAY[S.ed].alts[0]];
+  const fresh = S.pick === 'new' || S.pick === 'today';
+  const used = fresh ? [] : DAY[S.ed].alts;
+  const ref = fresh ? null : EX[DAY[S.ed].alts[0]];
   const q = (S.q || '').toLowerCase();
   let list = Object.entries(EX).filter(([id, e]) => !used.includes(id) && (!q || e.n.toLowerCase().includes(q) || e.eq.toLowerCase().includes(q) || e.p.some(m => MUS[m].toLowerCase().includes(q))));
   if (ref) list.sort((a, b) => (b[1].p[0] === ref.p[0]) - (a[1].p[0] === ref.p[0]));
@@ -1216,9 +1244,10 @@ function render() {
     <button class="btn primary block" data-a="altSheetClose">Listo</button>
   </div></div>` : ''}
 ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" data-a="noop">
-      <span class="eyebrow">${S.pick === 'new' ? 'Nuevo slot' : `Opción ${LET[DAY[S.ed].alts.length]} para ${DAY[S.ed].name}`}</span>
-      <h2>Elige un ejercicio</h2>
-      ${S.pick !== 'new' ? '<p class="small muted">Arriba salen los que trabajan el mismo músculo principal.</p>' : ''}
+      <span class="eyebrow">${S.pick === 'new' ? 'Nuevo slot' : S.pick === 'today' ? (S.insAfter != null ? `Después de ${DAY[S.insAfter].name.toLowerCase()}` : 'Al final de la rutina de hoy') : `Opción ${LET[DAY[S.ed].alts.length]} para ${DAY[S.ed].name}`}</span>
+      <h2>${S.pick === 'today' ? 'Agregar ejercicio a hoy' : 'Elige un ejercicio'}</h2>
+      ${S.pick === 'today' && S.insAfter != null ? `<div class="seg"><button class="${S.insBi ? '' : 'on'}" data-a="insBi" data-v="0">Solo agregar</button><button class="${S.insBi ? 'on' : ''}" data-a="insBi" data-v="1">⇅ En biserie con ${DAY[S.insAfter].name.toLowerCase()}</button></div>` : ''}
+      ${S.pick !== 'new' && S.pick !== 'today' ? '<p class="small muted">Arriba salen los que trabajan el mismo músculo principal.</p>' : ''}
       <input id="pickQ" class="txt" data-in="q" placeholder="Busca por nombre, equipo o músculo" value="${S.q||''}">
       <div class="alts pick-list" id="pickList">${pickerHtml()}</div>
       <button class="btn ghost block" data-a="pickClose">Cancelar</button>
@@ -1228,7 +1257,7 @@ ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" dat
     ${tag('cambiar el orden sin saber que afecta el rendimiento')}
     <div class="btn-row"><button class="btn ghost" data-a="sheetClose">Mantener orden</button><button class="btn primary" data-a="sheetGo">Hacerlo igual</button></div>
   </div></div>` : ''}`;
-  S.pulse = false;
+  S.pulse = false; S.restIn = false;
   setHp();
   if (S.scrollCur) { S.scrollCur = false; const c = r.querySelector('.cur-card'); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 }
@@ -1343,6 +1372,7 @@ setInterval(() => {
   const el = document.getElementById('restT'); if (!el) return;
   const left = Math.max(0, Math.round((S.restEnd - Date.now())/1000));
   el.textContent = `${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
+  const bx = document.getElementById('restBox'); if (bx && S.restLen) { bx.style.setProperty('--p', Math.min(1, left / S.restLen).toFixed(3)); bx.classList.toggle('done', left === 0); }
 }, 1000);
 S.draft = makeDraft(0);
 render();
