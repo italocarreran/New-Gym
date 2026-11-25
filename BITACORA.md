@@ -29,6 +29,11 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 ---
 
+## 2026-11-25 · Claude (hilo "Agregar inicio de rutinas") · calendario compacto
+
+- Comentario de Italo: el calendario del Inicio, más compacto, con cuadritos chicos. Ahora es una grilla de cuadritos de 14 px (columnas = semanas, filas = lunes a domingo, mes arriba), sin números, últimas 12 semanas. Se mantiene el color por rutina, tocar un cuadrito para ver el día y el resumen. Historial de ejemplo extendido a septiembre.
+- Acuerdo con el hilo "Planificar app personal de gimnasio": este hilo atiende los comentarios del prototipo sobre inicio de rutinas, Inicio/calendario y nombres de pestañas; ese hilo, todo lo de la tarjeta de sesión.
+
 ## 2026-11-25 · Claude (hilo "Agregar inicio de rutinas") · pestaña Inicio con calendario
 
 - Pedido de Italo: página de **Inicio** (primera pestaña, la que abre la app) con un calendario de los días entrenados. Muestra las últimas 8 semanas (lunes a domingo), cada día entrenado pintado según la rutina (Día 1, 2, 3), hoy marcado; al tocar un día dice qué rutina fue. Abajo: entrenamientos de los últimos 30 días, promedio por semana y semanas seguidas. Botón "Ir a la sesión de hoy".

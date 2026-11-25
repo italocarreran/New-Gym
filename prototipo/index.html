@@ -369,16 +369,17 @@ details.det { margin-top: -4px; }
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); display: flex; justify-content: center; padding: 6px max(16px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); z-index: 20; }
 .tabs-in { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
 /* inicio: calendario de días entrenados */
-.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
-.cal-h { font-size: 10.5px; font-weight: 600; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: .04em; }
-.cal-d { aspect-ratio: 1; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); display: grid; place-items: center; padding: 0; font-family: var(--display); font-size: 14px; font-weight: 600; color: var(--muted); position: relative; }
-.cal-d.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.cal-d.r1 { background: var(--tag); border-color: var(--tag); }
-.cal-d.r2 { background: var(--ok); border-color: var(--ok); }
-.cal-d.hoy { box-shadow: 0 0 0 2px var(--ink); }
-.cal-d.fut { opacity: .35; }
-.cal-d.sel { outline: 2px solid var(--ink); outline-offset: 2px; }
-.cal-d .m1 { position: absolute; top: 1px; left: 3px; font-family: var(--body); font-size: 8.5px; font-weight: 700; text-transform: uppercase; opacity: .8; }
+.cal-wrap { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; }
+.cal-dl { display: grid; grid-template-rows: 12px repeat(7, 14px); gap: 3px; font-size: 9.5px; color: var(--muted); line-height: 14px; }
+.cal { display: grid; grid-template-rows: 12px repeat(7, 14px); grid-auto-flow: column; grid-auto-columns: 14px; gap: 3px; justify-content: space-between; }
+.cal-mes { font-size: 9.5px; font-weight: 600; color: var(--muted); line-height: 12px; white-space: nowrap; overflow: visible; }
+.cal-d { width: 14px; height: 14px; border: 0; border-radius: 3px; background: var(--surface-2); padding: 0; }
+.cal-d.on { background: var(--accent); }
+.cal-d.r1 { background: var(--tag); }
+.cal-d.r2 { background: var(--ok); }
+.cal-d.hoy { box-shadow: 0 0 0 1.5px var(--ink); }
+.cal-d.fut { visibility: hidden; }
+.cal-d.sel { outline: 2px solid var(--ink); outline-offset: 1px; }
 .cal-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .cal-stats div { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; }
 .cal-stats b { font-family: var(--display); font-size: 24px; line-height: 1.1; }
@@ -906,17 +907,22 @@ const DIAS_C = ['dom','lun','mar','mié','jue','vie','sáb'], MESES_C = ['ene','
 const fechaTxt = f => `${DIAS_C[f.getDay()]} ${f.getDate()} ${MESES_C[f.getMonth()]}`;
 const diaKey = f => `${f.getFullYear()}-${f.getMonth() + 1}-${f.getDate()}`;
 // fechas entrenadas; la rutina sale de la rotación (la última fue Día 3 el mié 22 nov)
-const HIST = [[9,2],[9,4],[9,6],[9,9],[9,11],[9,13],[9,16],[9,18],[9,23],[9,25],[9,27],[9,30],[10,2],[10,6],[10,8],[10,10],[10,13],[10,15],[10,16],[10,20],[10,22]]
+const HIST = [[8,4],[8,6],[8,8],[8,11],[8,13],[8,15],[8,18],[8,20],[8,25],[8,27],[8,29],[9,2],[9,4],[9,6],[9,9],[9,11],[9,13],[9,16],[9,18],[9,23],[9,25],[9,27],[9,30],[10,2],[10,6],[10,8],[10,10],[10,13],[10,15],[10,16],[10,20],[10,22]]
   .map(([m, d], i, a) => ({ f: new Date(2023, m, d), k: ((2 - (a.length - 1 - i)) % 3 + 3) % 3 }));
 function viewInicioApp() {
-  const SEM = 8, lunes = new Date(HOY); lunes.setDate(HOY.getDate() - (HOY.getDay() + 6) % 7 - 7 * (SEM - 1));
+  const SEM = 12, lunes = new Date(HOY); lunes.setDate(HOY.getDate() - (HOY.getDay() + 6) % 7 - 7 * (SEM - 1));
   const porDia = {}; HIST.forEach(h => porDia[diaKey(h.f)] = h);
   let celdas = '';
-  for (let i = 0; i < SEM * 7; i++) {
-    const f = new Date(lunes); f.setDate(lunes.getDate() + i);
-    const h = porDia[diaKey(f)], key = diaKey(f), fut = f > HOY, hoy = key === diaKey(HOY);
-    const cls = ['cal-d', h ? `on r${h.k}` : '', hoy ? 'hoy' : '', fut ? 'fut' : '', S.calDay === key ? 'sel' : ''].join(' ');
-    celdas += `<button class="${cls}" ${fut ? 'disabled' : `data-a="calDay" data-v="${key}"`} aria-label="${fechaTxt(f)}${h ? ` · ${RUT[h.k] ? RUT[h.k].name : 'entrenado'}` : ''}">${f.getDate() === 1 ? `<span class="m1">${MESES_C[f.getMonth()]}</span>` : ''}${f.getDate()}</button>`;
+  for (let w = 0; w < SEM; w++) {
+    const f0 = new Date(lunes); f0.setDate(lunes.getDate() + w * 7);
+    const f6 = new Date(f0); f6.setDate(f0.getDate() + 6);
+    celdas += `<span class="cal-mes">${w === 0 || f0.getMonth() !== f6.getMonth() || f0.getDate() === 1 ? MESES_C[f6.getMonth()] : ''}</span>`;
+    for (let i = 0; i < 7; i++) {
+      const f = new Date(f0); f.setDate(f0.getDate() + i);
+      const h = porDia[diaKey(f)], key = diaKey(f), fut = f > HOY, hoy = key === diaKey(HOY);
+      const cls = ['cal-d', h ? `on r${h.k}` : '', hoy ? 'hoy' : '', fut ? 'fut' : '', S.calDay === key ? 'sel' : ''].join(' ');
+      celdas += `<button class="${cls}" ${fut ? 'disabled' : `data-a="calDay" data-v="${key}"`} aria-label="${fechaTxt(f)}${h ? ` · ${RUT[h.k] ? RUT[h.k].name : 'entrenado'}` : ''}"></button>`;
+    }
   }
   const ult30 = HIST.filter(h => (HOY - h.f) / 864e5 < 30).length;
   const porSem = (HIST.filter(h => (HOY - h.f) / 864e5 < 28).length / 4).toFixed(1).replace('.', ',');
@@ -928,7 +934,7 @@ function viewInicioApp() {
   return `
     <section class="card">
       <div class="slot-head"><h2>Tus entrenamientos</h2><span class="small muted">últimas ${SEM} semanas</span></div>
-      <div class="cal">${['lun','mar','mié','jue','vie','sáb','dom'].map(d => `<span class="cal-h">${d}</span>`).join('')}${celdas}</div>
+      <div class="cal-wrap"><div class="cal-dl"><span></span>${['lun','','mié','','vie','','dom'].map(d => `<span>${d}</span>`).join('')}</div><div class="cal">${celdas}</div></div>
       <div class="cal-leg">${RUT.slice(0, 3).map((x, k) => `<span><i class="r${k}"></i>Día ${k + 1}</span>`).join('')}<span>Toca un día para ver qué hiciste</span></div>
       ${det}
       <div class="cal-stats"><div><b>${ult30}</b><span>últimos 30 días</span></div><div><b>${porSem}</b><span>por semana</span></div><div><b>${racha}</b><span>semanas seguidas</span></div></div>
