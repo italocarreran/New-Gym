@@ -61,7 +61,9 @@ p { margin: 0; }
 .top { position: sticky; top: 0; z-index: 12; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -12px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 10px max(16px, env(safe-area-inset-left, 0px)) 8px; background: var(--bg); border-bottom: 1px solid var(--line); }
 .cur-card { scroll-margin-top: 96px; }
 .top-l { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.top h1 { font-size: 22px; }
+.top { --hp: 0; }
+.top .eyebrow { display: block; overflow: hidden; max-height: calc(16px * (1 - var(--hp))); opacity: calc(1 - var(--hp) * 1.4); }
+.top h1 { font-size: calc(22px - 5px * var(--hp)); }
 .clock { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .clock { display: flex; align-items: center; gap: 6px; }
 .clock b { color: var(--ink); font-weight: 600; font-size: 15px; font-family: var(--display); letter-spacing: .02em; min-width: 34px; }
@@ -308,8 +310,10 @@ details.det { margin-top: -4px; }
 .det .explain { font-size: 12px; padding: 10px; gap: 6px; }
 
 /* hoja inferior */
-.bodyfab { flex: none; width: 62px; padding: 4px 3px 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; color: var(--ink); }
-.bodyfab svg { width: 100%; height: auto; display: block; }
+.bodyfab { flex: none; padding: 4px 4px 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; color: var(--ink); }
+.bf-figs { display: flex; gap: calc(2px + 10px * var(--hp)); }
+.bf-fig { display: block; border-radius: 8px; padding: calc(4px * var(--hp)); background: color-mix(in srgb, var(--surface-2) calc(100% * var(--hp)), transparent); }
+.bf-fig svg { height: calc(56px + 36px * var(--hp)); width: auto; display: block; }
 .bodyfab .bf-t { font-size: 10px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
 .bodyfab.pulse { animation: bfpulse .7s ease-out; }
 @keyframes bfpulse { 0% { transform: scale(1); } 35% { transform: scale(1.12); box-shadow: 0 0 0 6px color-mix(in srgb, var(--mus) 30%, transparent); } 100% { transform: scale(1); } }
@@ -940,7 +944,7 @@ function smoothPath(pts) {
   return d + 'Z';
 }
 const BODY_PATH = (() => { const r = BODY_HALF, l = r.slice(1, -1).reverse().map(([x, y]) => [100 - x, y]); return smoothPath([...r, ...l]); })();
-function bodySvg(lv) {
+function bodySvg(lv, part) {
   const f = m => { const x = lv[m]; if (!x) return 'var(--mus-dim)'; return `color-mix(in srgb, var(--mus) ${Math.round(x.v * 100)}%, var(--mus-0))`; };
   const E = (m, cx, cy, rx, ry, rot = 0) => [cx, 100 - cx].map((x, k) => `<ellipse class="m" cx="${x}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${k ? -rot : rot} ${x} ${cy})" fill="${f(m)}"/>`).join('');
   const P = (m, pts) => [pts, pts.map(([x, y]) => [100 - x, y])].map(q => `<path class="m" d="${smoothPath(q)}" fill="${f(m)}"/>`).join('');
@@ -958,6 +962,7 @@ function bodySvg(lv) {
     ${E('tri', 75.5, 68, 3.8, 10, -6)}
     ${E('isq', 57, 108, 7, 8.5)}${E('isq', 57.5, 139, 5.8, 17, -4)}
     ${E('pant', 57, 177, 4.4, 13)}`;
+  if (part) return `<svg class="bodyfig" viewBox="2 0 96 210" aria-hidden="true"><g>${part === 'front' ? front : back}</g></svg>`;
   return `<svg class="bodyfig" viewBox="0 0 210 210" aria-hidden="true"><g>${front}</g><g transform="translate(110,0)">${back}</g></svg>`;
 }
 function clockTxt() {
@@ -971,7 +976,7 @@ function clockTxt() {
 const swElapsed = () => !S.startAt ? 0 : Math.max(0, Math.round(((S.pausedAt || Date.now()) - S.startAt - (S.pausedTotal || 0)) / 1000));
 function bodyFab() {
   const total = DAY.reduce((a, d, si) => a + (cutSet().has(si) && !logsFor(si).length ? 0 : Math.max(nS(si), logsFor(si).length)), 0);
-  return `<button class="bodyfab ${S.pulse ? 'pulse' : ''}" data-a="bodyOpen" aria-label="Ver músculos trabajados">${bodySvg(bodyLevels('hoy'))}<span class="bf-t">${S.logs.length}/${total}</span></button>`;
+  return `<button class="bodyfab ${S.pulse ? 'pulse' : ''}" data-a="bodyOpen" aria-label="Ver músculos trabajados">${(() => { const lv = bodyLevels('hoy'); return `<span class="bf-figs"><span class="bf-fig">${bodySvg(lv, 'front')}</span><span class="bf-fig">${bodySvg(lv, 'back')}</span></span>`; })()}<span class="bf-t">${S.logs.length}/${total}</span></button>`;
 }
 function bodySheet() {
   const mode = S.bodyMode || 'hoy', lv = bodyLevels(mode);
@@ -1071,6 +1076,7 @@ ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" dat
     <div class="btn-row"><button class="btn ghost" data-a="sheetClose">Mantener orden</button><button class="btn primary" data-a="sheetGo">Hacerlo igual</button></div>
   </div></div>` : ''}`;
   S.pulse = false;
+  setHp();
   if (S.scrollCur) { S.scrollCur = false; const c = r.querySelector('.cur-card'); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 }
 
@@ -1083,6 +1089,11 @@ document.addEventListener('pointerup', ev => {
   if (S.swiped != null && dx > 30) { S.swiped = null; render(); return; }
   if (S.swiped != null && Math.abs(dx) < 5 && !ev.target.closest('.sl-del')) { S.swiped = null; render(); }
 });
+// al bajar, el encabezado achica el texto y agranda el muñeco (frente y espalda por separado)
+let hpRaf = 0;
+const setHp = () => { hpRaf = 0; const t = document.querySelector('.top'); if (t) t.style.setProperty('--hp', Math.min(1, Math.max(0, scrollY / 140)).toFixed(3)); };
+addEventListener('scroll', () => { if (!hpRaf) hpRaf = requestAnimationFrame(setHp); }, { passive: true });
+
 // mantener apretado el encabezado de un slot para moverlo
 const lp = { timer: null, active: false, el: null, slot: null, y0: 0, x0: 0, target: null, suppress: false };
 function lpEnd() { clearTimeout(lp.timer); lp.timer = null; document.querySelectorAll('.drop-before,.drop-after').forEach(x => x.classList.remove('drop-before', 'drop-after')); }
