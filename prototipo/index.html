@@ -165,6 +165,7 @@ p { margin: 0; }
 .sl-swipe .sl-row { border-top: none; background: var(--surface); position: relative; z-index: 1; transition: transform .2s ease; touch-action: pan-y; }
 .sl-swipe .sl-row.cur { background: var(--accent-soft); }
 .sl-swipe.open .sl-row { transform: translateX(-84px); }
+.sl-swipe .u, .sl-swipe .antes { user-select: none; -webkit-user-select: none; }
 .sl-del { position: absolute; top: 0; bottom: 0; right: 0; width: 84px; border: none; background: var(--bad); color: #fff; font-weight: 600; font-size: 13px; }
 .sl-drop { padding-block: 4px 6px; border-top: 1px dashed var(--line); background: var(--surface-2); }
 .sl-drop .cell { font-size: 14px; padding: 4px 2px; }
@@ -1240,15 +1241,37 @@ ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" dat
   if (S.scrollCur) { S.scrollCur = false; const c = r.querySelector('.cur-card'); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 }
 
-// deslizar una serie a la izquierda muestra "Eliminar"
-let swX = null, swRow = null;
-document.addEventListener('pointerdown', ev => { const r = ev.target.closest('.sl-swipe'); swX = ev.clientX; swRow = r ? `${r.closest("[data-slot]").dataset.slot}-${r.dataset.row}` : null; });
+// deslizar una serie a la izquierda muestra "Eliminar": la fila sigue al dedo y al soltar se abre o se cierra
+const SW_W = 84;
+let swX = null, swY = 0, swRow = null, swEl = null, swBase = 0, swDrag = false;
+document.addEventListener('pointerdown', ev => {
+  const r = ev.target.closest('.sl-swipe'); swX = ev.clientX; swY = ev.clientY; swDrag = false;
+  swRow = r ? `${r.closest("[data-slot]").dataset.slot}-${r.dataset.row}` : null;
+  swEl = r ? r.querySelector('.sl-row') : null; swBase = r && r.classList.contains('open') ? -SW_W : 0;
+});
+document.addEventListener('pointermove', ev => {
+  if (swX == null || !swEl) return;
+  const dx = ev.clientX - swX, dy = ev.clientY - swY;
+  if (!swDrag) { if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy)) return; swDrag = true; swEl.style.transition = 'none'; }
+  let x = swBase + dx;
+  if (x < -SW_W) x = -SW_W - (-SW_W - x) * 0.3; // resistencia más allá del botón
+  if (x > 0) x = 0;
+  swEl.style.transform = `translateX(${x}px)`;
+});
 document.addEventListener('pointerup', ev => {
   if (swX == null) return; const dx = ev.clientX - swX; swX = null;
-  if (swRow != null && dx < -30) { S.swiped = swRow; render(); return; }
-  if (S.swiped != null && dx > 30) { S.swiped = null; render(); return; }
+  if (swDrag && swEl) {
+    const x = swBase + dx, open = x < -SW_W / 2;
+    swEl.style.transition = ''; swEl.style.transform = open ? `translateX(${-SW_W}px)` : '';
+    const was = S.swiped; S.swiped = open ? swRow : (S.swiped === swRow ? null : S.swiped);
+    swDrag = false; swEl = null; lp.suppress = true; setTimeout(() => { lp.suppress = false; }, 350);
+    if (S.swiped !== was) setTimeout(render, 200);
+    return;
+  }
+  swEl = null;
   if (S.swiped != null && Math.abs(dx) < 5 && !ev.target.closest('.sl-del')) { S.swiped = null; render(); }
 });
+document.addEventListener('pointercancel', () => { if (swEl) { swEl.style.transition = ''; swEl.style.transform = ''; } swX = null; swEl = null; swDrag = false; });
 // al bajar, el encabezado achica el texto y agranda el muñeco (frente y espalda por separado)
 let hpRaf = 0;
 const setHp = () => { hpRaf = 0; const t = document.querySelector('.top'); if (t) t.style.setProperty('--hp', Math.min(1, Math.max(0, scrollY / 140)).toFixed(3)); };
