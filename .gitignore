@@ -1,0 +1,12 @@
+# secretos y configuración local
+.env
+*.local.*
+config.local.json
+.claude/settings.local.json
+# herramientas
+__pycache__/
+*.pyc
+herramientas/iconos/poses.json
+herramientas/iconos/*.task
+herramientas/fotos/
+.DS_Store

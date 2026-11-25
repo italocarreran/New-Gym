@@ -1,0 +1,63 @@
+# MAPA.md · dónde está cada cosa
+
+Léelo antes de abrir archivos. Abre completo **solo** el archivo que vas a modificar.
+
+## Estructura
+
+```
+REGLAS.md              obligatorio: leer primero, siempre
+DECISIONES.md          lo vigente (producto, stack, progresión, UI)
+BITACORA.md            en curso, pendientes abiertos y registro de sesiones
+AGENTS.md              cómo se trabaja acá (CLAUDE.md apunta a este)
+MAPA.md                este archivo
+ROADMAP.md             plan por etapas
+README.md              presentación para humanos
+prototipo/
+  index.html           prototipo interactivo, un solo archivo (HTML+CSS+JS)
+data/
+  ejercicios.json      catálogo curado: 57 ejercicios, músculos, fedb_id, og_id, equivalencias
+  musculos.json        grupos musculares, pesos del conteo, metas (null = las pone el usuario)
+  fuentes/             datos de terceros, no se editan a mano
+    free-exercise-db.json        copia completa (dominio público)
+    opengym/biblioteca.json      solo texto de openGym (AGPL/MIT) + licencias
+    LEEME.md                     de dónde salen y cómo actualizarlos
+  iconos/
+    lista-150-ejercicios.csv     150 ejercicios para dibujar íconos (UTF-8 con BOM)
+docs/
+  contexto-app-entrenamiento.md  requisitos originales (2026-11-23)
+  fuentes-de-datos.md            evaluación de bases de ejercicios y respaldo científico
+  img/                           capturas: mapa de calor, encabezado, muestra de íconos
+scripts/
+  sincronizar.sh       trae main al día y muestra qué llegó
+  verificar.sh         datos + sintaxis del prototipo + secretos → "TODO OK"
+  validar_datos.py     coherencia de data/
+  importar_opengym.py  regenera data/fuentes/opengym/biblioteca.json
+herramientas/iconos/   prototipo del generador de íconos (MediaPipe → SVG)
+```
+
+## `prototipo/index.html` por dentro
+
+Un solo `<script>`. Usa **datos de ejemplo propios**, no lee `data/`.
+
+| Nombre | Qué es |
+|---|---|
+| `MUS`, `META`, `BASE` | grupos musculares, metas de ejemplo y lo hecho en la semana (ejemplo) |
+| `EX` | ejercicios de ejemplo: `n` nombre, `eq` equipo, `p`/`s` músculos, `why` equivalencia, `adj` ajuste de peso, `last` sesión anterior |
+| `TEC` | técnica por ejercicio (`como`, `ojo`) |
+| `DAY` | slots del día: series, rango de reps, prioridad, `comp`/`iso`, alternativas A/B/C |
+| `IMG` | fotos de free-exercise-db **en base64, una línea de ~270 KB**. No la leas: búscala o sáltatela |
+| `S` | estado global de la app |
+| `act(a, v)` | único despachador de acciones (los botones llevan `data-a` / `data-v`) |
+| `plan`, `target`, `feedback`, `progressionNote` | progresión y meta de hoy |
+| `weekly` | conteo semanal ponderado |
+| `timePlan`, `cutSet` | qué recortar si falta tiempo |
+| `findFiller`, `conflictFor`, `reorderCheck` | relleno mientras se espera y avisos de orden |
+| `bodyFigure`, `bodySvg`, `REGION_GRUPO`, `FRONT`, `BACK` | muñeco del mapa de calor (SVG a mano) |
+| `bodyFab` | muñeco + conteo en el encabezado |
+| `viewHoy`, `slotCard`, `viewSemana`, `viewGuia`, `pickerHtml` | vistas |
+
+Pestañas (clave interna → nombre en pantalla): `hoy` → Rutina, `semana` → Semana, `rutina` → Editar, `guia` → Esfuerzo.
+
+## `data/ejercicios.json`
+
+Objeto con `_nota` y `ejercicios`. Cada ejercicio trae sus músculos con los grupos de `musculos.json`, el `fedb_id` (foto en free-exercise-db) y el `og_id` (texto en openGym). Las fotos se cargan desde `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/<ruta>`.
