@@ -169,6 +169,8 @@ p { margin: 0; }
 .bi-link { display: flex; justify-content: center; align-items: center; gap: 8px; margin: -12px 0; min-height: 24px; }
 .bi-link button { border: 0; background: transparent; color: var(--muted); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
 .bi-link:not(.on) button { opacity: .7; }
+.bi-link { gap: 0; }
+.bi-sep { color: var(--muted); opacity: .5; font-size: 11px; }
 .bi-link.on { justify-content: space-between; padding: 4px 10px; margin: -14px 0; border-left: 3px solid var(--accent); border-right: 3px solid var(--accent); background: var(--accent-soft); }
 .bi-link.on .bi-tag { font-size: 11px; font-weight: 700; color: var(--accent); }
 .bi-link.on button { color: var(--accent); text-decoration: underline; padding: 2px 0; }
@@ -192,7 +194,7 @@ p { margin: 0; }
 .opt.on .opt-l { background: var(--accent); color: var(--accent-ink); }
 .opt.busy { opacity: .6; }
 .opts.mini { gap: 4px; }
-.opt-more { justify-content: center; align-items: center; font-weight: 700; font-size: 16px; padding: 0 !important; color: var(--muted); }
+.opt-more { grid-column: -2 / -1; justify-content: center; align-items: center; font-weight: 700; font-size: 16px; padding: 0 !important; color: var(--muted); }
 .opts.mini .opt { flex-direction: row; align-items: center; gap: 5px; padding: 5px 6px; border-radius: 9px; }
 .opts.mini .opt-top { order: 0; }
 .opts.mini .opt-l { width: 16px; height: 16px; font-size: 11px; border-radius: 4px; }
@@ -765,6 +767,8 @@ function act(a, v) {
     case 'exInfo': S.exInfo = v; break;
     case 'biOn': { const [a, b] = v.split(',').map(Number); Object.keys(S.bi).forEach(k => { const [x, y] = k.split('-').map(Number); if ([x, y].some(z => z === a || z === b)) delete S.bi[k]; }); S.bi[biKey(a, b)] = true; S.fold[a] = false; S.fold[b] = false; break; }
     case 'biOff': delete S.bi[v]; break;
+    case 'addToday': S.insAfter = v === '' || v == null ? null : +v; S.insBi = false; S.pick = 'today'; S.q = ''; break;
+    case 'insBi': S.insBi = v === '1'; break;
     case 'dropAdd': { const ls = logsFor(si), l = ls[ls.length - 1]; if (!l) break; l.drops = l.drops || []; const base = l.drops.length ? l.drops[l.drops.length - 1].w : l.w; l.drops.push({ w: dropW(base), r: null }); if (S.restEnd) S.restEnd = Date.now() + S.restLen * 1000; break; }
     case 'dropNow': { if (isDone(si)) break; const n = logsFor(si).length; act('log'); if (logsFor(si).length === n) return; if (S.si !== si) { S.si = si; S.draft = makeDraft(si); S.msg = null; S.scrollCur = false; } act('dropAdd'); return; }
     case 'dropDel': { const [i, k] = v.split(',').map(Number), l = logsFor(si)[i]; if (l && l.drops) l.drops.splice(k, 1); break; }
@@ -773,6 +777,14 @@ function act(a, v) {
     case 'pickClose': S.pick = null; break;
     case 'pickEx': {
       const e = EX[v];
+      if (S.pick === 'today') {
+        const order = viewOrder();
+        DAY.push({ name: e.n.split(' ').slice(0, 2).join(' '), sets: 3, reps: e.s.length ? [8,10] : [12,15], prio: e.s.length ? 'alta' : 'baja', type: e.s.length ? 'comp' : 'iso', alts: [v] });
+        const j = DAY.length - 1, a = S.insAfter;
+        order.splice(a != null ? order.indexOf(a) + 1 : order.length, 0, j); S.view = order; S.fold[j] = false;
+        if (a != null && S.insBi) act('biOn', `${a},${j}`);
+        S.pick = null; S.insBi = false; break;
+      }
       if (S.pick === 'new') {
         DAY.push({ name: e.n.split(' ').slice(0, 2).join(' '), sets: 3, reps: e.s.length ? [8,10] : [12,15], prio: e.s.length ? 'alta' : 'baja', type: e.s.length ? 'comp' : 'iso', alts: [v] });
         S.ed = DAY.length - 1;
@@ -803,12 +815,13 @@ function foldedCard(j) {
 
 function biLink(a, b) {
   if (S.bi[biKey(a, b)]) return `<div class="bi-link on"><span class="bi-tag">⇅ Biserie · sin descanso entre los dos</span><button data-a="biOff" data-v="${biKey(a, b)}">Separar</button></div>`;
-  return `<div class="bi-link"><button data-a="biOn" data-v="${a},${b}" aria-label="Hacer ${DAY[a].name} y ${DAY[b].name} en biserie">⇅ Unir en biserie</button></div>`;
+  return `<div class="bi-link"><button data-a="biOn" data-v="${a},${b}" aria-label="Hacer ${DAY[a].name} y ${DAY[b].name} en biserie">⇅ Unir en biserie</button><span class="bi-sep" aria-hidden="true">·</span><button data-a="addToday" data-v="${a}" aria-label="Agregar un ejercicio después de ${DAY[a].name}">+ Agregar ejercicio</button></div>`;
 }
 function viewHoy() {
   return `
     ${S.returnTo != null ? `<div class="banner"><span>Haciendo esto mientras esperas <b>${DAY[S.returnTo].name.toLowerCase()}</b>.</span><button class="btn" data-a="back">Se liberó</button></div>` : ''}
     ${viewOrder().map((j, k, v) => (k ? biLink(v[k - 1], j) : '') + (S.fold[j] ? foldedCard(j) : slotCard(j))).join('')}${(unitSlot = null, '')}
+    <button class="btn ghost block" data-a="addToday" data-v="">+ Agregar ejercicio a hoy</button>
     <button class="btn ghost block" data-a="reset">Reiniciar el ejemplo</button>`;
 }
 
@@ -902,7 +915,7 @@ function slotCard(si) {
         ${prioIcon(d.prio)}
       </div>
       ${S.fold[si] ? `<button class="fold-sub" data-a="fold"><span>${e.n}</span><span class="muted"> · ${ls.length}/${nS(si)} series${ls.length ? ' · ' + ls.map(l=>`${fmt(toU(l.w))}×${l.r}`).join(', ') : ''}</span></button>` : `
-      <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
+      <div class="opts ${chosen ? 'mini' : ''}" style="grid-template-columns: repeat(${d.alts.length}, minmax(0,1fr)) ${d.alts.length < 3 ? `minmax(0,${3 - d.alts.length}fr)` : ''} 30px">${alts}<button class="opt opt-more" data-a="altSheet" aria-label="Editar opciones">⋯</button></div>
       <p class="opt-cap"><b>${LET[altIdx(si)]}</b> · ${e.n}</p>
       ${act0 ? swapHtml : ''}
       ${chosen ? `<div class="setlist">
@@ -1013,8 +1026,9 @@ function viewGuia() {
 }
 
 function pickerHtml() {
-  const used = S.pick === 'new' ? [] : DAY[S.ed].alts;
-  const ref = S.pick === 'new' ? null : EX[DAY[S.ed].alts[0]];
+  const fresh = S.pick === 'new' || S.pick === 'today';
+  const used = fresh ? [] : DAY[S.ed].alts;
+  const ref = fresh ? null : EX[DAY[S.ed].alts[0]];
   const q = (S.q || '').toLowerCase();
   let list = Object.entries(EX).filter(([id, e]) => !used.includes(id) && (!q || e.n.toLowerCase().includes(q) || e.eq.toLowerCase().includes(q) || e.p.some(m => MUS[m].toLowerCase().includes(q))));
   if (ref) list.sort((a, b) => (b[1].p[0] === ref.p[0]) - (a[1].p[0] === ref.p[0]));
@@ -1230,9 +1244,10 @@ function render() {
     <button class="btn primary block" data-a="altSheetClose">Listo</button>
   </div></div>` : ''}
 ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" data-a="noop">
-      <span class="eyebrow">${S.pick === 'new' ? 'Nuevo slot' : `Opción ${LET[DAY[S.ed].alts.length]} para ${DAY[S.ed].name}`}</span>
-      <h2>Elige un ejercicio</h2>
-      ${S.pick !== 'new' ? '<p class="small muted">Arriba salen los que trabajan el mismo músculo principal.</p>' : ''}
+      <span class="eyebrow">${S.pick === 'new' ? 'Nuevo slot' : S.pick === 'today' ? (S.insAfter != null ? `Después de ${DAY[S.insAfter].name.toLowerCase()}` : 'Al final de la rutina de hoy') : `Opción ${LET[DAY[S.ed].alts.length]} para ${DAY[S.ed].name}`}</span>
+      <h2>${S.pick === 'today' ? 'Agregar ejercicio a hoy' : 'Elige un ejercicio'}</h2>
+      ${S.pick === 'today' && S.insAfter != null ? `<div class="seg"><button class="${S.insBi ? '' : 'on'}" data-a="insBi" data-v="0">Solo agregar</button><button class="${S.insBi ? 'on' : ''}" data-a="insBi" data-v="1">⇅ En biserie con ${DAY[S.insAfter].name.toLowerCase()}</button></div>` : ''}
+      ${S.pick !== 'new' && S.pick !== 'today' ? '<p class="small muted">Arriba salen los que trabajan el mismo músculo principal.</p>' : ''}
       <input id="pickQ" class="txt" data-in="q" placeholder="Busca por nombre, equipo o músculo" value="${S.q||''}">
       <div class="alts pick-list" id="pickList">${pickerHtml()}</div>
       <button class="btn ghost block" data-a="pickClose">Cancelar</button>
