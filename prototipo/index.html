@@ -310,28 +310,28 @@ details.det { margin-top: -4px; }
 .det .explain { font-size: 12px; padding: 10px; gap: 6px; }
 
 /* hoja inferior */
-.bodyfab { flex: none; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; color: var(--ink); }
+.bodyfab { flex: none; padding: 0; background: transparent; border: 0; border-radius: 12px; display: flex; flex-direction: row; align-items: flex-end; gap: 6px; cursor: pointer; color: var(--ink); }
 .bf-figs { display: flex; gap: calc(2px + 10px * var(--hp)); }
-.bf-fig { display: block; border-radius: 8px; padding: 0 calc(4px * var(--hp)); background: color-mix(in srgb, var(--surface-2) calc(100% * var(--hp)), transparent); }
+.bf-fig { display: block; }
 .bf-fig svg { height: 76px; width: auto; display: block; }
 .bodyfab { position: relative; }
-.bodyfab .bf-t { position: absolute; right: 3px; bottom: 3px; font-size: 9.5px; font-weight: 700; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 0 4px; line-height: 14px; font-variant-numeric: tabular-nums; }
+.bodyfab .bf-t { order: -1; font-size: 10.5px; font-weight: 700; color: var(--muted); line-height: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bodyfab.pulse { animation: bfpulse .7s ease-out; }
-@keyframes bfpulse { 0% { transform: scale(1); } 35% { transform: scale(1.12); box-shadow: 0 0 0 6px color-mix(in srgb, var(--mus) 30%, transparent); } 100% { transform: scale(1); } }
+@keyframes bfpulse { 0% { transform: scale(1); } 35% { transform: scale(1.08); } 100% { transform: scale(1); } }
 /* muñeco: piel durazno con contorno café (modelo de Italo); el calor va de --heat-0 a --heat-1 */
 .bodyfig { --fig-skin: #F6CBA8; --fig-line: #B5714A; }
 .bodyfig .sk { fill: var(--fig-skin); stroke: var(--fig-line); stroke-width: .75; stroke-linejoin: round; }
 .bodyfig .m { transition: fill .5s ease; stroke: var(--fig-line); stroke-width: .55; stroke-linejoin: round; }
 .bodyfig .ln { fill: none; stroke: var(--fig-line); stroke-width: .55; stroke-linecap: round; }
 .bf-fig .bodyfig .sk, .bf-fig .bodyfig .m, .bf-fig .bodyfig .ln { stroke-width: 1; }
-.bodyfig .m.on { stroke: var(--heat-1); stroke-width: 1.1; }
-.bf-fig .bodyfig .m.on { stroke-width: 2.2; }
+.bodyfig .m.on { stroke: #D2604E; stroke-width: .8; }
+.bf-fig .bodyfig .m.on { stroke-width: 1.5; }
 .body-big svg { width: 100%; max-width: 340px; height: auto; display: block; margin: 0 auto; }
 .mus-list { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; font-size: 12.5px; }
 .mus-list > div { display: flex; justify-content: space-between; gap: 6px; border-bottom: 1px solid var(--line); padding: 3px 0; }
 .mus-list .muted { font-variant-numeric: tabular-nums; }
 .mus-scale { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); justify-content: center; }
-.mus-scale i { display: inline-block; width: 80px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #F6CBA8, var(--heat-1)); border: 1.5px solid var(--heat-1); }
+.mus-scale i { display: inline-block; width: 80px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #F6CBA8, var(--heat-1)); border: 1px solid #D2604E; }
 .mus-scale b { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #F6CBA8; border: 1px solid #B5714A; margin-left: 8px; }
 .sheet-bg { position: fixed; inset: 0; background: rgba(5, 8, 12, .5); display: flex; align-items: flex-end; justify-content: center; z-index: 30; }
 .sheet { background: var(--surface); width: 100%; max-width: 480px; border-radius: 18px 18px 0 0; padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 12px; }
