@@ -310,14 +310,14 @@ details.det { margin-top: -4px; }
 .det .explain { font-size: 12px; padding: 10px; gap: 6px; }
 
 /* hoja inferior */
-.bodyfab { flex: none; padding: 0; background: transparent; border: 0; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; color: var(--ink); }
+.bodyfab { flex: none; padding: 0; background: transparent; border: 0; border-radius: 12px; display: flex; flex-direction: row; align-items: flex-end; gap: 6px; cursor: pointer; color: var(--ink); }
 .bf-figs { display: flex; gap: calc(2px + 10px * var(--hp)); }
 .bf-fig { display: block; }
 .bf-fig svg { height: 76px; width: auto; display: block; }
 .bodyfab { position: relative; }
-.bodyfab .bf-t { font-size: 10px; font-weight: 700; color: var(--muted); line-height: 12px; font-variant-numeric: tabular-nums; }
+.bodyfab .bf-t { order: -1; font-size: 10.5px; font-weight: 700; color: var(--muted); line-height: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bodyfab.pulse { animation: bfpulse .7s ease-out; }
-@keyframes bfpulse { 0% { transform: scale(1); } 35% { transform: scale(1.12); box-shadow: 0 0 0 6px color-mix(in srgb, var(--mus) 30%, transparent); } 100% { transform: scale(1); } }
+@keyframes bfpulse { 0% { transform: scale(1); } 35% { transform: scale(1.08); } 100% { transform: scale(1); } }
 /* muñeco: piel durazno con contorno café (modelo de Italo); el calor va de --heat-0 a --heat-1 */
 .bodyfig { --fig-skin: #F6CBA8; --fig-line: #B5714A; }
 .bodyfig .sk { fill: var(--fig-skin); stroke: var(--fig-line); stroke-width: .75; stroke-linejoin: round; }
