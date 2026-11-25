@@ -208,7 +208,7 @@ p { margin: 0; }
 .opt-pic { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 3 / 2; border-radius: 6px; overflow: hidden; background: #fff; }
 .opt-pic img { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: cover; display: block; }
 .opt-pic .f2 { opacity: 0; }
-.opt.on .opt-pic .f2 { animation: exflip 2.4s steps(1, end) infinite; }
+.cur-card .opt.on .opt-pic .f2 { animation: exflip 2.4s steps(1, end) infinite; }
 @keyframes exflip { 0% { opacity: 0; } 50% { opacity: 1; } }
 .opt-pic .opt-l { position: absolute; left: 3px; top: 3px; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
 .opt-pic .opt-n { padding: 4px; text-align: center; white-space: normal !important; color: #333; }
