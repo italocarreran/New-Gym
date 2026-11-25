@@ -58,7 +58,7 @@ Un solo `<script>`. Usa **datos de ejemplo propios**, no lee `data/`.
 | `viewInicio` | inicio de Rutina: la que toca, las demás y "+ Crear rutina" (`S.home`, `S.rut`, `S.edRut`, `S.lastDone`) |
 | `viewHoy`, `slotCard`, `viewSemana`, `viewGuia`, `pickerHtml` | vistas |
 
-Pestañas (clave interna → nombre en pantalla): `hoy` → Rutina, `semana` → Semana, `rutina` → Editar, `guia` → Esfuerzo.
+Pestañas (clave interna → nombre en pantalla): `hoy` → Sesión, `semana` → Semana, `rutina` → Editar, `guia` → Esfuerzo.
 
 ## `data/ejercicios.json`
 

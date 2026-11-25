@@ -29,6 +29,10 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 ---
 
+## 2026-11-25 · Claude (hilo "Agregar inicio de rutinas") · pestaña Rutina pasa a llamarse Sesión
+
+- Italo pidió en un comentario del prototipo cambiar el nombre de la pestaña "Rutina" a **"Sesión"**. Antes: Rutina / Semana / Editar / Esfuerzo. Ahora: Sesión / Semana / Editar / Esfuerzo. La clave interna sigue siendo `hoy`. Actualizado en `DECISIONES.md`.
+
 ## 2026-11-25 · Claude (hilo "Agregar inicio de rutinas") · inicio de la pestaña Rutina
 
 - Pedido de Italo: al entrar a **Rutina** aparece primero un inicio para elegir qué rutina hacer. Arriba, destacada, **la que toca** según la rotación (Día 1 → 2 → 3 → 1), con músculos, ejercicios, minutos estimados y última vez; abajo **las demás** para elegir cualquiera; botón **+ Crear rutina**. Cada una tiene **Editar**.

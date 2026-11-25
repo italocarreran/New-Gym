@@ -1318,7 +1318,7 @@ function render() {
     ${views[S.tab]()}
   </main>
   <nav class="tabs"><div class="tabs-in">
-    ${[['hoy','Rutina'],['semana','Semana'],['rutina','Editar'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
+    ${[['hoy','Sesión'],['semana','Semana'],['rutina','Editar'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
   </div></nav>
   ${S.bodySheet ? (() => { useDay(S.rut); const h = bodySheet(); useDay(S.tab === 'rutina' ? S.edRut : S.rut); return h; })() : ''}
   ${S.exInfo ? exInfoSheet(S.exInfo) : ''}
