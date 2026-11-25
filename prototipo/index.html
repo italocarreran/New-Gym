@@ -22,7 +22,7 @@
   --bad-soft: #F8E0DE;
   --tag: #6B4FC4;
   --tag-soft: #ECE6FA;
-  --mus: #C0392B; --mus-0: #F2D3CF; --mus-off: #DCE1E8; --mus-dim: #BFC7D2;
+  --mus: #C0392B; --mus-0: #F2D3CF; --mus-off: #DCE1E8; --mus-dim: #BFC7D2; --heat-0: #F3A188; --heat-1: #B3241A;
   --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -32,7 +32,7 @@
     --accent: #7096FF; --accent-soft: #1C2A4D; --accent-ink: #0B1020;
     --ok: #4CC683; --ok-soft: #143222; --warn: #E8AE4C; --warn-soft: #3A2C12; --bad: #F2766B; --bad-soft: #3D1A18;
     --tag: #B39DFF; --tag-soft: #2A2245; color-scheme: dark;
-    --mus: #F0675B; --mus-0: #3C2523; --mus-off: #262C35; --mus-dim: #3A434F;
+    --mus: #F0675B; --mus-0: #3C2523; --mus-off: #262C35; --mus-dim: #3A434F; --heat-0: #F3A188; --heat-1: #C42A1F;
   }
 }
 :root[data-theme="dark"] {
@@ -40,7 +40,7 @@
   --accent: #7096FF; --accent-soft: #1C2A4D; --accent-ink: #0B1020;
   --ok: #4CC683; --ok-soft: #143222; --warn: #E8AE4C; --warn-soft: #3A2C12; --bad: #F2766B; --bad-soft: #3D1A18;
   --tag: #B39DFF; --tag-soft: #2A2245; color-scheme: dark;
-  --mus: #F0675B; --mus-0: #3C2523; --mus-off: #262C35; --mus-dim: #3A434F;
+  --mus: #F0675B; --mus-0: #3C2523; --mus-off: #262C35; --mus-dim: #3A434F; --heat-0: #F3A188; --heat-1: #C42A1F;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
@@ -318,14 +318,23 @@ details.det { margin-top: -4px; }
 .bodyfab .bf-t { position: absolute; right: 3px; bottom: 3px; font-size: 9.5px; font-weight: 700; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 0 4px; line-height: 14px; font-variant-numeric: tabular-nums; }
 .bodyfab.pulse { animation: bfpulse .7s ease-out; }
 @keyframes bfpulse { 0% { transform: scale(1); } 35% { transform: scale(1.12); box-shadow: 0 0 0 6px color-mix(in srgb, var(--mus) 30%, transparent); } 100% { transform: scale(1); } }
-.bodyfig .m { transition: fill .5s ease; stroke: var(--mus-off); stroke-width: 1.2; }
+/* muñeco: piel durazno con contorno café (modelo de Italo); el calor va de --heat-0 a --heat-1 */
+.bodyfig { --fig-skin: #F6CBA8; --fig-line: #B5714A; }
+.bodyfig .sk { fill: var(--fig-skin); stroke: var(--fig-line); stroke-width: .75; stroke-linejoin: round; }
+.bodyfig .m { transition: fill .5s ease; stroke: var(--fig-line); stroke-width: .55; stroke-linejoin: round; }
+.bodyfig .ln { fill: none; stroke: var(--fig-line); stroke-width: .55; stroke-linecap: round; }
+.bf-fig .bodyfig .sk, .bf-fig .bodyfig .m, .bf-fig .bodyfig .ln { stroke-width: 1; }
+.bodyfig .m.tg { stroke: var(--heat-1); stroke-width: 1.3; }
+.bf-fig .bodyfig .m.tg { stroke-width: 2; }
 .body-big svg { width: 100%; max-width: 340px; height: auto; display: block; margin: 0 auto; }
 .mus-list { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; font-size: 12.5px; }
 .mus-list > div { display: flex; justify-content: space-between; gap: 6px; border-bottom: 1px solid var(--line); padding: 3px 0; }
 .mus-list .muted { font-variant-numeric: tabular-nums; }
 .mus-scale { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); justify-content: center; }
-.mus-scale i { display: inline-block; width: 80px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--mus-0), var(--mus)); }
-.mus-scale b { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--mus-off); margin-left: 8px; }
+.mus-scale i { display: inline-block; width: 80px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--heat-0), var(--heat-1)); }
+.mus-scale b { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #F6CBA8; border: 1px solid #B5714A; margin-left: 8px; }
+.mus-scale b.tg { border: 2px solid var(--heat-1); margin-left: 0; }
+.mus-scale b.tg + span { margin-right: 6px; }
 .sheet-bg { position: fixed; inset: 0; background: rgba(5, 8, 12, .5); display: flex; align-items: flex-end; justify-content: center; z-index: 30; }
 .sheet { background: var(--surface); width: 100%; max-width: 480px; border-radius: 18px 18px 0 0; padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 12px; }
 
@@ -933,38 +942,97 @@ function bodyLevels(mode) {
   Object.keys(plan).forEach(m => lv[m] = { v: Math.min(1, (done[m] || 0) / plan[m]), a: done[m] || 0, b: plan[m] });
   return lv;
 }
-// silueta: media figura (lado derecho), se espeja; curvas suaves con Catmull-Rom
-const BODY_HALF = [[50,24],[55,25],[56,31],[65,35],[72,39],[77,45],[79,54],[80,66],[81,80],[83.5,94],[85,107],[87.5,117],[84,122],[80.5,113],[78.5,108],[76,96],[73,82],[71.5,68],[68,58],[64,74],[61.5,92],[64.5,104],[65,120],[63.5,140],[60.5,158],[61.5,176],[57.5,196],[60.5,205],[52.5,206],[52.5,196],[52,176],[52,160],[51.5,136],[50,114]];
-function smoothPath(pts) {
-  let d = `M${pts[0][0]},${pts[0][1]}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+// Muñeco de músculos (frente y espalda). Se define la mitad derecha (x ≥ 50) y se espeja.
+// Cada región tiene un músculo; REGION_GRUPO dice qué grupo de la app la pinta.
+const closedPath = pts => {
+  const n = pts.length, P = i => pts[(i + n) % n];
+  let d = `M${P(0)[0]},${P(0)[1]}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
     const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0]},${p2[1]}`;
+    d += `C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0]},${p2[1]}`;
   }
   return d + 'Z';
+};
+const openPath = pts => closedPath(pts).replace(/C[^C]*$/, '').replace(/Z$/, '');
+const mirror = pts => pts.map(([x, y]) => [+(100 - x).toFixed(1), y]);
+// silueta completa a partir de la mitad (de la coronilla a la entrepierna)
+const SIL_HALF = [[50,26],[54.6,26],[56.4,30.6],[61,32.6],[68,34.4],[75,35.8],[81.5,39],[85.6,44.5],[87.4,52],[87.6,62],[88.2,72],[89.4,82],[91.2,88],[93.8,96],[96,103.5],[97.6,107],[99.4,112],[99,118.5],[96.6,122.4],[93.6,121],[92.4,116.5],[90.6,113],[89,108],[87.8,104],[84.4,95],[81.2,87],[79.2,79],[76.6,68],[73.4,59],[70.4,57],[69.4,67],[67.6,78],[66.8,88],[69.6,98],[74.6,106],[76.6,118],[76.2,132],[73.8,145],[73.6,152],[75.2,163],[74,177],[70.6,189],[69.6,196],[72.6,202],[75.2,208.5],[71,211.2],[63.6,211.4],[61,207],[61.6,198],[61,190],[59,178],[57.8,165],[59.4,155],[58,147],[55.4,132],[53.2,118],[51.2,111.4],[50,111]];
+const SIL = closedPath([...SIL_HALF, ...mirror(SIL_HALF.slice(1, -1)).reverse()]);
+const HEAD_HALF = [[50.0,0.5],[55.0,1.6],[58.3,6.4],[58.9,12.6],[58.1,19.4],[56.4,24.6],[53.4,28.2],[50.0,29.6]];
+const HEAD = closedPath([...HEAD_HALF, ...mirror(HEAD_HALF.slice(1, -1)).reverse()]);
+const EAR = [[58.3,9.6],[60.0,9.2],[60.5,12.6],[59.6,17],[58.1,17.6]];
+
+// [región, puntos]
+const FRONT = [
+  ['cuello', [[56.2,23.5],[57.4,29.5],[53,35.4],[51.2,35.6],[54,29.5]]],
+  ['trap',   [[57.8,29.8],[61.4,32.8],[67.6,34.6],[61,35.2],[58.2,33.4]]],
+  ['pecho',  [[50.6,37.2],[55.5,35.8],[62.5,36],[68.4,38.6],[72.2,44],[71.6,50.4],[67.8,55.8],[61,58.8],[54.5,58.4],[50.6,56.8]]],
+  ['delt_front', [[64.4,35.4],[70.5,34.8],[76.4,37.4],[79.4,43],[78.6,50.4],[75.6,57.2],[73.2,51],[71.4,43.6],[68.2,38.6]]],
+  ['delt_lat',   [[77.4,37.2],[82,39.6],[85.4,45],[86.9,52],[85.6,58.4],[81.4,61],[78,58.6],[80,50.6],[80.2,43.4]]],
+  ['bi',     [[76.6,60.6],[80.4,60.6],[84,64.6],[85.8,72],[85,79.6],[82.4,85],[79.4,82],[77.2,74],[75.8,66.4]]],
+  ['tri',    [[85.8,59.8],[87.2,64.6],[87.8,73.4],[87.2,81.6],[86,79.6],[86.4,71.6],[85.4,64]]],
+  ['ante',   [[80.4,85.6],[84,83.6],[88.6,85.6],[92.4,92.4],[95.4,100.8],[96,105.6],[92.6,106.8],[88.6,103.4],[84.8,96.6],[81.6,90.2]]],
+  ['abs',    [[51,59.8],[57.4,59.4],[59.6,61.2],[59.6,66.2],[51,66.8]]],
+  ['abs',    [[51,68.2],[59.6,67.6],[59.8,74.6],[51,75.2]]],
+  ['abs',    [[51,76.6],[59.8,76],[59.6,83.2],[51,83.8]]],
+  ['abs',    [[51,85.2],[59.4,84.6],[58.6,91.8],[54.6,97.6],[51,100.6]]],
+  ['obl',    [[61.2,60.6],[68.4,57.6],[69,68],[67.2,80],[66.6,89.6],[65.6,95],[60.6,93],[61,84.6],[61.2,72]]],
+  ['adu',    [[51.6,111.4],[55.4,105.4],[60.6,103.4],[59.6,112.4],[58,124.4],[56.6,130.4],[54.8,125.4],[52.8,117]]],
+  ['cuad',   [[61.2,104.4],[66.2,101.4],[68.6,112],[68.2,130],[66.2,143],[62.4,141],[59.8,128],[59.8,114]]],
+  ['cuad',   [[70.2,100.6],[74.8,106.4],[76.2,118],[75.4,132],[72.6,144],[68.2,146.2],[67.6,134],[69.2,118]]],
+  ['cuad',   [[57,128.4],[59.6,130],[62.2,138.4],[63.2,145.4],[59.8,148.4],[57.2,142.4],[55.8,134.4]]],
+  ['tibial', [[63.2,156.4],[67.2,154.4],[72,157.4],[73.8,166.4],[72,178],[69,189.4],[66,190.4],[64.2,180],[64.6,166.4]]],
+  ['pant',   [[59.2,155.4],[62,156.4],[63.4,166.4],[62.6,178],[61,184.4],[59.2,174],[58.4,164]]],
+];
+const BACK = [
+  ['trap',   [[50.6,21],[54.2,24.4],[57.2,29.6],[63,33],[70.4,35.2],[66,38.2],[60.4,44],[56,54],[51.6,65.6],[50.6,65.6]]],
+  ['delt_post', [[63.4,36.6],[71,35],[78.6,37.4],[81.6,42],[81.4,50],[80.4,59.4],[77.2,54.4],[72.4,45.4],[66.4,40.2]]],
+  ['delt_lat',  [[80.4,38.2],[84.6,43.4],[86.9,52],[85.4,58.4],[81.8,61],[82.6,52],[82.2,44]]],
+  ['espalda_alta', [[61.4,41.4],[66.2,40.6],[72,45.4],[75.6,52.6],[73,56.6],[66,57],[60.2,52.4],[59.4,46]]],
+  ['dorsal', [[57.2,56.4],[66,58.4],[73,57.4],[73.4,64],[69.6,72],[66,82],[61,86.4],[56,84],[52.6,78],[52.2,70],[54.2,62.4]]],
+  ['lumbar', [[51.2,71.6],[53.4,80],[57,85.6],[61,88.2],[64,92],[57,93],[51.2,92]]],
+  ['obl',    [[66,82.4],[69.2,71.6],[67.6,82],[67.2,91],[64.6,91.4],[62.4,87.4]]],
+  ['tri',    [[74,57.6],[79,58.4],[84,60.6],[86.6,66],[87.4,75],[85.4,83],[82.4,86],[79.4,82],[76.6,74],[75.2,65]]],
+  ['ante',   [[80.6,86.6],[85,84.4],[89.4,86.4],[93,93],[96,102],[96,107],[92.6,107],[88,102],[84.2,95]]],
+  ['gluteo', [[51,92.4],[58,90],[65,90.6],[71,95.4],[74.2,103],[72.4,110],[66.2,113.6],[58,113],[52.2,110],[51,101]]],
+  ['adu',    [[51.6,112.4],[53.6,114.6],[55.6,124],[56.8,132.6],[54.8,131.4],[52.6,121.6]]],
+  ['isq',    [[64.6,115.4],[71,112.6],[75,118],[75.2,130],[72.6,142],[69,148],[66.2,140],[64.6,128]]],
+  ['isq',    [[54.6,113.6],[63,114.4],[63.8,126],[64.6,140],[63.6,148.4],[60.2,146.4],[57.2,134],[55,122]]],
+  ['pant',   [[66.2,152.4],[71,150.6],[74,157],[74.6,166],[72.2,176],[68.6,180.4],[66.6,170],[65.6,160]]],
+  ['pant',   [[59.2,153.4],[64.6,151.4],[65.4,160],[66,172],[64.4,182.4],[61,180.4],[59,170],[58.4,161]]],
+  ['pant',   [[61.6,182],[64.6,184],[68.4,181.6],[69.6,187],[67.6,192.4],[63.4,192]]],
+];
+// líneas de detalle (no se pintan): línea media de la espalda, rodillas
+const FRONT_LINES = [[[59.4,147],[62.6,151],[67.6,151.8],[72,148.6]]];
+const BACK_LINES = [[[50,66],[50,92]], [[60,148.6],[64,150],[69,149.2]]];
+
+// región del dibujo → grupos de la app que la pintan (el primero que tenga datos)
+const REGION_GRUPO = {
+  pecho: ['pecho'], delt_front: ['front', 'hombro_anterior'], delt_lat: ['lat', 'hombro_lateral'], delt_post: ['post', 'hombro_posterior'],
+  bi: ['bi', 'biceps'], tri: ['tri', 'triceps'], ante: ['ante', 'antebrazo'], abs: ['abs', 'abdomen'], obl: ['abs', 'abdomen'],
+  trap: ['espalda'], espalda_alta: ['espalda'], dorsal: ['espalda'], lumbar: ['lumbar'],
+  gluteo: ['isq', 'isquios_gluteos'], isq: ['isq', 'isquios_gluteos'], adu: ['adu'],
+  cuad: ['cuad', 'cuadriceps'], pant: ['pant', 'pantorrillas'], tibial: [], cuello: [],
+};
+
+// fill(grupo) → color o null (piel). part: 'front' | 'back' | undefined (ambas).
+function bodyFigure(fill, part, cls = 'bodyfig') {
+  // fill devuelve un color, 'tg' (toca hoy pero aún sin series: solo se marca el borde) o null (piel)
+  const color = r => { for (const g of REGION_GRUPO[r] || []) { const c = fill(g); if (c) return c; } return 'var(--fig-skin)'; };
+  const one = (list, lines, back) => {
+    const regs = list.map(([r, pts]) => [pts, mirror(pts)].map(q => (c => `<path class="m${c === 'tg' ? ' tg' : ''}" data-r="${r}" d="${closedPath(q)}" fill="${c === 'tg' ? 'var(--fig-skin)' : c}"/>`)(color(r))).join('')).join('');
+    const ln = lines.map(pts => [pts, mirror(pts)].map(q => `<path class="ln" d="${openPath(q)}"/>`).join('')).join('');
+    const ears = [EAR, mirror(EAR)].map(q => `<path class="sk" d="${closedPath(q)}"/>`).join('');
+    const neck = back ? '' : `<path class="ln" d="M50,36 L50,57.6"/>`;
+    return `<path class="sk" d="${SIL}"/>${regs}${ln}${neck}${ears}<path class="sk" d="${HEAD}"/>`;
+  };
+  const f = one(FRONT, FRONT_LINES, false), b = one(BACK, BACK_LINES, true);
+  if (part) return `<svg class="${cls}" viewBox="-1 -1 102 214" aria-hidden="true">${part === 'front' ? f : b}</svg>`;
+  return `<svg class="${cls}" viewBox="-1 -1 216 214" aria-hidden="true"><g>${f}</g><g transform="translate(114,0)">${b}</g></svg>`;
 }
-const BODY_PATH = (() => { const r = BODY_HALF, l = r.slice(1, -1).reverse().map(([x, y]) => [100 - x, y]); return smoothPath([...r, ...l]); })();
 function bodySvg(lv, part) {
-  const f = m => { const x = lv[m]; if (!x) return 'var(--mus-dim)'; return `color-mix(in srgb, var(--mus) ${Math.round(x.v * 100)}%, var(--mus-0))`; };
-  const E = (m, cx, cy, rx, ry, rot = 0) => [cx, 100 - cx].map((x, k) => `<ellipse class="m" cx="${x}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${k ? -rot : rot} ${x} ${cy})" fill="${f(m)}"/>`).join('');
-  const P = (m, pts) => [pts, pts.map(([x, y]) => [100 - x, y])].map(q => `<path class="m" d="${smoothPath(q)}" fill="${f(m)}"/>`).join('');
-  const base = `<path d="${BODY_PATH}" fill="var(--mus-off)"/><ellipse cx="50" cy="13" rx="8.5" ry="10.5" fill="var(--mus-off)"/>`;
-  const front = `${base}
-    ${P('pecho', [[51,40],[60,37.5],[67,42],[68,51],[61,58],[52,58]])}
-    ${E('front', 69.5, 46, 5.5, 7.5, -15)}${E('lat', 76, 52, 3.2, 8, -10)}
-    ${E('bi', 75.5, 68, 3.8, 10, -6)}
-    ${E('cuad', 57.5, 134, 6.3, 21, -4)}
-    ${E('pant', 56.5, 180, 3.6, 13)}`;
-  const back = `${base}
-    ${P('espalda', [[51,27],[57,30],[66,36],[59,43],[51,51]])}
-    ${P('espalda', [[51,55],[60,47],[67,57],[64,76],[58,89],[51,93]])}
-    ${E('post', 69.5, 46, 5.5, 7.5, -15)}${E('lat', 76, 52, 3.2, 8, -10)}
-    ${E('tri', 75.5, 68, 3.8, 10, -6)}
-    ${E('isq', 57, 108, 7, 8.5)}${E('isq', 57.5, 139, 5.8, 17, -4)}
-    ${E('pant', 57, 177, 4.4, 13)}`;
-  if (part) return `<svg class="bodyfig" viewBox="2 0 96 210" aria-hidden="true"><g>${part === 'front' ? front : back}</g></svg>`;
-  return `<svg class="bodyfig" viewBox="0 0 210 210" aria-hidden="true"><g>${front}</g><g transform="translate(110,0)">${back}</g></svg>`;
+  return bodyFigure(m => { const x = lv[m]; return !x ? null : x.v <= 0 ? 'tg' : `color-mix(in srgb, var(--heat-1) ${Math.round(x.v * 100)}%, var(--heat-0))`; }, part);
 }
 function clockTxt() {
   const fm = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
@@ -986,7 +1054,7 @@ function bodySheet() {
     <span class="eyebrow">Músculos</span><h2>${mode === 'hoy' ? 'Lo que llevas hoy' : 'Lo que llevas en la semana'}</h2>
     <div class="seg"><button class="${mode==='hoy'?'on':''}" data-a="bodyMode" data-v="hoy">Hoy</button><button class="${mode==='semana'?'on':''}" data-a="bodyMode" data-v="semana">Semana</button></div>
     <div class="body-big">${bodySvg(lv)}</div>
-    <div class="mus-scale"><span>0%</span><i></i><span>100%</span><b></b><span>no toca</span></div>
+    <div class="mus-scale"><b class="tg"></b><span>por hacer</span><i></i><span>hecho</span><b></b><span>no toca</span></div>
     <div class="mus-list">${rows || '<span class="muted">Nada planificado.</span>'}</div>
     <p class="small muted">${mode === 'hoy' ? 'Series hechas sobre las que tocan hoy. Principal cuenta 1, secundario 0,5.' : 'Series de la semana sobre el mínimo semanal de cada músculo.'}</p>
     <button class="btn primary block" data-a="bodyClose">Cerrar</button>
