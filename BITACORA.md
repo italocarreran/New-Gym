@@ -34,6 +34,12 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 ---
 
+## 2026-11-26 · Claude (hilo "Instalar la app en el celular") · sesiones anteriores editables
+
+- Italo ya instaló la app (publicada OK en GitHub Pages) y le salían las 2 series de prueba de `prueba.html`. Pidió revisar y editar sesiones anteriores.
+- Inicio › **Sesiones anteriores**: lista de las últimas (y "Ver todas"); al tocar una se abre una hoja con sus series por ejercicio para corregir peso, reps y RIR, borrar una serie (con sus bajadas) o borrar la sesión entera (dos toques). El calendario también tiene "Ver y editar".
+- Probado en Chromium: editar, borrar serie, borrar sesión.
+
 ## 2026-11-26 · Claude (hilo "Instalar la app en el celular") · PWA v1 instalable
 
 - Italo quiere usar la app en sus entrenamientos (él y un amigo) para encontrar bugs. Eligió **GitHub Pages** en vez de Cloudflare (repo público, sin cuenta nueva). `DECISIONES.md` (Stack) actualizado.

@@ -485,6 +485,14 @@ button.day { cursor: pointer; }
   .flash { animation: pop .35s ease-out; }
   @keyframes pop { from { transform: translateY(4px); opacity: .4; } to { transform: none; opacity: 1; } }
 }
+.hs-list { display: flex; flex-direction: column; }
+.hs-row { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 10px 2px; border: 0; border-bottom: 1px solid var(--surface-2); background: none; font: inherit; color: var(--ink); text-align: left; cursor: pointer; }
+.hs-row:last-child { border-bottom: 0; }
+.hs-ex { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--surface-2); }
+.hs-set { display: grid; grid-template-columns: 22px 1fr 1fr 1fr 32px; gap: 6px; align-items: center; }
+.hs-set.drop { opacity: .85; }
+.hs-n { font-weight: 600; color: var(--muted); text-align: center; }
+.hs-del { border: 0; background: var(--surface-2); color: var(--muted); border-radius: 8px; height: 32px; font: inherit; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -816,7 +824,7 @@ async function recargarRegistro() {
     const k = RUT.findIndex(r => r.id === s.rutina_id), xs = porSes[s.id], f = new Date(s.inicio);
     if (k >= 0 && !RUT[k].last) RUT[k].last = fechaTxt(f);
     const bien = xs.filter(x => x.rir === 1 || x.rir === 2 || (x.rir === 0 && EX[x.ejercicio_id] && !EX[x.ejercicio_id].comp)).length;
-    return { f, k, id: s.id, sd: setsRut(k) ? Math.min(1, xs.length / setsRut(k)) : 1, ri: bien / xs.length, ser: xs.map(x => ({ ex: x.ejercicio_id, rir: x.rir })) };
+    return { f, k, id: s.id, nombre: s.rutina_nombre || (k >= 0 ? RUT[k].name : 'Sesión'), n: xs.length, sd: setsRut(k) ? Math.min(1, xs.length / setsRut(k)) : 1, ri: bien / xs.length, ser: xs.map(x => ({ ex: x.ejercicio_id, rir: x.rir })) };
   }).sort((a, b) => a.f - b.f);
   const ult = [...HIST].reverse().find(h => h.k >= 0 && h.id !== sid);
   S.lastDone = ult ? ult.k : RUT.length - 1;
@@ -905,6 +913,33 @@ function viewLogin() {
     <button class="btn ghost block" data-a="lgInvitado">Usar sin cuenta (queda solo en este celular)</button>
   </main>`;
 }
+function sesionesCard() {
+  const lista = [...HIST].reverse().filter(h => h.id !== S.sesionId).slice(0, S.histTodas ? 200 : 8);
+  const total = HIST.filter(h => h.id !== S.sesionId).length;
+  return `<section class="card">
+    <div class="slot-head"><h2>Sesiones anteriores</h2><span class="small muted">${total ? `${total} en 12 semanas` : ''}</span></div>
+    ${lista.length ? `<div class="hs-list">${lista.map(h => `<button class="hs-row" data-a="hsAbrir" data-v="${h.id}"><span><b>${fechaTxt(h.f)}</b> · ${esc(h.nombre)}</span><span class="small muted">${h.n} serie${h.n === 1 ? '' : 's'} ›</span></button>`).join('')}</div>
+    ${total > lista.length ? `<button class="btn ghost block" data-a="hsTodas">Ver todas</button>` : ''}`
+    : '<p class="small muted">Todavía no hay sesiones. Las que termines aparecen acá y las puedes revisar, corregir o borrar.</p>'}
+  </section>`;
+}
+function hsSheet() {
+  const V = S.hsVer; if (!V) return '';
+  const grupos = [];
+  V.series.filter(x => !x.drop_de).forEach(x => { let g = grupos.find(g => g.ex === x.ejercicio_id && g.pos === x.posicion); if (!g) grupos.push(g = { ex: x.ejercicio_id, pos: x.posicion, filas: [] }); g.filas.push(x); });
+  const fila = (x, drop) => `<div class="hs-set ${drop ? 'drop' : ''}"><span class="hs-n">${drop ? '↳' : x.numero}</span>
+      <label class="cellw"><input class="cell" inputmode="decimal" data-hs="${x.id}" data-f="peso" value="${x.peso ?? ''}" aria-label="Peso"><span class="u">${x.unidad || 'kg'}</span></label>
+      <label class="cellw"><input class="cell" inputmode="numeric" data-hs="${x.id}" data-f="reps" value="${x.reps ?? ''}" aria-label="Repeticiones"><span class="u">reps</span></label>
+      ${drop ? '<span></span>' : `<label class="cellw"><input class="cell" inputmode="numeric" data-hs="${x.id}" data-f="rir" value="${x.rir ?? ''}" aria-label="RIR"><span class="u">RIR</span></label>`}
+      <button class="hs-del" data-a="hsDel" data-v="${x.id}" aria-label="Borrar serie">✕</button></div>`;
+  return `<div class="sheet-bg" data-a="hsCerrar"><div class="sheet" data-a="noop">
+    <span class="eyebrow">${fechaTxt(V.f)} · ${horaTxt(V.f.toISOString())}</span><h2>${esc(V.nombre)}</h2>
+    ${grupos.length ? grupos.map(g => `<div class="hs-ex"><b>${esc(EX[g.ex] ? EX[g.ex].n : g.ex)}</b>${g.filas.map(x => fila(x, false) + V.series.filter(d => d.drop_de === x.id).map(d => fila(d, true)).join('')).join('')}</div>`).join('') : '<p class="small muted">Esta sesión ya no tiene series.</p>'}
+    <p class="small muted">Los cambios se guardan al salir de cada casilla.</p>
+    <button class="btn ${V.confirmar ? 'danger' : 'ghost'} block" data-a="hsBorrarSes">${V.confirmar ? 'Toca de nuevo para borrar la sesión entera' : 'Borrar sesión'}</button>
+    <button class="btn primary block" data-a="hsCerrar">Listo</button>
+  </div></div>`;
+}
 function cuentaCard() {
   const e = DB ? DB.estado() : {}, u = e.usuario;
   const est = !e.nube ? 'Sin nube: todo queda solo en este celular.'
@@ -921,6 +956,25 @@ function cuentaCard() {
   </section>`;
 }
 const CUENTA_ACC = {
+  async hsAbrir(id) {
+    const h = HIST.find(x => x.id === id); if (!h) return;
+    S.hsVer = { id, nombre: h.nombre, f: h.f, series: await DB.series.deSesion(id) }; render();
+  },
+  hsTodas() { S.histTodas = true; render(); },
+  async hsDel(id) {
+    const V = S.hsVer; if (!V) return;
+    const ids = [id, ...V.series.filter(x => x.drop_de === id).map(x => x.id)];
+    V.series = V.series.filter(x => !ids.includes(x.id)); V.cambio = true;
+    ids.forEach(i => enCola(() => DB.series.borrar(i))); render();
+  },
+  async hsBorrarSes() {
+    const V = S.hsVer; if (!V) return;
+    if (!V.confirmar) { V.confirmar = true; render(); return; }
+    V.series.forEach(x => enCola(() => DB.series.borrar(x.id)));
+    enCola(() => DB.sesiones.borrar(V.id));
+    S.hsVer = null; S.calDay = null; await enCola(recargarRegistro); render();
+  },
+  async hsCerrar() { const V = S.hsVer; S.hsVer = null; if (V && V.cambio) await enCola(recargarRegistro); render(); },
   lgModo() { const L = S.loginF; L.modo = L.modo === 'crear' ? 'entrar' : 'crear'; L.error = null; L.email = document.getElementById('lgMail')?.value || L.email; render(); },
   async lgEntrar() {
     const L = S.loginF, email = (document.getElementById('lgMail')?.value || '').trim(), pass = document.getElementById('lgPass')?.value || '';
@@ -1216,7 +1270,7 @@ function viewInicioApp() {
   const part = (lab, v, txt) => `<div class="cump-p"><span>${lab}</span><div class="bar"><div class="fill" style="width:${Math.round(v * 100)}%"></div></div><span class="v">${txt}</span></div>`;
   const sel = S.calDay ? porDia[S.calDay] || { f: (() => { const [y, m, d] = S.calDay.split('-').map(Number); return new Date(y, m - 1, d); })() } : null;
   const det = !sel ? '' : sel.k != null
-    ? `<div class="cal-det"><b>${fechaTxt(sel.f)}</b> · Día ${sel.k + 1}: ${RUT[sel.k] ? RUT[sel.k].name : ''}<br><span class="muted">${Math.round(sel.sd * setsRut(sel.k))} de ${setsRut(sel.k)} series · ${Math.round(sel.ri * 100)}% en el RIR pedido · <b>${ptsSesion(sel)} puntos</b></span></div>`
+    ? `<div class="cal-det"><b>${fechaTxt(sel.f)}</b> · Día ${sel.k + 1}: ${RUT[sel.k] ? RUT[sel.k].name : ''}<br><span class="muted">${Math.round(sel.sd * setsRut(sel.k))} de ${setsRut(sel.k)} series · ${Math.round(sel.ri * 100)}% en el RIR pedido · <b>${ptsSesion(sel)} puntos</b></span><br><button class="btn ghost" style="margin-top:8px" data-a="hsAbrir" data-v="${sel.id}">Ver y editar</button></div>`
     : `<div class="cal-det"><b>${fechaTxt(sel.f)}</b> · Descanso</div>`;
   return `
     <section class="card">
@@ -1683,7 +1737,7 @@ const ICONS = {
 function render() {
   if (S.pantalla) { document.getElementById('root').innerHTML = S.pantalla === 'login' ? viewLogin() : '<p style="padding:24px">Cargando…</p>'; return; }
   HOY = new Date(); HOY.setHours(0, 0, 0, 0);
-  const views = { inicio: () => viewInicioApp() + cuentaCard(), hoy: viewHoy, semana: viewSemana, guia: viewGuia, rutina: viewRutina };
+  const views = { inicio: () => viewInicioApp() + sesionesCard() + cuentaCard(), hoy: viewHoy, semana: viewSemana, guia: viewGuia, rutina: viewRutina };
   const r = document.getElementById('root');
   const home = S.tab === 'hoy' && S.home;
   useDay(S.rut);
@@ -1701,6 +1755,7 @@ function render() {
   </div></nav>
   ${S.bodySheet ? (() => { useDay(S.rut); const h = bodySheet(); useDay(S.tab === 'rutina' ? S.edRut : S.rut); return h; })() : ''}
   ${S.exInfo ? exInfoSheet(S.exInfo) : ''}
+  ${S.hsVer ? hsSheet() : ''}
   ${S.prioSheet ? `<div class="sheet-bg" data-a="prioClose"><div class="sheet" data-a="noop">
     <span class="eyebrow">${DAY[S.si].name}</span><h2>Prioridad ${DAY[S.si].prio}</h2>
     <div class="plegend">${['alta','media','baja'].map(k => `<div class="${k === DAY[S.si].prio ? 'cur' : ''}"><span class="pico ${k}">${prioSvg(k)}</span><span><b>${k[0].toUpperCase() + k.slice(1)}.</b> ${PRIO_TXT[k]}</span></div>`).join('')}</div>
@@ -1816,6 +1871,13 @@ function selSlot(ev) {
 }
 document.addEventListener('change', ev => {
   const t = ev.target;
+  if (t.dataset && t.dataset.hs && S.hsVer) {
+    const x = S.hsVer.series.find(y => y.id === t.dataset.hs), f = t.dataset.f, raw = String(t.value).trim().replace(',', '.'), v = raw === '' ? null : parseFloat(raw);
+    if (!x || (v != null && (isNaN(v) || v < 0))) { render(); return; }
+    x[f] = f === 'peso' || v == null ? v : Math.round(v); S.hsVer.cambio = true;
+    enCola(() => DB.series.cambiar(x.id, { [f]: x[f] }));
+    return;
+  }
   if (t.dataset && t.dataset.drop != null) { selSlot(ev); const [i, k] = t.dataset.drop.split(',').map(Number), raw = parseFloat(String(t.value).replace(',', '.')); const l = logsFor(S.si)[i]; if (!isNaN(raw) && l && l.drops && l.drops[k]) { l.drops[k][t.dataset.f] = t.dataset.f === 'w' ? fromU(raw) : raw; cambiarDrop(S.si, l.drops[k]); } guardarTodo(); render(); return; }
   if (!t.dataset || t.dataset.set == null) return;
   selSlot(ev);
