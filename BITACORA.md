@@ -37,6 +37,7 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 - Código: `S.cumpRange`, agregados `W` y `musR` en `viewInicioApp`; al renderizar se centra `.wk.sel`.
 - Otro comentario ("más chico, mucho más chico"): las semanas del carrusel pasaron a pastillas de una línea ("13/11 97"); la semana en curso lleva un punto.
 - Otro comentario: en "Por músculo" ya no se muestra el puntaje a la derecha sino las series hechas / series objetivo (ej. "7,5/12"); la barra sigue mostrando el avance.
+- Otro comentario: "Por músculo" ahora usa el mismo diseño de barras de la pestaña Semana (zona verde de meta, barra azul de hecho, "Atrasado" en el más bajo). Con 2 o 4 semanas la meta se multiplica por las semanas.
 - Nota: con las rutinas de ejemplo (Día 2 y Día 3 cortas) casi todos los músculos salen bajo el mínimo; es por los datos de ejemplo.
 
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · sin botón en Inicio
