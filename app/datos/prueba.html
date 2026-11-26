@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prueba de datos</title>
+<style>
+  :root { --bg: #f6f7f9; --card: #fff; --ink: #1c2024; --muted: #60646c; --line: #dfe3e6; --accent: #3e63dd; --ok: #30a46c; --bad: #e5484d; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.4 system-ui, sans-serif; }
+  main { max-width: 480px; margin: 0 auto; padding: 16px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+  h1 { font-size: 20px; } h2 { font-size: 16px; margin: 0 0 8px; }
+  input, button { font: inherit; padding: 10px; border-radius: 8px; border: 1px solid var(--line); box-sizing: border-box; }
+  input { width: 100%; margin-bottom: 8px; }
+  .fila { display: flex; gap: 6px; } .fila input { min-width: 0; }
+  button { background: var(--accent); color: #fff; border: 0; width: 100%; margin-top: 4px; }
+  button.sec { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+  #estado { color: var(--muted); font-size: 14px; } .ok { color: var(--ok); } .bad { color: var(--bad); }
+  li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Prueba de la capa de datos</h1>
+  <p id="estado">Cargando…</p>
+
+  <section id="conectar" hidden>
+    <h2>Conectar con Supabase</h2>
+    <p>Pega la Project URL y la Publishable key. Quedan guardadas solo en este navegador.</p>
+    <input id="cfg-url" placeholder="https://xxxx.supabase.co" autocomplete="off">
+    <input id="cfg-clave" placeholder="sb_publishable_..." autocomplete="off">
+    <button data-a="conectar">Guardar y conectar</button>
+  </section>
+
+  <section id="cuenta">
+    <h2>Cuenta</h2>
+    <input id="email" type="email" placeholder="correo" autocomplete="username">
+    <input id="pass" type="password" placeholder="contraseña (mín. 6)" autocomplete="current-password">
+    <button data-a="entrar">Entrar</button>
+    <button class="sec" data-a="crear">Crear cuenta</button>
+    <button class="sec" data-a="salir">Salir</button>
+  </section>
+
+  <section>
+    <h2>Anotar una serie</h2>
+    <input id="ej" placeholder="ejercicio (id de ejercicios.json)" value="press_banca_barra">
+    <div class="fila"><input id="peso" inputmode="decimal" placeholder="kg"><input id="reps" inputmode="numeric" placeholder="reps"><input id="rir" inputmode="numeric" placeholder="RIR"></div>
+    <button data-a="serie">Guardar serie</button>
+    <button class="sec" data-a="sync">Sincronizar ahora</button>
+  </section>
+
+  <section>
+    <h2>Sesión de hoy</h2>
+    <ul id="lista"></ul>
+  </section>
+</main>
+<script src="../config.js" onerror="window.GYM_CONFIG = null"></script>
+<script type="module">
+import { crearDatos } from './index.js';
+const $ = (id) => document.getElementById(id);
+// config.js manda; si no está (por ejemplo, la página publicada para probar),
+// se usa la que el usuario pegó en este navegador.
+let config = window.GYM_CONFIG;
+if (!config) { try { config = JSON.parse(localStorage.getItem('gym-config')); } catch { config = null; } }
+$('conectar').hidden = Boolean(config);
+const datos = await crearDatos(config || {});
+let sesion = null;
+
+// Al terminar cada sincronización se repinta la lista, para ver lo que bajó.
+datos.alCambiar((e) => { pintarEstado(e); if (!e.sincronizando) pintarLista(); });
+pintarEstado(datos.estado());
+pintarLista();
+
+function pintarEstado(e) {
+  const partes = [];
+  if (!e.nube) partes.push('<span class="bad">Sin conectar a Supabase: solo guarda en este aparato.</span>');
+  partes.push(e.usuario ? `Conectado como ${e.usuario.email}` : 'Sin cuenta (invitado)');
+  partes.push(`${e.pendientes} sin subir`);
+  if (e.sincronizando) partes.push('subiendo…');
+  else if (e.ultimaSync) partes.push(`<span class="ok">sincronizado ${new Date(e.ultimaSync).toLocaleTimeString('es-CL')}</span>`);
+  if (e.debeEntrar) partes.push('<span class="bad">vuelve a entrar</span>');
+  if (e.error) partes.push(`<span class="bad">${e.error}</span>`);
+  $('estado').innerHTML = partes.join(' · ');
+}
+
+async function pintarLista() {
+  if (!sesion) {
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    sesion = (await datos.sesiones.listar({ desde: hoy.toISOString() }))[0] || null;
+  }
+  const series = sesion ? await datos.series.deSesion(sesion.id) : [];
+  $('lista').innerHTML = series.map((s) => `<li>${s.ejercicio_id} · serie ${s.numero}: ${s.peso ?? '-'} ${s.unidad} × ${s.reps ?? '-'} (RIR ${s.rir ?? '-'})</li>`).join('') || '<li>Nada todavía.</li>';
+}
+
+const num = (id) => ($(id).value === '' ? null : Number($(id).value.replace(',', '.')));
+
+document.addEventListener('click', async (ev) => {
+  const a = ev.target.dataset.a; if (!a) return;
+  try {
+    if (a === 'conectar') {
+      const url = $('cfg-url').value.trim(), clave = $('cfg-clave').value.trim();
+      if (!/^https:\/\/.+\.supabase\.co\/?$/.test(url) || !clave.startsWith('sb_publishable_') && !clave.startsWith('eyJ')) {
+        alert('Revisa la URL (https://….supabase.co) y que la clave sea la publishable.'); return;
+      }
+      localStorage.setItem('gym-config', JSON.stringify({ url, clave }));
+      location.reload(); return;
+    }
+    if (a === 'entrar') await datos.cuenta.entrar($('email').value, $('pass').value);
+    if (a === 'crear') {
+      const r = await datos.cuenta.crear($('email').value, $('pass').value);
+      if (r.confirmarCorreo) alert('Revisa tu correo para confirmar la cuenta y después toca Entrar.');
+    }
+    if (a === 'salir') { await datos.cuenta.salir(); sesion = null; }
+    if (a === 'serie') {
+      if (!sesion) sesion = await datos.sesiones.iniciar({ rutina_nombre: 'Prueba' });
+      const ej = $('ej').value.trim();
+      const previas = (await datos.series.deSesion(sesion.id)).filter((s) => s.ejercicio_id === ej);
+      await datos.series.agregar({ sesion_id: sesion.id, ejercicio_id: ej, numero: previas.length + 1, peso: num('peso'), reps: num('reps'), rir: num('rir') });
+    }
+    if (a === 'sync') await datos.sincronizar();
+  } catch (e) { alert(e.message); }
+  pintarLista();
+});
+</script>
+</body>
+</html>

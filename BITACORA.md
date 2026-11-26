@@ -25,11 +25,31 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 - [ ] **Estilo de íconos** (2026-11-25): pipeline propio, ChatGPT o compra. Si es Gymvisual, falta que confirmen **por escrito** que se pueden editar y usar con IA.
 - [ ] **Puntaje de cumplimiento** (2026-11-26): Italo confirma pesos (ahora músculos 55, días 25, esfuerzo 20) y meta de 3 días.
 - [ ] **Rotación de rutinas en la PWA real** (2026-11-25): que avance al terminar una rutina y se pueda reordenar.
+- [ ] **Evitar la pausa de Supabase gratis** (2026-11-26): se pausa tras 7 días sin uso. Opcional: un aviso automático semanal (GitHub Action) que lo mantenga despierto.
 - [ ] **Empezar la PWA real** en `app/` cuando Italo dé el visto bueno al prototipo (ver `ROADMAP.md`).
 - [ ] **Hacer `main` la rama por defecto en GitHub** (Settings → General → Default branch). Hoy GitHub sigue mostrando una rama `claude/*`.
 - [ ] **Decidir si el repo vuelve a privado.** Hoy es público.
 
 ---
+
+## 2026-11-26 · Claude (hilo "Pasar el registro a Supabase") · prueba real OK
+
+- Italo probó contra su Supabase: creó cuenta, guardó 2 series en el celular (llegaron a la tabla `series` con su `user_id`) y en otro navegador entró y bajaron.
+- Las series solo se veían tras "Sincronizar ahora": la capa sí sincroniza al entrar, pero `prueba.html` no repintaba al terminar. Ahora repinta en cada fin de sincronización (`alCambiar`). La PWA real tiene que hacer lo mismo.
+
+## 2026-11-26 · Claude (hilo "Pasar el registro a Supabase") · prueba desde el celular
+
+- Italo creó el proyecto Supabase y corrió el esquema. El entorno de Claude no llega a supabase.co, así que la prueba real la hace Italo desde el celular.
+- `prueba.html` ahora deja pegar la URL y la publishable key cuando no hay `config.js` (quedan solo en ese navegador), para abrirla publicada sin subir claves al repo.
+
+## 2026-11-26 · Claude (hilo "Pasar el registro a Supabase") · datos en Supabase con copia local
+
+- Italo: "¿podríamos partir desde ya con Supabase? Como es gratis". Antes el stack decía Google Sheets + Apps Script (nunca se construyó). `DECISIONES.md` (Stack) y `ROADMAP.md` actualizados.
+- `supabase/esquema.sql`: tablas `rutinas`, `sesiones`, `series` (peso, unidad, reps, RIR, posición en la sesión, opción A/B/C, drop set, biserie, aviso de orden) y `ajustes`. Cada fila con dueño, RLS "solo el dueño", sin acceso anónimo y sin borrado real. Trigger: pone `user_id`, sella `servidor_en` y no deja que una versión vieja pise a una nueva.
+- `app/datos/`: capa de datos sin dependencias. IndexedDB primero (una base por usuario, "invitado" antes de entrar), sube pendientes y baja cambios por páginas. Cliente propio de Supabase por HTTP.
+- `app/config.js` en `.gitignore`; `verificar.sh` ahora revisa el JS de `app/` y que no se suban claves de Supabase.
+- Probado: el esquema contra Postgres 16 local (RLS, dueño forzado, versión vieja no pisa, anónimo sin acceso) y la capa de datos con dos celulares simulados contra ese Postgres (invitado → cuenta, conflicto, borrado, sesión anterior, 2.500 series). `prueba.html` probado en Chromium sin config (guarda local y sobrevive a recargar).
+- Pendiente: Italo crea el proyecto (`supabase/LEEME.md`). Las pantallas de la PWA todavía no existen; cuando se hagan, usan `app/datos/`.
 
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · vuelve el carrusel sin fondo de color
 

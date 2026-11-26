@@ -10,3 +10,5 @@ herramientas/iconos/poses.json
 herramientas/iconos/*.task
 herramientas/fotos/
 .DS_Store
+# configuración de Supabase de cada uno (ver app/config.ejemplo.js)
+app/config.js

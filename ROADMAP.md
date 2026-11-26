@@ -19,15 +19,16 @@ Estado al 2026-11-25. Plan por etapas. Lo inmediato (y quién está en qué) viv
 - [ ] Recorte por falta de tiempo según prioridad del slot.
 - [ ] Sugerencia de ejercicio de relleno mientras se espera una máquina.
 
-## Backend en Google Sheets
+## Datos en Supabase
 
-- [ ] Planilla con hojas: `rutina`, `registros`, `ajustes`.
-- [ ] Apps Script publicado como web app (leer/escribir). La URL va como secreto, no en el repo.
-- [ ] Guardado local primero y sincronización cuando haya señal.
+- [x] Esquema con cuentas y permisos por usuario (`supabase/esquema.sql`).
+- [x] Capa de datos con copia local y sincronización (`app/datos/`).
+- [x] Italo crea el proyecto Supabase (`supabase/LEEME.md`) y pasa URL + publishable key.
+- [ ] Conectar las pantallas de la PWA a `app/datos/`.
 
 ## Deploy
 
-- [ ] Conectar el repo a Cloudflare Pages (sin build, carpeta `app/`).
+- [ ] Conectar el repo a Cloudflare Pages (carpeta `app/`; el único paso de build escribe `app/config.js`, ver `supabase/LEEME.md`).
 - [ ] Instalar en el celular como ícono de inicio.
 
 ## Después
