@@ -404,6 +404,17 @@ details.det { margin-top: -4px; }
 .mus-sc .cump-p { grid-template-columns: 112px minmax(0, 1fr) 44px; }
 .mus-sc .cump-p .v { text-align: right; }
 .fill.mid { background: var(--warn); } .fill.low { background: var(--bad); } .fill.okc { background: var(--ok); }
+.wks { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 2px 16px 4px; scrollbar-width: none; }
+.wks::-webkit-scrollbar { display: none; }
+.wk { flex: none; scroll-snap-align: center; width: 54px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 5px 2px 6px; display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 10.5px; color: var(--muted); }
+.wk b { font-family: var(--display); font-size: 19px; line-height: 1.05; color: var(--ok); }
+.wk b.mid { color: var(--warn); } .wk b.low { color: var(--bad); }
+.wk.rng { background: var(--accent-soft); border-color: transparent; }
+.wk.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.wk i { font-style: normal; font-size: 9px; }
+.cump-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cump-top .seg { flex: none; width: 150px; padding: 3px; }
+.cump-top .seg button { padding: 5px 2px; font-size: 12px; }
 .cump-how { font-size: 12px; color: var(--muted); }
 .cump-how summary { color: var(--accent); font-size: 12px; }
 .cal-det { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
@@ -751,6 +762,7 @@ function act(a, v) {
     case 'calDay': S.calDay = S.calDay === v ? null : v; break;
     case 'calWeek': S.calWeek = +v; break;
     case 'cumpMode': S.cumpMode = v; break;
+    case 'cumpRange': S.cumpRange = +v; break;
     case 'goSesion': S.tab = 'hoy'; S.home = true; window.scrollTo(0, 0); break;
     case 'home': S.home = true; window.scrollTo(0, 0); break;
     case 'rutGo': {
@@ -976,7 +988,11 @@ function viewInicioApp() {
     }
     celdas += `<button class="cal-sc ${nivel(c.pts)} ${c.cur ? 'cur' : ''} ${w === semW ? 'sel' : ''}" style="height:${Math.max(2, c.pts * .3)}px" data-a="calWeek" data-v="${w}" aria-label="Semana del ${fechaTxt(f0)}: ${c.pts} puntos"></button>`;
   }
-  const W = sems[semW], llenas = sems.filter(x => !x.cur).slice(-4);
+  const R = S.cumpRange || 1, ws = sems.slice(Math.max(0, semW - R + 1), semW + 1);
+  const avg = f => ws.reduce((a, x) => a + f(x), 0) / ws.length;
+  const W = { pts: Math.round(avg(x => x.pts)), dias: avg(x => x.dias), series: avg(x => x.series), esf: avg(x => x.esf), n: ws.reduce((a, x) => a + x.n, 0), hechas: ws.reduce((a, x) => a + x.hechas, 0), plan: ws.reduce((a, x) => a + x.plan, 0), cur: ws[ws.length - 1].cur, f0: ws[0].f0, f6: ws[ws.length - 1].f6 };
+  const musR = musSemana(ws[0].f0).map((x, i) => { const all = ws.map(w => musSemana(w.f0)[i]); const a = all.reduce((s2, y) => s2 + y.a, 0); return { m: x.m, a, b: x.b * ws.length, p: Math.min(100, Math.round(a / (x.b * ws.length) * 100)) }; });
+  const llenas = sems.filter(x => !x.cur).slice(-4);
   const prom = Math.round(llenas.reduce((a, x) => a + x.pts, 0) / Math.max(1, llenas.length));
   const col = { '': 'var(--ok)', mid: 'var(--warn)', low: 'var(--bad)' }[nivel(W.pts)];
   const part = (lab, v, txt) => `<div class="cump-p"><span>${lab}</span><div class="bar"><div class="fill" style="width:${Math.round(v * 100)}%"></div></div><span class="v">${txt}</span></div>`;
@@ -986,19 +1002,21 @@ function viewInicioApp() {
     : `<div class="cal-det"><b>${fechaTxt(sel.f)}</b> · Descanso</div>`;
   return `
     <section class="card">
-      <div class="slot-head"><h2>Cumplimiento</h2><span class="small muted">${W.cur ? 'esta semana, en curso' : `semana del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]}`}</span></div>
+      <div class="cump-top"><h2>Cumplimiento</h2><div class="seg">${[1, 2, 4].map(n => `<button class="${R === n ? 'on' : ''}" data-a="cumpRange" data-v="${n}">${n} sem</button>`).join('')}</div></div>
+      <div class="wks" id="wks">${sems.map((x, w) => `<button class="wk ${w === semW ? 'sel' : w > semW - R && w < semW ? 'rng' : ''}" data-a="calWeek" data-v="${w}"><span>${x.f0.getDate()} ${MESES_C[x.f0.getMonth()]}</span><b class="${nivel(x.pts)}">${x.pts}</b>${x.cur ? '<i>en curso</i>' : ''}</button>`).join('')}</div>
+      <p class="small muted">${R === 1 ? (W.cur ? 'Esta semana, en curso.' : `Semana del ${fechaTxt(W.f0)}.`) : `Promedio de ${ws.length} semanas: del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]} al ${W.f6.getDate()} ${MESES_C[W.f6.getMonth()]}${W.cur ? ' (incluye la semana en curso)' : ''}.`} Desliza las semanas para moverte.</p>
       <div class="seg"><button class="${S.cumpMode === 'mus' ? '' : 'on'}" data-a="cumpMode" data-v="gen">General</button><button class="${S.cumpMode === 'mus' ? 'on' : ''}" data-a="cumpMode" data-v="mus">Por músculo</button></div>
-      ${S.cumpMode === 'mus' ? `<div class="mus-sc">${musSemana(W.f0).sort((x, y) => y.p - x.p).map(x => `<div class="cump-p"><span>${MUS[x.m]}</span><div class="bar"><div class="fill ${{ '': 'okc', mid: 'mid', low: 'low' }[nivel(x.p)]}" style="width:${x.p}%"></div></div><span class="v">${x.p}</span></div>`).join('')}</div>
-      <p class="small muted">Series duras de la semana sobre tu mínimo semanal de cada músculo (principal cuenta 1, secundario 0,5).</p>` : `
+      ${S.cumpMode === 'mus' ? `<div class="mus-sc">${musR.sort((x, y) => y.p - x.p).map(x => `<div class="cump-p"><span>${MUS[x.m]}</span><div class="bar"><div class="fill ${{ '': 'okc', mid: 'mid', low: 'low' }[nivel(x.p)]}" style="width:${x.p}%"></div></div><span class="v">${x.p}</span></div>`).join('')}</div>
+      <p class="small muted">Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. Lo que está en rojo es lo que tienes más botado.</p>` : `
       <div class="cump">
         <div class="cump-n" style="--p:${W.pts};--c:${col}"><b>${W.pts}</b><span>de 100</span></div>
         <div class="cump-parts">
-          ${part('Días', W.dias, `${W.n}/${CUMP.dias}`)}
+          ${part('Días', W.dias, `${W.n}/${CUMP.dias * ws.length}`)}
           ${part('Series', W.series, `${W.hechas}/${W.plan}`)}
           ${part('Esfuerzo', W.esf, `${Math.round(W.esf * 100)}%`)}
         </div>
       </div>
-      <p class="small muted">Promedio de las últimas 4 semanas completas: <b style="color:var(--ink)">${prom}</b>.</p>`}
+      ${R === 1 ? `<p class="small muted">Promedio de las últimas 4 semanas completas: <b style="color:var(--ink)">${prom}</b>.</p>` : ''}`}
     </section>
     <section class="card">
       <div class="slot-head"><h2>Tus entrenamientos</h2><span class="small muted">últimas ${SEM} semanas</span></div>
@@ -1484,6 +1502,7 @@ ${S.pick ? `<div class="sheet-bg" data-a="pickClose"><div class="sheet pick" dat
   S.pulse = false; S.restIn = false;
   if (S.focusName) { S.focusName = false; const n = document.getElementById('rutName'); if (n) { n.focus(); n.select(); } }
   setHp();
+  { const wk = r.querySelector('.wk.sel'), c = wk && wk.parentElement; if (c) c.scrollLeft = wk.offsetLeft - c.offsetLeft - (c.clientWidth - wk.offsetWidth) / 2; }
   if (S.scrollCur) { S.scrollCur = false; const c = r.querySelector('.cur-card'); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 }
 
