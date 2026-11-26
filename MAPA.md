@@ -55,7 +55,7 @@ Un solo `<script>`. Usa **datos de ejemplo propios**, no lee `data/`.
 | `findFiller`, `conflictFor`, `reorderCheck` | relleno mientras se espera y avisos de orden |
 | `bodyFigure`, `bodySvg`, `REGION_GRUPO`, `FRONT`, `BACK` | muñeco del mapa de calor (SVG a mano) |
 | `bodyFab` | muñeco + conteo en el encabezado |
-| `HOY`, `HIST`, `viewInicioApp` | pestaña Inicio: puntaje de cumplimiento (`CUMP`, `cumpSemana`, `ptsSesion`) y calendario de días entrenados (historial de ejemplo) |
+| `HOY`, `HIST`, `viewInicioApp` | pestaña Inicio: puntaje de cumplimiento (`CUMP`: músculos 55 + días 25 + esfuerzo 20; `cumpSemana`, `musSemana`, `ptsSesion`) y calendario de días entrenados (historial de ejemplo) |
 | `viewInicio` | inicio de Rutina: la que toca, las demás y "+ Crear rutina" (`S.home`, `S.rut`, `S.edRut`, `S.lastDone`) |
 | `viewHoy`, `slotCard`, `viewSemana`, `viewGuia`, `pickerHtml` | vistas |
 

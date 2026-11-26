@@ -22,13 +22,21 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 - [ ] **Feedback de Italo sobre el prototipo y el mapa de calor** (2026-11-25).
 - [ ] **Estilo de íconos** (2026-11-25): pipeline propio, ChatGPT o compra. Si es Gymvisual, falta que confirmen **por escrito** que se pueden editar y usar con IA.
-- [ ] **Puntaje de cumplimiento** (2026-11-26): Italo confirma pesos (días 40, series 40, esfuerzo 20) y meta de 3 días.
+- [ ] **Puntaje de cumplimiento** (2026-11-26): Italo confirma pesos (ahora músculos 55, días 25, esfuerzo 20) y meta de 3 días.
 - [ ] **Rotación de rutinas en la PWA real** (2026-11-25): que avance al terminar una rutina y se pueda reordenar.
 - [ ] **Empezar la PWA real** en `app/` cuando Italo dé el visto bueno al prototipo (ver `ROADMAP.md`).
 - [ ] **Hacer `main` la rama por defecto en GitHub** (Settings → General → Default branch). Hoy GitHub sigue mostrando una rama `claude/*`.
 - [ ] **Decidir si el repo vuelve a privado.** Hoy es público.
 
 ---
+
+## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · el puntaje pesa las series por músculo
+
+- Comentario de Italo: el puntaje no se correlaciona con las series semanales por músculo; darle más peso a eso.
+- Nuevo puntaje semanal: **Músculos 55** (promedio por músculo de series duras / mínimo semanal de `META`, con tope 1; lo mismo que muestra "Por músculo") + **Días 25** + **Esfuerzo 20**. Se quitó la parte "Series hechas / planificadas". En General la barra Músculos muestra "N/M en meta". Textos del "i" y de "¿Cómo se calcula?" actualizados.
+- Con las rutinas de ejemplo (pocas series) los puntajes bajan a ~50-75: es el efecto buscado, las semanas con músculos cortos ya no salen en verde.
+- Pendiente: Italo confirma los pesos.
+- Artifact versión 1795710764-1827.
 
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · carrusel de semanas y rango de 1, 2 o 4 semanas
 

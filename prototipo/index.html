@@ -956,8 +956,9 @@ const HIST = [[8,4],[8,6],[8,8],[8,11],[8,13],[8,15],[8,18],[8,20],[8,25],[8,27]
     const z = x => (Math.sin((m * 31 + d) * x) + 1) / 2;
     return { f: new Date(2023, m, d), k: ((2 - (a.length - 1 - i)) % 3 + 3) % 3, sd: Math.min(1, .62 + z(12.9) * .5), ri: Math.min(1, .55 + z(78.2) * .5) };
   });
-// Puntaje de cumplimiento (propuesta, pesos ajustables): días 40 + series 40 + esfuerzo 20
-const CUMP = { dias: 3, pDias: 40, pSeries: 40, pEsf: 20 };
+// Puntaje de cumplimiento (propuesta, pesos ajustables): músculos 55 + días 25 + esfuerzo 20
+// músculos = promedio de cada músculo de (series duras / mínimo semanal), con tope 1
+const CUMP = { dias: 3, pDias: 25, pMus: 55, pEsf: 20 };
 const setsRut = k => RUT[k] ? RUT[k].slots.reduce((a, d) => a + d.sets, 0) : 0;
 const ptsSesion = h => Math.round(70 * h.sd + 30 * h.ri);
 function cumpSemana(l) {
@@ -967,7 +968,8 @@ function cumpSemana(l) {
   const hechas = Math.round(ss.reduce((a, h) => a + h.sd * setsRut(h.k), 0));
   const dias = Math.min(1, ss.length / CUMP.dias), series = Math.min(1, hechas / plan);
   const esf = ss.length ? ss.reduce((a, h) => a + h.ri * h.sd * setsRut(h.k), 0) / Math.max(1, hechas) : 0;
-  return { n: ss.length, hechas, plan, dias, series, esf: Math.min(1, esf), pts: Math.round(dias * CUMP.pDias + series * CUMP.pSeries + Math.min(1, esf) * CUMP.pEsf), cur: fin > HOY };
+  const mm = musSemana(l), mus = mm.reduce((a, x) => a + Math.min(1, x.a / x.b), 0) / mm.length;
+  return { n: ss.length, hechas, plan, dias, series, mus, esf: Math.min(1, esf), pts: Math.round(mus * CUMP.pMus + dias * CUMP.pDias + Math.min(1, esf) * CUMP.pEsf), cur: fin > HOY };
 }
 // series duras por músculo en la semana (principal 1, secundario 0,5) sobre el mínimo semanal (META)
 function musSemana(l) {
@@ -1000,7 +1002,7 @@ function viewInicioApp() {
   }
   const R = S.cumpRange || 1, ws = sems.slice(Math.max(0, semW - R + 1), semW + 1);
   const avg = f => ws.reduce((a, x) => a + f(x), 0) / ws.length;
-  const W = { pts: Math.round(avg(x => x.pts)), dias: avg(x => x.dias), series: avg(x => x.series), esf: avg(x => x.esf), n: ws.reduce((a, x) => a + x.n, 0), hechas: ws.reduce((a, x) => a + x.hechas, 0), plan: ws.reduce((a, x) => a + x.plan, 0), cur: ws[ws.length - 1].cur, f0: ws[0].f0, f6: ws[ws.length - 1].f6 };
+  const W = { pts: Math.round(avg(x => x.pts)), dias: avg(x => x.dias), series: avg(x => x.series), mus: avg(x => x.mus), esf: avg(x => x.esf), n: ws.reduce((a, x) => a + x.n, 0), hechas: ws.reduce((a, x) => a + x.hechas, 0), plan: ws.reduce((a, x) => a + x.plan, 0), cur: ws[ws.length - 1].cur, f0: ws[0].f0, f6: ws[ws.length - 1].f6 };
   const musR = musSemana(ws[0].f0).map((x, i) => { const all = ws.map(w => musSemana(w.f0)[i]); const a = all.reduce((s2, y) => s2 + y.a, 0); return { m: x.m, a, b: x.b * ws.length, p: Math.min(100, Math.round(a / (x.b * ws.length) * 100)) }; });
   const llenas = sems.filter(x => !x.cur).slice(-4);
   const prom = Math.round(llenas.reduce((a, x) => a + x.pts, 0) / Math.max(1, llenas.length));
@@ -1025,8 +1027,8 @@ function viewInicioApp() {
       <div class="cump">
         <div class="cump-n" style="--p:${W.pts};--c:${col}"><b>${W.pts}</b><span>de 100</span></div>
         <div class="cump-parts">
+          ${part('Músculos', W.mus, `${musR.filter(x => x.a >= x.b).length}/${musR.length} en meta`)}
           ${part('Días', W.dias, `${W.n}/${CUMP.dias * ws.length}`)}
-          ${part('Series', W.series, `${W.hechas}/${W.plan}`)}
           ${part('Esfuerzo', W.esf, `${Math.round(W.esf * 100)}%`)}
         </div>
       </div>
@@ -1038,10 +1040,10 @@ function viewInicioApp() {
       <div class="cal-leg"><span><i style="background:color-mix(in srgb, var(--accent) 35%, var(--surface-2))"></i><i style="background:color-mix(in srgb, var(--accent) 65%, var(--surface-2))"></i><i style="background:var(--accent)"></i>sesión incompleta → completa</span><span>Una columna por semana; cada fila es un día de tu plan. Barras: puntaje de la semana</span></div>
       ${det}
       <details class="cump-how"><summary>¿Cómo se calcula?</summary>
-        <p><b>Días (40):</b> entrenamientos de la semana sobre los ${CUMP.dias} que te propones. <b>Series (40):</b> series hechas sobre las planificadas en tus ${CUMP.dias} rutinas. <b>Esfuerzo (20):</b> parte de esas series que quedó en el RIR pedido (1-2; el fallo solo en la última de un aislado). Los pesos se pueden cambiar.</p>
+        <p><b>Músculos (55):</b> por cada músculo, series duras de la semana sobre su mínimo semanal (con tope en el mínimo), y se promedian; es lo mismo que ves en "Por músculo". <b>Días (25):</b> entrenamientos de la semana sobre los ${CUMP.dias} que te propones. <b>Esfuerzo (20):</b> parte de esas series que quedó en el RIR pedido (1-2; el fallo solo en la última de un aislado). Los pesos se pueden cambiar.</p>
       </details>
     </section>
-    ${S.cumpInfo ? `<div class="sheet-bg" data-a="cumpInfo"><div class="sheet" data-a="noop"><span class="eyebrow">Cumplimiento</span><h2>Cómo leerlo</h2><p class="small">${R === 1 ? (W.cur ? 'Esta semana, en curso.' : `Semana del ${fechaTxt(W.f0)}.`) : `Promedio de ${ws.length} semanas: del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]} al ${W.f6.getDate()} ${MESES_C[W.f6.getMonth()]}${W.cur ? ' (incluye la semana en curso)' : ''}.`} Desliza las semanas para moverte y elige 1, 2 o 4 semanas arriba.</p><p class="small"><b>General:</b> Días (40) son tus entrenamientos sobre los ${CUMP.dias} de la semana; Series (40), las series hechas sobre las planificadas; Esfuerzo (20), la parte que quedó en el RIR pedido. Verde desde 80, ámbar 60-79, rojo bajo 60.</p><p class="small"><b>Por músculo:</b> Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. A la derecha: series hechas / meta. La zona verde es la meta. Verde: llegaste al mínimo; ámbar: 60% o más; rojo: menos del 60%, es lo que tienes más botado.</p><button class="btn primary block" data-a="cumpInfo">Entendido</button></div></div>` : ''}`;
+    ${S.cumpInfo ? `<div class="sheet-bg" data-a="cumpInfo"><div class="sheet" data-a="noop"><span class="eyebrow">Cumplimiento</span><h2>Cómo leerlo</h2><p class="small">${R === 1 ? (W.cur ? 'Esta semana, en curso.' : `Semana del ${fechaTxt(W.f0)}.`) : `Promedio de ${ws.length} semanas: del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]} al ${W.f6.getDate()} ${MESES_C[W.f6.getMonth()]}${W.cur ? ' (incluye la semana en curso)' : ''}.`} Desliza las semanas para moverte y elige 1, 2 o 4 semanas arriba.</p><p class="small"><b>General:</b> Músculos (55) es cuánto llegó cada músculo a su mínimo de series, en promedio (lo mismo de "Por músculo"); Días (25), tus entrenamientos sobre los ${CUMP.dias} de la semana; Esfuerzo (20), la parte que quedó en el RIR pedido. Verde desde 80, ámbar 60-79, rojo bajo 60.</p><p class="small"><b>Por músculo:</b> Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. A la derecha: series hechas / meta. La zona verde es la meta. Verde: llegaste al mínimo; ámbar: 60% o más; rojo: menos del 60%, es lo que tienes más botado.</p><button class="btn primary block" data-a="cumpInfo">Entendido</button></div></div>` : ''}`;
 }
 function viewInicio() {
   const nx = nextRut(), r = RUT[nx];
