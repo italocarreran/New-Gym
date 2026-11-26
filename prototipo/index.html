@@ -367,7 +367,7 @@ details.det { margin-top: -4px; }
 
 /* pestañas */
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); display: flex; justify-content: center; padding: 6px max(16px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); z-index: 20; }
-.tabs-in { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.tabs-in { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
 /* inicio: calendario de días entrenados */
 .cal-wrap { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; }
 .cal-dl { display: grid; grid-template-rows: 12px repeat(var(--nr), 18px) 30px; gap: 4px; font-size: 11px; color: var(--muted); line-height: 18px; white-space: nowrap; }
@@ -1196,6 +1196,8 @@ function slotCard(si) {
     </section>`;
 }
 
+// Pestaña Semana quitada (Italo, 2026-11-26): el volumen por músculo vive en Inicio › Por músculo.
+// Queda sin uso; el "Día 4 de rescate" de aquí se puede mover a Inicio si se pide.
 function viewSemana() {
   const now = weekly(false), proj = weekly(true);
   const keys = Object.keys(META);
@@ -1488,7 +1490,7 @@ function render() {
     ${views[S.tab]()}
   </main>
   <nav class="tabs"><div class="tabs-in">
-    ${[['inicio','Inicio'],['hoy','Sesión'],['semana','Semana'],['rutina','Editar'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
+    ${[['inicio','Inicio'],['hoy','Sesión'],['rutina','Editar'],['guia','Esfuerzo']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${l}</button>`).join('')}
   </div></nav>
   ${S.bodySheet ? (() => { useDay(S.rut); const h = bodySheet(); useDay(S.tab === 'rutina' ? S.edRut : S.rut); return h; })() : ''}
   ${S.exInfo ? exInfoSheet(S.exInfo) : ''}

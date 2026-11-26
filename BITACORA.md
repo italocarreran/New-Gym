@@ -20,6 +20,7 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 ## Pendientes abiertos
 
+- [ ] **Día 4 de rescate** (2026-11-26): se fue con la pestaña Semana; ver si Italo lo quiere en Inicio.
 - [ ] **Feedback de Italo sobre el prototipo y el mapa de calor** (2026-11-25).
 - [ ] **Estilo de íconos** (2026-11-25): pipeline propio, ChatGPT o compra. Si es Gymvisual, falta que confirmen **por escrito** que se pueden editar y usar con IA.
 - [ ] **Puntaje de cumplimiento** (2026-11-26): Italo confirma pesos (ahora músculos 55, días 25, esfuerzo 20) y meta de 3 días.
@@ -29,6 +30,13 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 - [ ] **Decidir si el repo vuelve a privado.** Hoy es público.
 
 ---
+
+## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · se quita la pestaña Semana
+
+- Comentario de Italo: "Quita esta hoja" sobre la pestaña Semana.
+- La barra queda con 4 pestañas: Inicio, Sesión, Editar, Esfuerzo. El volumen por músculo ya está en Inicio › Por músculo y el muñeco "Semana" del encabezado sigue funcionando.
+- `viewSemana` queda en el código sin uso; tenía la tarjeta "Día 4 de rescate" (qué completar el sábado). Pendiente: preguntar a Italo si la quiere en Inicio.
+- `DECISIONES.md` (Pestañas) y `MAPA.md` actualizados. Artifact versión 1795711372-56ae.
 
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · semanas del carrusel pintadas por nota
 
