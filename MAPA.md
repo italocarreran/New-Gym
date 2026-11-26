@@ -14,7 +14,10 @@ ROADMAP.md             plan por etapas
 README.md              presentación para humanos
 prototipo/
   index.html           prototipo interactivo, un solo archivo (HTML+CSS+JS)
-app/
+app/                   la PWA que se publica (GitHub Pages, ver docs/instalar-en-el-celular.md)
+  index.html           pantallas (vienen del prototipo) + "Registro real" (guardar/leer con datos/) + "Cuenta" (login)
+  catalogo.js          GENERADO por scripts/armar_catalogo.py desde data/; no editar a mano
+  sw.js                service worker (sin señal); manifest.webmanifest e iconos/ para instalar
   config.ejemplo.js    molde de config.js (URL + clave pública de Supabase); config.js no va al repo
   datos/               capa de datos: lo único que lee y guarda (ver datos/LEEME.md)
     index.js           API crearDatos() y sincronización
@@ -41,6 +44,7 @@ scripts/
   sincronizar.sh       trae main al día y muestra qué llegó
   verificar.sh         datos + sintaxis del prototipo y de app/ + secretos → "TODO OK"
   validar_datos.py     coherencia de data/
+  armar_catalogo.py    data/ → app/catalogo.js (verificar.sh avisa si quedó viejo)
   importar_opengym.py  regenera data/fuentes/opengym/biblioteca.json
 herramientas/iconos/   prototipo del generador de íconos (MediaPipe → SVG)
 ```

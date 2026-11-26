@@ -32,7 +32,11 @@ La app guarda el registro (sesiones, series, rutinas y ajustes) en Supabase, pla
 - Si entrenas al menos una vez por semana, no se pausa. Si quieres evitarlo del todo, se puede agregar un aviso automático semanal (pendiente en `BITACORA.md`).
 - Límites gratis: 500 MB de base de datos y 50.000 usuarios al mes. Un registro de gimnasio usa muy poco (años de series caben en unos pocos MB).
 
-## Publicar en Cloudflare Pages (más adelante)
+## Publicar
+
+Hoy se publica en GitHub Pages: ver `docs/instalar-en-el-celular.md`. Lo de abajo queda por si el repo vuelve a privado.
+
+### Cloudflare Pages (alternativa)
 
 Como `app/config.js` no está en el repo, Cloudflare lo arma al publicar:
 
