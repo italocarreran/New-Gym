@@ -23,7 +23,7 @@ Estado al 2026-11-25. Plan por etapas. Lo inmediato (y quién está en qué) viv
 
 - [x] Esquema con cuentas y permisos por usuario (`supabase/esquema.sql`).
 - [x] Capa de datos con copia local y sincronización (`app/datos/`).
-- [ ] Italo crea el proyecto Supabase (`supabase/LEEME.md`) y pasa URL + publishable key.
+- [x] Italo crea el proyecto Supabase (`supabase/LEEME.md`) y pasa URL + publishable key.
 - [ ] Conectar las pantallas de la PWA a `app/datos/`.
 
 ## Deploy

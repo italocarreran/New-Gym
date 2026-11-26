@@ -66,7 +66,8 @@ $('conectar').hidden = Boolean(config);
 const datos = await crearDatos(config || {});
 let sesion = null;
 
-datos.alCambiar(pintarEstado);
+// Al terminar cada sincronización se repinta la lista, para ver lo que bajó.
+datos.alCambiar((e) => { pintarEstado(e); if (!e.sincronizando) pintarLista(); });
 pintarEstado(datos.estado());
 pintarLista();
 
