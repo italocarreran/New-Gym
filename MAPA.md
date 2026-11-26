@@ -14,6 +14,16 @@ ROADMAP.md             plan por etapas
 README.md              presentación para humanos
 prototipo/
   index.html           prototipo interactivo, un solo archivo (HTML+CSS+JS)
+app/
+  config.ejemplo.js    molde de config.js (URL + clave pública de Supabase); config.js no va al repo
+  datos/               capa de datos: lo único que lee y guarda (ver datos/LEEME.md)
+    index.js           API crearDatos() y sincronización
+    local.js           copia local en IndexedDB, una base por usuario
+    remoto.js          cliente mínimo de Supabase por HTTP
+    prueba.html        página para probar cuenta, series y sincronización
+supabase/
+  esquema.sql          tablas rutinas/sesiones/series/ajustes, triggers y permisos (RLS)
+  LEEME.md             cómo crear el proyecto Supabase y publicar
 data/
   ejercicios.json      catálogo curado: 57 ejercicios, músculos, fedb_id, og_id, equivalencias
   musculos.json        grupos musculares, pesos del conteo, metas (null = las pone el usuario)
@@ -29,7 +39,7 @@ docs/
   img/                           capturas: mapa de calor, encabezado, muestra de íconos
 scripts/
   sincronizar.sh       trae main al día y muestra qué llegó
-  verificar.sh         datos + sintaxis del prototipo + secretos → "TODO OK"
+  verificar.sh         datos + sintaxis del prototipo y de app/ + secretos → "TODO OK"
   validar_datos.py     coherencia de data/
   importar_opengym.py  regenera data/fuentes/opengym/biblioteca.json
 herramientas/iconos/   prototipo del generador de íconos (MediaPipe → SVG)

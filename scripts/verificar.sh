@@ -32,8 +32,21 @@ else
     echo "   (se omite: no hay node en este entorno)"
 fi
 
+echo "== JavaScript de app/ =="
+if command -v node >/dev/null; then
+    malos=0
+    while IFS= read -r f; do node --check "$f" 2>/dev/null || { echo "   FALLA: $f"; malos=1; }; done < <(git ls-files 'app/*.js')
+    if [ "$malos" -eq 0 ]; then echo "   ok"; else fallas=$((fallas + 1)); fi
+else
+    echo "   (se omite: no hay node en este entorno)"
+fi
+
 echo "== Sin secretos =="
-if git grep -nIE "script\.google\.com/macros/s/|AKfyc[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}" -- . ':!scripts/verificar.sh' >/dev/null; then
+if git ls-files --error-unmatch app/config.js >/dev/null 2>&1; then
+    echo "   FALLA: app/config.js está versionado; va solo en tu aparato y en Cloudflare"
+    fallas=$((fallas + 1))
+fi
+if git grep -nIE "script\.google\.com/macros/s/|AKfyc[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}|sb_secret_[A-Za-z0-9_-]{10,}|sb_publishable_[A-Za-z0-9_-]{10,}|c2VydmljZV9yb2xl|[a-z0-9]{20}\.supabase\.co" -- . ':!scripts/verificar.sh' >/dev/null; then
     echo "   FALLA: parece haber una URL de Apps Script o una clave versionada"
     fallas=$((fallas + 1))
 else

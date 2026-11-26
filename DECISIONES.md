@@ -18,7 +18,13 @@
 ## Stack
 
 - HTML + JS **sin framework**, como **PWA**. Sin bundlers ni npm salvo que el usuario lo apruebe. (Italo delegó, 2026-11-23)
-- Datos en **Google Sheets** vía **Google Apps Script** (planilla visible y editable como respaldo). (2026-11-23)
+- Datos (registro de sesiones y series, rutinas y ajustes) en **Supabase, plan gratis**. Reemplaza a Google Sheets + Apps Script, que no se llegó a construir. (Italo, 2026-11-26)
+  - **Primero en el celular** (IndexedDB) y se sincroniza solo cuando hay señal; la app funciona entera sin internet.
+  - **Cuentas por usuario y Row Level Security desde el inicio**: cada fila tiene dueño y nadie ve las de otro. Hoy lo usa solo Italo, pero queda lista para más usuarios.
+  - Toda la lectura y escritura pasa por `app/datos/`; el resto de la app no habla con Supabase.
+  - En el cliente va **solo la clave pública** (publishable/anon), y tampoco se sube al repo: va en `app/config.js` (ignorado) y en Cloudflare. La clave secreta y la contraseña de la base nunca salen de Supabase.
+  - Sin librería de Supabase: cliente propio por HTTP en `app/datos/remoto.js` (sigue la regla de no usar npm).
+  - Si dos aparatos editan lo mismo gana el cambio más reciente; borrar es marcar `borrado`.
 - Hosting en **Cloudflare Pages** (GitHub Pages no sirve gratis con repo privado). (2026-11-23)
 - Scripts de datos en Python 3 sin dependencias. (2026-11-23)
 - Rama oficial: **`main`**. (Italo, 2026-11-25)
