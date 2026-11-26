@@ -419,6 +419,7 @@ details.det { margin-top: -4px; }
 .wk.rng { background: var(--accent-soft); border-color: transparent; }
 .wk.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; color: var(--ink); }
 .wk i { font-style: normal; color: var(--accent); }
+.info-i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--muted); background: none; color: var(--muted); font-family: Georgia, serif; font-style: italic; font-weight: 700; font-size: 11px; line-height: 1; padding: 0; vertical-align: 4px; margin-left: 4px; }
 .cump-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .cump-top .seg { flex: none; width: 150px; padding: 3px; }
 .cump-top .seg button { padding: 5px 2px; font-size: 12px; }
@@ -770,6 +771,7 @@ function act(a, v) {
     case 'calWeek': S.calWeek = +v; break;
     case 'cumpMode': S.cumpMode = v; break;
     case 'cumpRange': S.cumpRange = +v; break;
+    case 'cumpInfo': S.cumpInfo = !S.cumpInfo; break;
     case 'goSesion': S.tab = 'hoy'; S.home = true; window.scrollTo(0, 0); break;
     case 'home': S.home = true; window.scrollTo(0, 0); break;
     case 'rutGo': {
@@ -1009,16 +1011,16 @@ function viewInicioApp() {
     : `<div class="cal-det"><b>${fechaTxt(sel.f)}</b> · Descanso</div>`;
   return `
     <section class="card">
-      <div class="cump-top"><h2>Cumplimiento</h2><div class="seg">${[1, 2, 4].map(n => `<button class="${R === n ? 'on' : ''}" data-a="cumpRange" data-v="${n}">${n} sem</button>`).join('')}</div></div>
+      <div class="cump-top"><h2>Cumplimiento <button class="info-i" data-a="cumpInfo" aria-label="Qué significa">i</button></h2><div class="seg">${[1, 2, 4].map(n => `<button class="${R === n ? 'on' : ''}" data-a="cumpRange" data-v="${n}">${n} sem</button>`).join('')}</div></div>
       <div class="wks" id="wks">${sems.map((x, w) => `<button class="wk ${w === semW ? 'sel' : w > semW - R && w < semW ? 'rng' : ''}" data-a="calWeek" data-v="${w}"><span>${x.f0.getDate()}/${x.f0.getMonth() + 1}</span><b class="${nivel(x.pts)}">${x.pts}</b>${x.cur ? '<i>•</i>' : ''}</button>`).join('')}</div>
-      <p class="small muted">${R === 1 ? (W.cur ? 'Esta semana, en curso.' : `Semana del ${fechaTxt(W.f0)}.`) : `Promedio de ${ws.length} semanas: del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]} al ${W.f6.getDate()} ${MESES_C[W.f6.getMonth()]}${W.cur ? ' (incluye la semana en curso)' : ''}.`} Desliza las semanas para moverte.</p>
+      <p class="small muted">${R === 1 ? (W.cur ? 'Esta semana, en curso' : `Semana del ${fechaTxt(W.f0)}`) : `${ws.length} semanas: ${W.f0.getDate()}/${W.f0.getMonth() + 1} al ${W.f6.getDate()}/${W.f6.getMonth() + 1}`}</p>
       <div class="seg"><button class="${S.cumpMode === 'mus' ? '' : 'on'}" data-a="cumpMode" data-v="gen">General</button><button class="${S.cumpMode === 'mus' ? 'on' : ''}" data-a="cumpMode" data-v="mus">Por músculo</button></div>
       ${S.cumpMode === 'mus' ? `<div class="legend"><span><i style="background:var(--accent)"></i>Hecho</span><span><i style="background:var(--ok-soft);border:1px solid var(--ok)"></i>Meta</span></div>
       <div class="bars" style="gap:8px">${(() => { const n = ws.length, maxV = Math.max(...Object.values(META).map(x => x[1])) * n * 1.15, peor = [...musR].sort((x, y) => x.p - y.p)[0].m;
         return musR.map(x => { const [lo, hi] = META[x.m].map(v => v * n), a2 = Math.round(x.a * 2) / 2;
           return `<div class="mus-row ${x.m === peor && a2 < lo ? 'behind' : ''}"><span class="m">${MUS[x.m]}</span>
           <div class="bar"><span class="zone" style="left:${lo / maxV * 100}%;width:${(hi - lo) / maxV * 100}%"></span><span class="fill" style="width:${Math.min(a2, maxV) / maxV * 100}%"></span></div><span class="v">${fmt(a2)}<span class="muted"> / ${lo}-${hi}</span></span></div>`; }).join(''); })()}</div>
-      <p class="small muted">Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. A la derecha: series hechas / meta. La zona verde es la meta; el músculo en rojo es el que tienes más botado.</p>` : `
+      ` : `
       <div class="cump">
         <div class="cump-n" style="--p:${W.pts};--c:${col}"><b>${W.pts}</b><span>de 100</span></div>
         <div class="cump-parts">
@@ -1037,7 +1039,8 @@ function viewInicioApp() {
       <details class="cump-how"><summary>¿Cómo se calcula?</summary>
         <p><b>Días (40):</b> entrenamientos de la semana sobre los ${CUMP.dias} que te propones. <b>Series (40):</b> series hechas sobre las planificadas en tus ${CUMP.dias} rutinas. <b>Esfuerzo (20):</b> parte de esas series que quedó en el RIR pedido (1-2; el fallo solo en la última de un aislado). Los pesos se pueden cambiar.</p>
       </details>
-    </section>`;
+    </section>
+    ${S.cumpInfo ? `<div class="sheet-bg" data-a="cumpInfo"><div class="sheet" data-a="noop"><span class="eyebrow">Cumplimiento</span><h2>Cómo leerlo</h2><p class="small">${R === 1 ? (W.cur ? 'Esta semana, en curso.' : `Semana del ${fechaTxt(W.f0)}.`) : `Promedio de ${ws.length} semanas: del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]} al ${W.f6.getDate()} ${MESES_C[W.f6.getMonth()]}${W.cur ? ' (incluye la semana en curso)' : ''}.`} Desliza las semanas para moverte y elige 1, 2 o 4 semanas arriba.</p><p class="small"><b>General:</b> Días (40) son tus entrenamientos sobre los ${CUMP.dias} de la semana; Series (40), las series hechas sobre las planificadas; Esfuerzo (20), la parte que quedó en el RIR pedido. Verde desde 80, ámbar 60-79, rojo bajo 60.</p><p class="small"><b>Por músculo:</b> Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. A la derecha: series hechas / meta. La zona verde es la meta; el músculo en rojo es el que tienes más botado.</p><button class="btn primary block" data-a="cumpInfo">Entendido</button></div></div>` : ''}`;
 }
 function viewInicio() {
   const nx = nextRut(), r = RUT[nx];
