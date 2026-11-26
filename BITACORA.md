@@ -33,6 +33,11 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 ---
 
+## 2026-11-26 · Claude (hilo "Pasar el registro a Supabase") · prueba desde el celular
+
+- Italo creó el proyecto Supabase y corrió el esquema. El entorno de Claude no llega a supabase.co, así que la prueba real la hace Italo desde el celular.
+- `prueba.html` ahora deja pegar la URL y la publishable key cuando no hay `config.js` (quedan solo en ese navegador), para abrirla publicada sin subir claves al repo.
+
 ## 2026-11-26 · Claude (hilo "Pasar el registro a Supabase") · datos en Supabase con copia local
 
 - Italo: "¿podríamos partir desde ya con Supabase? Como es gratis". Antes el stack decía Google Sheets + Apps Script (nunca se construyó). `DECISIONES.md` (Stack) y `ROADMAP.md` actualizados.

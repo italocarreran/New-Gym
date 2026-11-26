@@ -24,6 +24,14 @@
   <h1>Prueba de la capa de datos</h1>
   <p id="estado">Cargando…</p>
 
+  <section id="conectar" hidden>
+    <h2>Conectar con Supabase</h2>
+    <p>Pega la Project URL y la Publishable key. Quedan guardadas solo en este navegador.</p>
+    <input id="cfg-url" placeholder="https://xxxx.supabase.co" autocomplete="off">
+    <input id="cfg-clave" placeholder="sb_publishable_..." autocomplete="off">
+    <button data-a="conectar">Guardar y conectar</button>
+  </section>
+
   <section id="cuenta">
     <h2>Cuenta</h2>
     <input id="email" type="email" placeholder="correo" autocomplete="username">
@@ -50,7 +58,12 @@
 <script type="module">
 import { crearDatos } from './index.js';
 const $ = (id) => document.getElementById(id);
-const datos = await crearDatos(window.GYM_CONFIG || {});
+// config.js manda; si no está (por ejemplo, la página publicada para probar),
+// se usa la que el usuario pegó en este navegador.
+let config = window.GYM_CONFIG;
+if (!config) { try { config = JSON.parse(localStorage.getItem('gym-config')); } catch { config = null; } }
+$('conectar').hidden = Boolean(config);
+const datos = await crearDatos(config || {});
 let sesion = null;
 
 datos.alCambiar(pintarEstado);
@@ -59,7 +72,7 @@ pintarLista();
 
 function pintarEstado(e) {
   const partes = [];
-  if (!e.nube) partes.push('<span class="bad">Sin config.js: solo guarda en este aparato.</span>');
+  if (!e.nube) partes.push('<span class="bad">Sin conectar a Supabase: solo guarda en este aparato.</span>');
   partes.push(e.usuario ? `Conectado como ${e.usuario.email}` : 'Sin cuenta (invitado)');
   partes.push(`${e.pendientes} sin subir`);
   if (e.sincronizando) partes.push('subiendo…');
@@ -83,6 +96,14 @@ const num = (id) => ($(id).value === '' ? null : Number($(id).value.replace(',',
 document.addEventListener('click', async (ev) => {
   const a = ev.target.dataset.a; if (!a) return;
   try {
+    if (a === 'conectar') {
+      const url = $('cfg-url').value.trim(), clave = $('cfg-clave').value.trim();
+      if (!/^https:\/\/.+\.supabase\.co\/?$/.test(url) || !clave.startsWith('sb_publishable_') && !clave.startsWith('eyJ')) {
+        alert('Revisa la URL (https://….supabase.co) y que la clave sea la publishable.'); return;
+      }
+      localStorage.setItem('gym-config', JSON.stringify({ url, clave }));
+      location.reload(); return;
+    }
     if (a === 'entrar') await datos.cuenta.entrar($('email').value, $('pass').value);
     if (a === 'crear') {
       const r = await datos.cuenta.crear($('email').value, $('pass').value);
