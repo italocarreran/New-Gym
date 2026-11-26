@@ -406,7 +406,8 @@ details.det { margin-top: -4px; }
 .mus-row .fill { top: 2px; bottom: 2px; border-radius: 3px; }
 .mus-row .v { font-family: var(--display); font-size: 14px; font-weight: 600; text-align: right; white-space: nowrap; }
 .mus-row .v .muted { font-size: 12px; }
-.mus-row.behind .m { color: var(--bad); font-weight: 600; } .mus-row.behind .fill { background: var(--bad); }
+.mus-row.behind .fill { background: var(--bad); }
+.mus-row.midm .fill { background: var(--warn); } .mus-row.okm .fill { background: var(--ok); }
 .mus-sc { display: flex; flex-direction: column; gap: 7px; }
 .mus-sc .cump-p { grid-template-columns: 112px minmax(0, 1fr) 58px; }
 .mus-sc .cump-p .v { text-align: right; }
@@ -1015,10 +1016,10 @@ function viewInicioApp() {
       <div class="wks" id="wks">${sems.map((x, w) => `<button class="wk ${w === semW ? 'sel' : w > semW - R && w < semW ? 'rng' : ''}" data-a="calWeek" data-v="${w}"><span>${x.f0.getDate()}/${x.f0.getMonth() + 1}</span><b class="${nivel(x.pts)}">${x.pts}</b>${x.cur ? '<i>•</i>' : ''}</button>`).join('')}</div>
       <p class="small muted">${R === 1 ? (W.cur ? 'Esta semana, en curso' : `Semana del ${fechaTxt(W.f0)}`) : `${ws.length} semanas: ${W.f0.getDate()}/${W.f0.getMonth() + 1} al ${W.f6.getDate()}/${W.f6.getMonth() + 1}`}</p>
       <div class="seg"><button class="${S.cumpMode === 'mus' ? '' : 'on'}" data-a="cumpMode" data-v="gen">General</button><button class="${S.cumpMode === 'mus' ? 'on' : ''}" data-a="cumpMode" data-v="mus">Por músculo</button></div>
-      ${S.cumpMode === 'mus' ? `<div class="legend"><span><i style="background:var(--accent)"></i>Hecho</span><span><i style="background:var(--ok-soft);border:1px solid var(--ok)"></i>Meta</span></div>
+      ${S.cumpMode === 'mus' ? `<div class="legend"><span><i style="background:var(--ok)"></i>Meta cumplida</span><span><i style="background:var(--warn)"></i>Cerca</span><span><i style="background:var(--bad)"></i>Atrasado</span></div>
       <div class="bars" style="gap:8px">${(() => { const n = ws.length, maxV = Math.max(...Object.values(META).map(x => x[1])) * n * 1.15, peor = [...musR].sort((x, y) => x.p - y.p)[0].m;
         return musR.map(x => { const [lo, hi] = META[x.m].map(v => v * n), a2 = Math.round(x.a * 2) / 2;
-          return `<div class="mus-row ${x.m === peor && a2 < lo ? 'behind' : ''}"><span class="m">${MUS[x.m]}</span>
+          return `<div class="mus-row ${a2 >= lo ? 'okm' : a2 >= lo * .6 ? 'midm' : 'behind'}"><span class="m">${MUS[x.m]}</span>
           <div class="bar"><span class="zone" style="left:${lo / maxV * 100}%;width:${(hi - lo) / maxV * 100}%"></span><span class="fill" style="width:${Math.min(a2, maxV) / maxV * 100}%"></span></div><span class="v">${fmt(a2)}<span class="muted"> / ${lo}-${hi}</span></span></div>`; }).join(''); })()}</div>
       ` : `
       <div class="cump">
@@ -1040,7 +1041,7 @@ function viewInicioApp() {
         <p><b>Días (40):</b> entrenamientos de la semana sobre los ${CUMP.dias} que te propones. <b>Series (40):</b> series hechas sobre las planificadas en tus ${CUMP.dias} rutinas. <b>Esfuerzo (20):</b> parte de esas series que quedó en el RIR pedido (1-2; el fallo solo en la última de un aislado). Los pesos se pueden cambiar.</p>
       </details>
     </section>
-    ${S.cumpInfo ? `<div class="sheet-bg" data-a="cumpInfo"><div class="sheet" data-a="noop"><span class="eyebrow">Cumplimiento</span><h2>Cómo leerlo</h2><p class="small">${R === 1 ? (W.cur ? 'Esta semana, en curso.' : `Semana del ${fechaTxt(W.f0)}.`) : `Promedio de ${ws.length} semanas: del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]} al ${W.f6.getDate()} ${MESES_C[W.f6.getMonth()]}${W.cur ? ' (incluye la semana en curso)' : ''}.`} Desliza las semanas para moverte y elige 1, 2 o 4 semanas arriba.</p><p class="small"><b>General:</b> Días (40) son tus entrenamientos sobre los ${CUMP.dias} de la semana; Series (40), las series hechas sobre las planificadas; Esfuerzo (20), la parte que quedó en el RIR pedido. Verde desde 80, ámbar 60-79, rojo bajo 60.</p><p class="small"><b>Por músculo:</b> Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. A la derecha: series hechas / meta. La zona verde es la meta; el músculo en rojo es el que tienes más botado.</p><button class="btn primary block" data-a="cumpInfo">Entendido</button></div></div>` : ''}`;
+    ${S.cumpInfo ? `<div class="sheet-bg" data-a="cumpInfo"><div class="sheet" data-a="noop"><span class="eyebrow">Cumplimiento</span><h2>Cómo leerlo</h2><p class="small">${R === 1 ? (W.cur ? 'Esta semana, en curso.' : `Semana del ${fechaTxt(W.f0)}.`) : `Promedio de ${ws.length} semanas: del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]} al ${W.f6.getDate()} ${MESES_C[W.f6.getMonth()]}${W.cur ? ' (incluye la semana en curso)' : ''}.`} Desliza las semanas para moverte y elige 1, 2 o 4 semanas arriba.</p><p class="small"><b>General:</b> Días (40) son tus entrenamientos sobre los ${CUMP.dias} de la semana; Series (40), las series hechas sobre las planificadas; Esfuerzo (20), la parte que quedó en el RIR pedido. Verde desde 80, ámbar 60-79, rojo bajo 60.</p><p class="small"><b>Por músculo:</b> Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. A la derecha: series hechas / meta. La zona verde es la meta. Verde: llegaste al mínimo; ámbar: 60% o más; rojo: menos del 60%, es lo que tienes más botado.</p><button class="btn primary block" data-a="cumpInfo">Entendido</button></div></div>` : ''}`;
 }
 function viewInicio() {
   const nx = nextRut(), r = RUT[nx];

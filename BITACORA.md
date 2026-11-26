@@ -40,6 +40,7 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 - Otro comentario: "Por músculo" ahora usa el mismo diseño de barras de la pestaña Semana (zona verde de meta, barra azul de hecho, "Atrasado" en el más bajo). Con 2 o 4 semanas la meta se multiplica por las semanas.
 - Otro comentario: cada músculo en una sola línea, nombre a la izquierda, barra al medio y "hecho / meta" a la derecha; el más atrasado va en rojo.
 - Otro comentario ("mucho ruido"): los textos explicativos de Cumplimiento se movieron a un botón "i" al lado del título, que abre una hoja con la explicación (`S.cumpInfo`). Bajo el carrusel queda solo una línea corta con el período.
+- Italo preguntó por qué pecho salía en rojo y no isquios: solo se marcaba el más bajo. Ahora cada músculo se pinta según su avance: verde si llegó al mínimo, ámbar desde 60%, rojo bajo 60%.
 - Nota: con las rutinas de ejemplo (Día 2 y Día 3 cortas) casi todos los músculos salen bajo el mínimo; es por los datos de ejemplo.
 
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · sin botón en Inicio
