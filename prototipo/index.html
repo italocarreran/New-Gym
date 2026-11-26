@@ -999,15 +999,15 @@ function viewInicioApp() {
         </div>
       </div>
       <p class="small muted">Promedio de las últimas 4 semanas completas: <b style="color:var(--ink)">${prom}</b>.</p>`}
-      <details class="cump-how"><summary>¿Cómo se calcula?</summary>
-        <p><b>Días (40):</b> entrenamientos de la semana sobre los ${CUMP.dias} que te propones. <b>Series (40):</b> series hechas sobre las planificadas en tus ${CUMP.dias} rutinas. <b>Esfuerzo (20):</b> parte de esas series que quedó en el RIR pedido (1-2; el fallo solo en la última de un aislado). Los pesos se pueden cambiar.</p>
-      </details>
     </section>
     <section class="card">
       <div class="slot-head"><h2>Tus entrenamientos</h2><span class="small muted">últimas ${SEM} semanas</span></div>
       <div class="cal-wrap" style="--nr:${NR}"><div class="cal-dl"><span></span>${RUT.slice(0, NR).map((x, k) => `<span><b>D${k + 1}</b>${x.name.split(' · ')[0]}</span>`).join('')}<span class="sc">pts</span></div><div class="cal">${celdas}</div></div>
       <div class="cal-leg"><span><i style="background:color-mix(in srgb, var(--accent) 35%, var(--surface-2))"></i><i style="background:color-mix(in srgb, var(--accent) 65%, var(--surface-2))"></i><i style="background:var(--accent)"></i>sesión incompleta → completa</span><span>Una columna por semana; cada fila es un día de tu plan. Barras: puntaje de la semana</span></div>
       ${det}
+      <details class="cump-how"><summary>¿Cómo se calcula?</summary>
+        <p><b>Días (40):</b> entrenamientos de la semana sobre los ${CUMP.dias} que te propones. <b>Series (40):</b> series hechas sobre las planificadas en tus ${CUMP.dias} rutinas. <b>Esfuerzo (20):</b> parte de esas series que quedó en el RIR pedido (1-2; el fallo solo en la última de un aislado). Los pesos se pueden cambiar.</p>
+      </details>
     </section>`;
 }
 function viewInicio() {

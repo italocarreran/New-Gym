@@ -33,6 +33,7 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · sin botón en Inicio
 
 - Comentario de Italo: se sacó el botón "Ir a la sesión de hoy" del Inicio. La acción `goSesion` queda sin uso.
+- Otro comentario: "¿Cómo se calcula?" pasó de la tarjeta Cumplimiento al final de la tarjeta "Tus entrenamientos".
 
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · calendario por días del plan y puntaje por músculo
 
