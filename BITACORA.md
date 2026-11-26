@@ -30,6 +30,12 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 ---
 
+## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · semanas del carrusel pintadas por nota
+
+- Comentario de Italo: que cada recuadro de semana se pinte con el color de su calificación.
+- Las píldoras `.wk` ahora tienen fondo suave verde/ámbar/rojo según la nota (`okw`/`midw`/`loww`). Las semanas del rango (2 o 4 sem) se marcan con borde punteado en vez de fondo azul.
+- Artifact versión 1795711193-d2c5.
+
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · el puntaje pesa las series por músculo
 
 - Comentario de Italo: el puntaje no se correlaciona con las series semanales por músculo; darle más peso a eso.

@@ -417,7 +417,9 @@ details.det { margin-top: -4px; }
 .wk { flex: none; scroll-snap-align: center; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 1px 7px; display: inline-flex; align-items: baseline; gap: 4px; font-size: 10.5px; line-height: 16px; color: var(--muted); white-space: nowrap; }
 .wk b { font-family: var(--display); font-size: 12.5px; color: var(--ok); }
 .wk b.mid { color: var(--warn); } .wk b.low { color: var(--bad); }
-.wk.rng { background: var(--accent-soft); border-color: transparent; }
+.wk.okw { background: var(--ok-soft); } .wk.midw { background: var(--warn-soft); } .wk.loww { background: var(--bad-soft); }
+.wk.okw, .wk.midw, .wk.loww { border-color: transparent; color: var(--ink); }
+.wk.rng { border-color: var(--accent); border-style: dashed; }
 .wk.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; color: var(--ink); }
 .wk i { font-style: normal; color: var(--accent); }
 .info-i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--muted); background: none; color: var(--muted); font-family: Georgia, serif; font-style: italic; font-weight: 700; font-size: 11px; line-height: 1; padding: 0; vertical-align: 4px; margin-left: 4px; }
@@ -1015,7 +1017,7 @@ function viewInicioApp() {
   return `
     <section class="card">
       <div class="cump-top"><h2>Cumplimiento <button class="info-i" data-a="cumpInfo" aria-label="Qué significa">i</button></h2><div class="seg">${[1, 2, 4].map(n => `<button class="${R === n ? 'on' : ''}" data-a="cumpRange" data-v="${n}">${n} sem</button>`).join('')}</div></div>
-      <div class="wks" id="wks">${sems.map((x, w) => `<button class="wk ${w === semW ? 'sel' : w > semW - R && w < semW ? 'rng' : ''}" data-a="calWeek" data-v="${w}"><span>${x.f0.getDate()}/${x.f0.getMonth() + 1}</span><b class="${nivel(x.pts)}">${x.pts}</b>${x.cur ? '<i>•</i>' : ''}</button>`).join('')}</div>
+      <div class="wks" id="wks">${sems.map((x, w) => `<button class="wk ${({ '': 'okw', mid: 'midw', low: 'loww' })[nivel(x.pts)]} ${w === semW ? 'sel' : w > semW - R && w < semW ? 'rng' : ''}" data-a="calWeek" data-v="${w}"><span>${x.f0.getDate()}/${x.f0.getMonth() + 1}</span><b class="${nivel(x.pts)}">${x.pts}</b>${x.cur ? '<i>•</i>' : ''}</button>`).join('')}</div>
       <p class="small muted">${R === 1 ? (W.cur ? 'Esta semana, en curso' : `Semana del ${fechaTxt(W.f0)}`) : `${ws.length} semanas: ${W.f0.getDate()}/${W.f0.getMonth() + 1} al ${W.f6.getDate()}/${W.f6.getMonth() + 1}`}</p>
       <div class="seg"><button class="${S.cumpMode === 'mus' ? '' : 'on'}" data-a="cumpMode" data-v="gen">General</button><button class="${S.cumpMode === 'mus' ? 'on' : ''}" data-a="cumpMode" data-v="mus">Por músculo</button></div>
       ${S.cumpMode === 'mus' ? `<div class="legend"><span><i style="background:var(--ok)"></i>Meta cumplida</span><span><i style="background:var(--warn)"></i>Cerca</span><span><i style="background:var(--bad)"></i>Atrasado</span></div>
