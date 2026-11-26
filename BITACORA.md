@@ -35,6 +35,7 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 - Comentario de Italo: carrusel de semanas en Cumplimiento para moverse sin tocar el gráfico, y ver el puntaje de varias semanas (2, 4) para detectar qué grupo está más botado.
 - Cumplimiento ahora tiene un carrusel deslizable de semanas (fecha + puntaje con color; la elegida queda centrada) y un selector **1 sem / 2 sem / 4 sem**. Con 2 o 4 se promedia el puntaje general y, por músculo, se suman las series de esas semanas sobre el mínimo semanal × semanas. Las semanas del rango se marcan en el carrusel.
 - Código: `S.cumpRange`, agregados `W` y `musR` en `viewInicioApp`; al renderizar se centra `.wk.sel`.
+- Otro comentario ("más chico, mucho más chico"): las semanas del carrusel pasaron a pastillas de una línea ("13/11 97"); la semana en curso lleva un punto.
 - Nota: con las rutinas de ejemplo (Día 2 y Día 3 cortas) casi todos los músculos salen bajo el mínimo; es por los datos de ejemplo.
 
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · sin botón en Inicio

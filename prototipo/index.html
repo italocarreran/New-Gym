@@ -404,14 +404,14 @@ details.det { margin-top: -4px; }
 .mus-sc .cump-p { grid-template-columns: 112px minmax(0, 1fr) 44px; }
 .mus-sc .cump-p .v { text-align: right; }
 .fill.mid { background: var(--warn); } .fill.low { background: var(--bad); } .fill.okc { background: var(--ok); }
-.wks { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 2px 16px 4px; scrollbar-width: none; }
+.wks { display: flex; gap: 4px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 2px 16px 4px; scrollbar-width: none; }
 .wks::-webkit-scrollbar { display: none; }
-.wk { flex: none; scroll-snap-align: center; width: 54px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 5px 2px 6px; display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 10.5px; color: var(--muted); }
-.wk b { font-family: var(--display); font-size: 19px; line-height: 1.05; color: var(--ok); }
+.wk { flex: none; scroll-snap-align: center; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 1px 7px; display: inline-flex; align-items: baseline; gap: 4px; font-size: 10.5px; line-height: 16px; color: var(--muted); white-space: nowrap; }
+.wk b { font-family: var(--display); font-size: 12.5px; color: var(--ok); }
 .wk b.mid { color: var(--warn); } .wk b.low { color: var(--bad); }
 .wk.rng { background: var(--accent-soft); border-color: transparent; }
-.wk.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
-.wk i { font-style: normal; font-size: 9px; }
+.wk.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; color: var(--ink); }
+.wk i { font-style: normal; color: var(--accent); }
 .cump-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .cump-top .seg { flex: none; width: 150px; padding: 3px; }
 .cump-top .seg button { padding: 5px 2px; font-size: 12px; }
@@ -1003,7 +1003,7 @@ function viewInicioApp() {
   return `
     <section class="card">
       <div class="cump-top"><h2>Cumplimiento</h2><div class="seg">${[1, 2, 4].map(n => `<button class="${R === n ? 'on' : ''}" data-a="cumpRange" data-v="${n}">${n} sem</button>`).join('')}</div></div>
-      <div class="wks" id="wks">${sems.map((x, w) => `<button class="wk ${w === semW ? 'sel' : w > semW - R && w < semW ? 'rng' : ''}" data-a="calWeek" data-v="${w}"><span>${x.f0.getDate()} ${MESES_C[x.f0.getMonth()]}</span><b class="${nivel(x.pts)}">${x.pts}</b>${x.cur ? '<i>en curso</i>' : ''}</button>`).join('')}</div>
+      <div class="wks" id="wks">${sems.map((x, w) => `<button class="wk ${w === semW ? 'sel' : w > semW - R && w < semW ? 'rng' : ''}" data-a="calWeek" data-v="${w}"><span>${x.f0.getDate()}/${x.f0.getMonth() + 1}</span><b class="${nivel(x.pts)}">${x.pts}</b>${x.cur ? '<i>•</i>' : ''}</button>`).join('')}</div>
       <p class="small muted">${R === 1 ? (W.cur ? 'Esta semana, en curso.' : `Semana del ${fechaTxt(W.f0)}.`) : `Promedio de ${ws.length} semanas: del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]} al ${W.f6.getDate()} ${MESES_C[W.f6.getMonth()]}${W.cur ? ' (incluye la semana en curso)' : ''}.`} Desliza las semanas para moverte.</p>
       <div class="seg"><button class="${S.cumpMode === 'mus' ? '' : 'on'}" data-a="cumpMode" data-v="gen">General</button><button class="${S.cumpMode === 'mus' ? 'on' : ''}" data-a="cumpMode" data-v="mus">Por músculo</button></div>
       ${S.cumpMode === 'mus' ? `<div class="mus-sc">${musR.sort((x, y) => y.p - x.p).map(x => `<div class="cump-p"><span>${MUS[x.m]}</span><div class="bar"><div class="fill ${{ '': 'okc', mid: 'mid', low: 'low' }[nivel(x.p)]}" style="width:${x.p}%"></div></div><span class="v">${x.p}</span></div>`).join('')}</div>
