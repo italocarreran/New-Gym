@@ -31,6 +31,11 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 ---
 
+## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · vuelve el carrusel sin fondo de color
+
+- Comentario de Italo: "Me arrepentí que no se pinte todo". Se deshace el cambio de bf95474: las semanas vuelven a fondo blanco con solo el número de color, y el rango de 2/4 semanas vuelve a fondo azul suave.
+- Artifact versión 1795711461-e44f.
+
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · se quita la pestaña Semana
 
 - Comentario de Italo: "Quita esta hoja" sobre la pestaña Semana.
