@@ -401,7 +401,7 @@ details.det { margin-top: -4px; }
 .cump-p .fill { top: 0; bottom: 0; border-radius: 4px; }
 .cump-p .v { font-family: var(--display); font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap; }
 .mus-sc { display: flex; flex-direction: column; gap: 7px; }
-.mus-sc .cump-p { grid-template-columns: 112px minmax(0, 1fr) 44px; }
+.mus-sc .cump-p { grid-template-columns: 112px minmax(0, 1fr) 58px; }
 .mus-sc .cump-p .v { text-align: right; }
 .fill.mid { background: var(--warn); } .fill.low { background: var(--bad); } .fill.okc { background: var(--ok); }
 .wks { display: flex; gap: 4px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 2px 16px 4px; scrollbar-width: none; }
@@ -1006,8 +1006,8 @@ function viewInicioApp() {
       <div class="wks" id="wks">${sems.map((x, w) => `<button class="wk ${w === semW ? 'sel' : w > semW - R && w < semW ? 'rng' : ''}" data-a="calWeek" data-v="${w}"><span>${x.f0.getDate()}/${x.f0.getMonth() + 1}</span><b class="${nivel(x.pts)}">${x.pts}</b>${x.cur ? '<i>•</i>' : ''}</button>`).join('')}</div>
       <p class="small muted">${R === 1 ? (W.cur ? 'Esta semana, en curso.' : `Semana del ${fechaTxt(W.f0)}.`) : `Promedio de ${ws.length} semanas: del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]} al ${W.f6.getDate()} ${MESES_C[W.f6.getMonth()]}${W.cur ? ' (incluye la semana en curso)' : ''}.`} Desliza las semanas para moverte.</p>
       <div class="seg"><button class="${S.cumpMode === 'mus' ? '' : 'on'}" data-a="cumpMode" data-v="gen">General</button><button class="${S.cumpMode === 'mus' ? 'on' : ''}" data-a="cumpMode" data-v="mus">Por músculo</button></div>
-      ${S.cumpMode === 'mus' ? `<div class="mus-sc">${musR.sort((x, y) => y.p - x.p).map(x => `<div class="cump-p"><span>${MUS[x.m]}</span><div class="bar"><div class="fill ${{ '': 'okc', mid: 'mid', low: 'low' }[nivel(x.p)]}" style="width:${x.p}%"></div></div><span class="v">${x.p}</span></div>`).join('')}</div>
-      <p class="small muted">Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. Lo que está en rojo es lo que tienes más botado.</p>` : `
+      ${S.cumpMode === 'mus' ? `<div class="mus-sc">${musR.sort((x, y) => y.p - x.p).map(x => `<div class="cump-p"><span>${MUS[x.m]}</span><div class="bar"><div class="fill ${{ '': 'okc', mid: 'mid', low: 'low' }[nivel(x.p)]}" style="width:${x.p}%"></div></div><span class="v">${fmt(Math.round(x.a * 2) / 2)}/${fmt(x.b)}</span></div>`).join('')}</div>
+      <p class="small muted">Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. A la derecha: series hechas / series objetivo. Lo que está en rojo es lo que tienes más botado.</p>` : `
       <div class="cump">
         <div class="cump-n" style="--p:${W.pts};--c:${col}"><b>${W.pts}</b><span>de 100</span></div>
         <div class="cump-parts">
