@@ -30,6 +30,10 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 ---
 
+## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · sin botón en Inicio
+
+- Comentario de Italo: se sacó el botón "Ir a la sesión de hoy" del Inicio. La acción `goSesion` queda sin uso.
+
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · calendario por días del plan y puntaje por músculo
 
 - Comentario de Italo: que el calendario no muestre todos los días de la semana sino los días del plan, y una opción de puntaje por grupo muscular.

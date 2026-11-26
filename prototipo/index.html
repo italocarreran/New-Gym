@@ -1008,8 +1008,7 @@ function viewInicioApp() {
       <div class="cal-wrap" style="--nr:${NR}"><div class="cal-dl"><span></span>${RUT.slice(0, NR).map((x, k) => `<span><b>D${k + 1}</b>${x.name.split(' · ')[0]}</span>`).join('')}<span class="sc">pts</span></div><div class="cal">${celdas}</div></div>
       <div class="cal-leg"><span><i style="background:color-mix(in srgb, var(--accent) 35%, var(--surface-2))"></i><i style="background:color-mix(in srgb, var(--accent) 65%, var(--surface-2))"></i><i style="background:var(--accent)"></i>sesión incompleta → completa</span><span>Una columna por semana; cada fila es un día de tu plan. Barras: puntaje de la semana</span></div>
       ${det}
-    </section>
-    <button class="btn primary block" data-a="goSesion">Ir a la sesión de hoy</button>`;
+    </section>`;
 }
 function viewInicio() {
   const nx = nextRut(), r = RUT[nx];
