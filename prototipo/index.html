@@ -400,6 +400,13 @@ details.det { margin-top: -4px; }
 .cump-p .bar { height: 8px; }
 .cump-p .fill { top: 0; bottom: 0; border-radius: 4px; }
 .cump-p .v { font-family: var(--display); font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.mus-row { display: grid; grid-template-columns: 104px minmax(0, 1fr) 76px; gap: 8px; align-items: center; font-size: 12.5px; }
+.mus-row .m { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mus-row .bar { height: 10px; }
+.mus-row .fill { top: 2px; bottom: 2px; border-radius: 3px; }
+.mus-row .v { font-family: var(--display); font-size: 14px; font-weight: 600; text-align: right; white-space: nowrap; }
+.mus-row .v .muted { font-size: 12px; }
+.mus-row.behind .m { color: var(--bad); font-weight: 600; } .mus-row.behind .fill { background: var(--bad); }
 .mus-sc { display: flex; flex-direction: column; gap: 7px; }
 .mus-sc .cump-p { grid-template-columns: 112px minmax(0, 1fr) 58px; }
 .mus-sc .cump-p .v { text-align: right; }
@@ -1007,11 +1014,11 @@ function viewInicioApp() {
       <p class="small muted">${R === 1 ? (W.cur ? 'Esta semana, en curso.' : `Semana del ${fechaTxt(W.f0)}.`) : `Promedio de ${ws.length} semanas: del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]} al ${W.f6.getDate()} ${MESES_C[W.f6.getMonth()]}${W.cur ? ' (incluye la semana en curso)' : ''}.`} Desliza las semanas para moverte.</p>
       <div class="seg"><button class="${S.cumpMode === 'mus' ? '' : 'on'}" data-a="cumpMode" data-v="gen">General</button><button class="${S.cumpMode === 'mus' ? 'on' : ''}" data-a="cumpMode" data-v="mus">Por músculo</button></div>
       ${S.cumpMode === 'mus' ? `<div class="legend"><span><i style="background:var(--accent)"></i>Hecho</span><span><i style="background:var(--ok-soft);border:1px solid var(--ok)"></i>Meta</span></div>
-      <div class="bars">${(() => { const n = ws.length, maxV = Math.max(...Object.values(META).map(x => x[1])) * n * 1.15, peor = [...musR].sort((x, y) => x.p - y.p)[0].m;
+      <div class="bars" style="gap:8px">${(() => { const n = ws.length, maxV = Math.max(...Object.values(META).map(x => x[1])) * n * 1.15, peor = [...musR].sort((x, y) => x.p - y.p)[0].m;
         return musR.map(x => { const [lo, hi] = META[x.m].map(v => v * n), a2 = Math.round(x.a * 2) / 2;
-          return `<div class="bar-row ${x.m === peor && a2 < lo ? 'behind' : ''}"><div class="bar-top"><span class="m">${MUS[x.m]}</span><span class="v">${fmt(a2)}<span class="muted small"> / ${lo}-${hi}</span></span></div>
-          <div class="bar"><span class="zone" style="left:${lo / maxV * 100}%;width:${(hi - lo) / maxV * 100}%"></span><span class="fill" style="width:${Math.min(a2, maxV) / maxV * 100}%"></span></div></div>`; }).join(''); })()}</div>
-      <p class="small muted">Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. A la derecha: series hechas / meta. La zona verde es la meta; "Atrasado" marca el músculo que tienes más botado.</p>` : `
+          return `<div class="mus-row ${x.m === peor && a2 < lo ? 'behind' : ''}"><span class="m">${MUS[x.m]}</span>
+          <div class="bar"><span class="zone" style="left:${lo / maxV * 100}%;width:${(hi - lo) / maxV * 100}%"></span><span class="fill" style="width:${Math.min(a2, maxV) / maxV * 100}%"></span></div><span class="v">${fmt(a2)}<span class="muted"> / ${lo}-${hi}</span></span></div>`; }).join(''); })()}</div>
+      <p class="small muted">Series duras ${R === 1 ? 'de la semana' : `de las ${ws.length} semanas`} sobre tu mínimo semanal de cada músculo${R === 1 ? '' : ' (multiplicado por las semanas)'}. Principal cuenta 1, secundario 0,5. A la derecha: series hechas / meta. La zona verde es la meta; el músculo en rojo es el que tienes más botado.</p>` : `
       <div class="cump">
         <div class="cump-n" style="--p:${W.pts};--c:${col}"><b>${W.pts}</b><span>de 100</span></div>
         <div class="cump-parts">
