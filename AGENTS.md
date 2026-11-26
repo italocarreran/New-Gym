@@ -14,7 +14,7 @@
 
 App personal de gimnasio en español. Resuelve: alternativa equivalente al toque cuando una máquina está ocupada (slots con A/B/C), series duras por músculo en la semana, y cuándo subir peso. Requisitos originales en `docs/contexto-app-entrenamiento.md`; lo vigente en `DECISIONES.md`.
 
-**Estado (2026-11-25):** prototipo interactivo completo y aprobado en `prototipo/index.html`. La PWA real todavía no empieza. Ver `ROADMAP.md`.
+**Estado (2026-11-26):** la PWA v1 está en `app/` (pantallas del prototipo + registro en Supabase) y se publica en GitHub Pages desde `main`. `prototipo/` queda como referencia de UI. Ver `ROADMAP.md`.
 
 ## 2. Cómo se entregan los cambios
 
@@ -40,6 +40,8 @@ App personal de gimnasio en español. Resuelve: alternativa equivalente al toque
 | La línea `const IMG = {...}` del prototipo pesa ~270 KB | No la leas ni la pegues entera. Búscala por nombre o edita con un script. |
 | El prototipo no usa `data/` | Sus `EX` y `DAY` son ejemplos. La PWA real tiene que leer `data/ejercicios.json` y `data/musculos.json`. |
 | `docs/contexto-app-entrenamiento.md` tiene la regla de progresión vieja | Manda `DECISIONES.md` (regla del 2026-11-24). |
+| `app/catalogo.js` es generado | Si cambias `data/`, corre `python3 scripts/armar_catalogo.py`. No lo edites a mano. |
+| `app/index.html` nació del prototipo | Los cambios de UI se hacen en `app/`; el prototipo ya no es la app. |
 | Hay una versión publicada del prototipo (artifact de Claude) | Si la editas, que `prototipo/index.html` quede idéntico. Lee la versión publicada antes de republicar, porque Italo puede haberla cambiado. |
 | Fotos de openGym aparecen en su repo junto al texto | Nunca las copies ni las enlaces. |
 | `lista-150-ejercicios.csv` lleva BOM | Consérvalo, si no Excel muestra mal los acentos. |

@@ -22,10 +22,11 @@
   - **Primero en el celular** (IndexedDB) y se sincroniza solo cuando hay señal; la app funciona entera sin internet.
   - **Cuentas por usuario y Row Level Security desde el inicio**: cada fila tiene dueño y nadie ve las de otro. Hoy lo usa solo Italo, pero queda lista para más usuarios.
   - Toda la lectura y escritura pasa por `app/datos/`; el resto de la app no habla con Supabase.
-  - En el cliente va **solo la clave pública** (publishable/anon), y tampoco se sube al repo: va en `app/config.js` (ignorado) y en Cloudflare. La clave secreta y la contraseña de la base nunca salen de Supabase.
+  - En el cliente va **solo la clave pública** (publishable/anon), y tampoco se sube al repo: va en `app/config.js` (ignorado) y en las variables del repo para publicar. La clave secreta y la contraseña de la base nunca salen de Supabase.
   - Sin librería de Supabase: cliente propio por HTTP en `app/datos/remoto.js` (sigue la regla de no usar npm).
   - Si dos aparatos editan lo mismo gana el cambio más reciente; borrar es marcar `borrado`.
-- Hosting en **Cloudflare Pages** (GitHub Pages no sirve gratis con repo privado). (2026-11-23)
+- Hosting en **GitHub Pages**, publicado solo desde `main` con GitHub Actions; URL fija `https://italocarreran.github.io/New-Gym/`. Sirve gratis porque el repo es público; si vuelve a privado, se pasa a Cloudflare Pages. Reemplaza "Cloudflare Pages" (2026-11-23). (Italo, 2026-11-26)
+- La URL y la publishable key de Supabase van como **variables del repo** (`SUPABASE_URL`, `SUPABASE_CLAVE`) y el workflow arma `app/config.js` al publicar. (2026-11-26)
 - Scripts de datos en Python 3 sin dependencias. (2026-11-23)
 - Rama oficial: **`main`**. (Italo, 2026-11-25)
 

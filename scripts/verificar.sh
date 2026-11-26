@@ -17,6 +17,13 @@ else
     fallas=$((fallas + 1))
 fi
 
+echo "== Catálogo de la app (app/catalogo.js) =="
+if python3 scripts/armar_catalogo.py --revisar; then
+    echo "   ok"
+else
+    fallas=$((fallas + 1))
+fi
+
 echo "== JavaScript del prototipo =="
 if command -v node >/dev/null; then
     tmp=$(mktemp --suffix=.js)
@@ -36,6 +43,14 @@ echo "== JavaScript de app/ =="
 if command -v node >/dev/null; then
     malos=0
     while IFS= read -r f; do node --check "$f" 2>/dev/null || { echo "   FALLA: $f"; malos=1; }; done < <(git ls-files 'app/*.js')
+    tmp=$(mktemp --suffix=.js)
+    python3 - "$tmp" <<'PY'
+import re, sys
+html = open("app/index.html", encoding="utf-8").read()
+open(sys.argv[1], "w", encoding="utf-8").write("\n;\n".join(re.findall(r"<script>(.*?)</script>", html, re.S)))
+PY
+    node --check "$tmp" 2>/dev/null || { echo "   FALLA: app/index.html"; malos=1; }
+    rm -f "$tmp"
     if [ "$malos" -eq 0 ]; then echo "   ok"; else fallas=$((fallas + 1)); fi
 else
     echo "   (se omite: no hay node en este entorno)"

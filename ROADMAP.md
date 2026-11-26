@@ -9,10 +9,11 @@ Estado al 2026-11-25. Plan por etapas. Lo inmediato (y quién está en qué) viv
 
 ## PWA real (versión 1)
 
-- [ ] Carpeta `app/` con la PWA: `index.html`, `manifest.webmanifest`, service worker para que funcione sin internet en el gimnasio.
-- [ ] Pasar la UI del prototipo a la app, leyendo `data/ejercicios.json` y `data/musculos.json` en vez de los datos de ejemplo (`EX`, `DAY`).
-- [ ] App en blanco: el usuario arma sus días y slots en Editar.
-- [ ] Registro de series (ejercicio usado, posición en la sesión, peso, reps, RIR, drop sets).
+- [x] Carpeta `app/` con la PWA: `index.html`, `manifest.webmanifest`, service worker para que funcione sin internet en el gimnasio.
+- [x] Pasar la UI del prototipo a la app, leyendo `data/` (vía `app/catalogo.js`).
+- [x] App en blanco: el usuario arma sus días y slots en Editar.
+- [x] Registro de series (ejercicio usado, posición en la sesión, peso, reps, RIR, drop sets).
+- [ ] Metas semanales por músculo editables en la app.
 - [ ] Regla de progresión completa (ver bitácora), con sesión anterior y meta de hoy.
 - [ ] Conteo semanal ponderado con metas que define el usuario, y aviso del músculo atrasado.
 - [ ] Sugerencia del día 4 de rescate.
@@ -24,11 +25,12 @@ Estado al 2026-11-25. Plan por etapas. Lo inmediato (y quién está en qué) viv
 - [x] Esquema con cuentas y permisos por usuario (`supabase/esquema.sql`).
 - [x] Capa de datos con copia local y sincronización (`app/datos/`).
 - [x] Italo crea el proyecto Supabase (`supabase/LEEME.md`) y pasa URL + publishable key.
-- [ ] Conectar las pantallas de la PWA a `app/datos/`.
+- [x] Conectar las pantallas de la PWA a `app/datos/`.
 
 ## Deploy
 
-- [ ] Conectar el repo a Cloudflare Pages (carpeta `app/`; el único paso de build escribe `app/config.js`, ver `supabase/LEEME.md`).
+- [x] Publicación automática en GitHub Pages desde `main` (`.github/workflows/publicar.yml`).
+- [ ] Italo activa Pages y agrega las variables (`docs/instalar-en-el-celular.md`).
 - [ ] Instalar en el celular como ícono de inicio.
 
 ## Después

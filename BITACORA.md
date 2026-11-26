@@ -20,17 +20,29 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 ## Pendientes abiertos
 
+- [ ] **Publicar la app** (2026-11-26): Italo fusiona el PR, activa Pages (Source: GitHub Actions) y agrega las variables `SUPABASE_URL` / `SUPABASE_CLAVE`. Pasos en `docs/instalar-en-el-celular.md`.
+- [ ] **App v1, faltantes conocidos** (2026-11-26): metas semanales editables (hoy parten con las del prototipo, en ajustes), validación del salto de peso ("jump") en la progresión, "Agregar ejercicio a hoy" queda guardado en la rutina, sin aviso de versión nueva.
+
 - [ ] **Día 4 de rescate** (2026-11-26): se fue con la pestaña Semana; ver si Italo lo quiere en Inicio.
 - [ ] **Feedback de Italo sobre el prototipo y el mapa de calor** (2026-11-25).
 - [ ] **Estilo de íconos** (2026-11-25): pipeline propio, ChatGPT o compra. Si es Gymvisual, falta que confirmen **por escrito** que se pueden editar y usar con IA.
 - [ ] **Puntaje de cumplimiento** (2026-11-26): Italo confirma pesos (ahora músculos 55, días 25, esfuerzo 20) y meta de 3 días.
 - [ ] **Rotación de rutinas en la PWA real** (2026-11-25): que avance al terminar una rutina y se pueda reordenar.
 - [ ] **Evitar la pausa de Supabase gratis** (2026-11-26): se pausa tras 7 días sin uso. Opcional: un aviso automático semanal (GitHub Action) que lo mantenga despierto.
-- [ ] **Empezar la PWA real** en `app/` cuando Italo dé el visto bueno al prototipo (ver `ROADMAP.md`).
 - [ ] **Hacer `main` la rama por defecto en GitHub** (Settings → General → Default branch). Hoy GitHub sigue mostrando una rama `claude/*`.
 - [ ] **Decidir si el repo vuelve a privado.** Hoy es público.
 
 ---
+
+## 2026-11-26 · Claude (hilo "Instalar la app en el celular") · PWA v1 instalable
+
+- Italo quiere usar la app en sus entrenamientos (él y un amigo) para encontrar bugs. Eligió **GitHub Pages** en vez de Cloudflare (repo público, sin cuenta nueva). `DECISIONES.md` (Stack) actualizado.
+- `app/index.html`: las pantallas del prototipo con datos reales. Catálogo de `data/` (57 ejercicios, fotos de free-exercise-db, pasos de openGym) vía `app/catalogo.js`, generado por `scripts/armar_catalogo.py`. Parte en blanco.
+- Todo pasa por `app/datos/`: rutinas se guardan al editar, cada serie (y drop set) al registrarla, sesión al terminar. "Última vez", progresión, conteo semanal e Inicio (cumplimiento y calendario) salen del registro. La sesión en curso sobrevive a que el celular cierre la app (localStorage; se da por terminada tras 12 h sin uso).
+- Entrar / crear cuenta / usar sin cuenta; tarjeta Cuenta al final de Inicio (estado de la nube, versión, salir). Si no hay config.js, pide pegar URL y publishable key.
+- `manifest.webmanifest`, íconos, `sw.js` (red primero con 3 s de espera; fotos y fuentes guardadas). `.github/workflows/publicar.yml` publica `app/` desde `main`.
+- Probado en Chromium (390 px) sin nube: armar rutina, registrar, recargar a mitad de sesión, terminar, "última vez" en la segunda, y abrir sin red. El login con Supabase no se pudo probar desde acá (el entorno no llega a supabase.co).
+- `prototipo/` no se tocó; queda como referencia de UI.
 
 ## 2026-11-26 · Claude (hilo "Pasar el registro a Supabase") · prueba real OK
 
