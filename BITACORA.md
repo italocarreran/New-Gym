@@ -30,6 +30,13 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 ---
 
+## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · calendario por días del plan y puntaje por músculo
+
+- Comentario de Italo: que el calendario no muestre todos los días de la semana sino los días del plan, y una opción de puntaje por grupo muscular.
+- Calendario: ahora cada fila es un día del plan ("D1 Pecho", "D2 Espalda", "D3 Pierna"; la etiqueta es la primera parte del nombre de la rutina) y cada columna una semana. El cuadrito se pinta si esa rutina se hizo esa semana, más fuerte mientras más completa; vacío si no se hizo. Debajo sigue la barra de puntaje semanal.
+- Cumplimiento con selector **General / Por músculo**. Por músculo: series duras de la semana (principal 1, secundario 0,5) sobre el mínimo semanal de `META`, de 0 a 100, ordenado de mayor a menor, verde/ámbar/rojo.
+- Código: `musSemana`, `S.cumpMode`, filas del calendario según `CUMP.dias` rutinas.
+
 ## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · puntaje de cumplimiento en Inicio
 
 - Comentario de Italo: el calendario solo no lo convence; propone un puntaje de cumplimiento por días, intensidad, series. Propuesta hecha en el prototipo (pesos por confirmar):

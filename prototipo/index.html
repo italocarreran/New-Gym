@@ -370,12 +370,13 @@ details.det { margin-top: -4px; }
 .tabs-in { width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
 /* inicio: calendario de días entrenados */
 .cal-wrap { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; }
-.cal-dl { display: grid; grid-template-rows: 12px repeat(7, 14px) 30px; gap: 3px; font-size: 9.5px; color: var(--muted); line-height: 14px; }
-.cal { display: grid; grid-template-rows: 12px repeat(7, 14px) 30px; grid-auto-flow: column; grid-auto-columns: 14px; gap: 3px; justify-content: space-between; }
+.cal-dl { display: grid; grid-template-rows: 12px repeat(var(--nr), 18px) 30px; gap: 4px; font-size: 11px; color: var(--muted); line-height: 18px; white-space: nowrap; }
+.cal-dl b { color: var(--ink); font-weight: 600; margin-right: 3px; }
+.cal { display: grid; grid-template-rows: 12px repeat(var(--nr), 18px) 30px; grid-auto-flow: column; grid-auto-columns: 16px; gap: 4px; justify-content: space-between; }
 .cal-mes { font-size: 9.5px; font-weight: 600; color: var(--muted); line-height: 12px; white-space: nowrap; overflow: visible; }
-.cal-d { width: 14px; height: 14px; border: 0; border-radius: 3px; background: var(--surface-2); padding: 0; }
+.cal-d { width: 16px; height: 18px; border: 0; border-radius: 3px; background: var(--surface-2); padding: 0; }
 .cal-d.on { background: color-mix(in srgb, var(--accent) var(--q, 100%), var(--surface-2)); }
-.cal-sc { align-self: end; width: 14px; border: 0; padding: 0; border-radius: 3px 3px 1px 1px; background: var(--ok); min-height: 2px; }
+.cal-sc { align-self: end; width: 16px; border: 0; padding: 0; border-radius: 3px 3px 1px 1px; background: var(--ok); min-height: 2px; }
 .cal-sc.mid { background: var(--warn); } .cal-sc.low { background: var(--bad); } .cal-sc.cur { opacity: .5; }
 .cal-sc.sel { outline: 2px solid var(--ink); outline-offset: 1px; }
 .cal-dl .sc { align-self: end; line-height: 12px; }
@@ -399,6 +400,10 @@ details.det { margin-top: -4px; }
 .cump-p .bar { height: 8px; }
 .cump-p .fill { top: 0; bottom: 0; border-radius: 4px; }
 .cump-p .v { font-family: var(--display); font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.mus-sc { display: flex; flex-direction: column; gap: 7px; }
+.mus-sc .cump-p { grid-template-columns: 112px minmax(0, 1fr) 44px; }
+.mus-sc .cump-p .v { text-align: right; }
+.fill.mid { background: var(--warn); } .fill.low { background: var(--bad); } .fill.okc { background: var(--ok); }
 .cump-how { font-size: 12px; color: var(--muted); }
 .cump-how summary { color: var(--accent); font-size: 12px; }
 .cal-det { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
@@ -745,6 +750,7 @@ function act(a, v) {
     // --- inicio de Rutina ---
     case 'calDay': S.calDay = S.calDay === v ? null : v; break;
     case 'calWeek': S.calWeek = +v; break;
+    case 'cumpMode': S.cumpMode = v; break;
     case 'goSesion': S.tab = 'hoy'; S.home = true; window.scrollTo(0, 0); break;
     case 'home': S.home = true; window.scrollTo(0, 0); break;
     case 'rutGo': {
@@ -941,23 +947,32 @@ function cumpSemana(l) {
   const esf = ss.length ? ss.reduce((a, h) => a + h.ri * h.sd * setsRut(h.k), 0) / Math.max(1, hechas) : 0;
   return { n: ss.length, hechas, plan, dias, series, esf: Math.min(1, esf), pts: Math.round(dias * CUMP.pDias + series * CUMP.pSeries + Math.min(1, esf) * CUMP.pEsf), cur: fin > HOY };
 }
+// series duras por músculo en la semana (principal 1, secundario 0,5) sobre el mínimo semanal (META)
+function musSemana(l) {
+  const fin = new Date(l); fin.setDate(l.getDate() + 7), t = {};
+  HIST.filter(h => h.f >= l && h.f < fin).forEach(h => (RUT[h.k] ? RUT[h.k].slots : []).forEach(d => {
+    const e = EX[d.alts[0]], n = d.sets * h.sd;
+    e.p.forEach(m => t[m] = (t[m] || 0) + n); e.s.forEach(m => t[m] = (t[m] || 0) + n * .5);
+  }));
+  return Object.keys(META).map(m => ({ m, a: Math.round((t[m] || 0) * 10) / 10, b: META[m][0], p: Math.min(100, Math.round((t[m] || 0) / META[m][0] * 100)) }));
+}
 const nivel = p => p >= 80 ? '' : p >= 60 ? 'mid' : 'low';
 function viewInicioApp() {
   const SEM = 12, lunes = new Date(HOY); lunes.setDate(HOY.getDate() - (HOY.getDay() + 6) % 7 - 7 * (SEM - 1));
   const porDia = {}; HIST.forEach(h => porDia[diaKey(h.f)] = h);
-  const semW = S.calWeek ?? SEM - 1;
+  const semW = S.calWeek ?? SEM - 1, NR = Math.min(RUT.length, CUMP.dias);
   let celdas = '', sems = [];
   for (let w = 0; w < SEM; w++) {
     const f0 = new Date(lunes); f0.setDate(lunes.getDate() + w * 7);
     const f6 = new Date(f0); f6.setDate(f0.getDate() + 6);
     const c = cumpSemana(f0); sems.push({ ...c, f0, f6 });
     celdas += `<span class="cal-mes">${w === 0 || f0.getMonth() !== f6.getMonth() || f0.getDate() === 1 ? MESES_C[f6.getMonth()] : ''}</span>`;
-    for (let i = 0; i < 7; i++) {
-      const f = new Date(f0); f.setDate(f0.getDate() + i);
-      const h = porDia[diaKey(f)], key = diaKey(f), fut = f > HOY, hoy = key === diaKey(HOY);
+    for (let k = 0; k < NR; k++) {
+      const ss = HIST.filter(h => h.k === k && h.f >= f0 && h.f <= f6), h = ss[ss.length - 1];
+      const key = h ? diaKey(h.f) : '';
       const q = h ? (ptsSesion(h) >= 85 ? 100 : ptsSesion(h) >= 70 ? 65 : 35) : 0;
-      const cls = ['cal-d', h ? 'on' : '', hoy ? 'hoy' : '', fut ? 'fut' : '', S.calDay === key ? 'sel' : ''].join(' ');
-      celdas += `<button class="${cls}" ${h ? `style="--q:${q}%"` : ''} ${fut ? 'disabled' : `data-a="calDay" data-v="${key}"`} aria-label="${fechaTxt(f)}${h ? ` · ${ptsSesion(h)} puntos` : ''}"></button>`;
+      const cls = ['cal-d', h ? 'on' : '', h && S.calDay === key ? 'sel' : '', f0 > HOY ? 'fut' : ''].join(' ');
+      celdas += `<button class="${cls}" ${h ? `style="--q:${q}%" data-a="calDay" data-v="${key}"` : 'disabled'} aria-label="Semana del ${fechaTxt(f0)} · D${k + 1}${h ? `: ${fechaTxt(h.f)}, ${ptsSesion(h)} puntos` : ': no se hizo'}"></button>`;
     }
     celdas += `<button class="cal-sc ${nivel(c.pts)} ${c.cur ? 'cur' : ''} ${w === semW ? 'sel' : ''}" style="height:${Math.max(2, c.pts * .3)}px" data-a="calWeek" data-v="${w}" aria-label="Semana del ${fechaTxt(f0)}: ${c.pts} puntos"></button>`;
   }
@@ -972,6 +987,9 @@ function viewInicioApp() {
   return `
     <section class="card">
       <div class="slot-head"><h2>Cumplimiento</h2><span class="small muted">${W.cur ? 'esta semana, en curso' : `semana del ${W.f0.getDate()} ${MESES_C[W.f0.getMonth()]}`}</span></div>
+      <div class="seg"><button class="${S.cumpMode === 'mus' ? '' : 'on'}" data-a="cumpMode" data-v="gen">General</button><button class="${S.cumpMode === 'mus' ? 'on' : ''}" data-a="cumpMode" data-v="mus">Por músculo</button></div>
+      ${S.cumpMode === 'mus' ? `<div class="mus-sc">${musSemana(W.f0).sort((x, y) => y.p - x.p).map(x => `<div class="cump-p"><span>${MUS[x.m]}</span><div class="bar"><div class="fill ${{ '': 'okc', mid: 'mid', low: 'low' }[nivel(x.p)]}" style="width:${x.p}%"></div></div><span class="v">${x.p}</span></div>`).join('')}</div>
+      <p class="small muted">Series duras de la semana sobre tu mínimo semanal de cada músculo (principal cuenta 1, secundario 0,5).</p>` : `
       <div class="cump">
         <div class="cump-n" style="--p:${W.pts};--c:${col}"><b>${W.pts}</b><span>de 100</span></div>
         <div class="cump-parts">
@@ -980,15 +998,15 @@ function viewInicioApp() {
           ${part('Esfuerzo', W.esf, `${Math.round(W.esf * 100)}%`)}
         </div>
       </div>
-      <p class="small muted">Promedio de las últimas 4 semanas completas: <b style="color:var(--ink)">${prom}</b>.</p>
+      <p class="small muted">Promedio de las últimas 4 semanas completas: <b style="color:var(--ink)">${prom}</b>.</p>`}
       <details class="cump-how"><summary>¿Cómo se calcula?</summary>
         <p><b>Días (40):</b> entrenamientos de la semana sobre los ${CUMP.dias} que te propones. <b>Series (40):</b> series hechas sobre las planificadas en tus ${CUMP.dias} rutinas. <b>Esfuerzo (20):</b> parte de esas series que quedó en el RIR pedido (1-2; el fallo solo en la última de un aislado). Los pesos se pueden cambiar.</p>
       </details>
     </section>
     <section class="card">
       <div class="slot-head"><h2>Tus entrenamientos</h2><span class="small muted">últimas ${SEM} semanas</span></div>
-      <div class="cal-wrap"><div class="cal-dl"><span></span>${['lun','','mié','','vie','','dom'].map(d => `<span>${d}</span>`).join('')}<span class="sc">pts</span></div><div class="cal">${celdas}</div></div>
-      <div class="cal-leg"><span><i style="background:color-mix(in srgb, var(--accent) 35%, var(--surface-2))"></i><i style="background:color-mix(in srgb, var(--accent) 65%, var(--surface-2))"></i><i style="background:var(--accent)"></i>sesión incompleta → completa</span><span>Barras: puntaje de la semana</span></div>
+      <div class="cal-wrap" style="--nr:${NR}"><div class="cal-dl"><span></span>${RUT.slice(0, NR).map((x, k) => `<span><b>D${k + 1}</b>${x.name.split(' · ')[0]}</span>`).join('')}<span class="sc">pts</span></div><div class="cal">${celdas}</div></div>
+      <div class="cal-leg"><span><i style="background:color-mix(in srgb, var(--accent) 35%, var(--surface-2))"></i><i style="background:color-mix(in srgb, var(--accent) 65%, var(--surface-2))"></i><i style="background:var(--accent)"></i>sesión incompleta → completa</span><span>Una columna por semana; cada fila es un día de tu plan. Barras: puntaje de la semana</span></div>
       ${det}
     </section>
     <button class="btn primary block" data-a="goSesion">Ir a la sesión de hoy</button>`;
