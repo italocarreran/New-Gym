@@ -22,12 +22,22 @@ Desde ahora esas ramas tienen que salir de `main` y volver a `main` (ver `REGLAS
 
 - [ ] **Feedback de Italo sobre el prototipo y el mapa de calor** (2026-11-25).
 - [ ] **Estilo de íconos** (2026-11-25): pipeline propio, ChatGPT o compra. Si es Gymvisual, falta que confirmen **por escrito** que se pueden editar y usar con IA.
+- [ ] **Puntaje de cumplimiento** (2026-11-26): Italo confirma pesos (días 40, series 40, esfuerzo 20) y meta de 3 días.
 - [ ] **Rotación de rutinas en la PWA real** (2026-11-25): que avance al terminar una rutina y se pueda reordenar.
 - [ ] **Empezar la PWA real** en `app/` cuando Italo dé el visto bueno al prototipo (ver `ROADMAP.md`).
 - [ ] **Hacer `main` la rama por defecto en GitHub** (Settings → General → Default branch). Hoy GitHub sigue mostrando una rama `claude/*`.
 - [ ] **Decidir si el repo vuelve a privado.** Hoy es público.
 
 ---
+
+## 2026-11-26 · Claude (hilo "Agregar inicio de rutinas") · puntaje de cumplimiento en Inicio
+
+- Comentario de Italo: el calendario solo no lo convence; propone un puntaje de cumplimiento por días, intensidad, series. Propuesta hecha en el prototipo (pesos por confirmar):
+  - **Semana, de 0 a 100**: Días 40 (entrenamientos sobre 3 por semana) + Series 40 (series hechas sobre las planificadas en las 3 rutinas) + Esfuerzo 20 (parte de las series en el RIR pedido).
+  - **Sesión**: 70 por series hechas + 30 por esfuerzo. El cuadrito del calendario se pinta más fuerte mientras más completa la sesión.
+  - Tarjeta "Cumplimiento" con anillo, desglose y promedio de 4 semanas completas. Bajo el calendario, una barra por semana (verde ≥80, ámbar 60-79, rojo <60); tocarla cambia la semana mostrada.
+- Código: `CUMP` (pesos), `cumpSemana`, `ptsSesion`, `nivel`; `HIST` ahora trae `sd` (series hechas) y `ri` (en RIR) de ejemplo. Se sacó el color por rutina y el resumen anterior (30 días, por semana, racha).
+- Pendiente: que Italo confirme o ajuste los pesos y la meta de días; recién ahí pasa a `DECISIONES.md`.
 
 ## 2026-11-25 · Claude (hilo "Agregar inicio de rutinas") · calendario compacto
 
